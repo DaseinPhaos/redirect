@@ -13,6 +13,7 @@ use winapi::ID3D12Device;
 use error::WinError;
 use std::os::raw::c_void;
 use factory::Adapter;
+use command::{CommandQueue, CommandQueueDesc, CommandAllocator, CommandListType};
 
 /// a 3D display adapter
 #[derive(Debug, Clone)]
@@ -45,7 +46,43 @@ impl Device {
         }
     }
 
+    /// attempts to create a command queue with given description
+    pub fn create_command_queue(
+        &mut self, desc: &CommandQueueDesc
+    ) -> Result<CommandQueue, WinError> {
+        unsafe {
+            let mut ret = ::std::mem::uninitialized();
+            let hr = self.ptr.CreateCommandQueue(
+                desc as *const _ as *const ::winapi::D3D12_COMMAND_QUEUE_DESC,
+                & ::dxguid::IID_ID3D12CommandQueue,
+                &mut ret as *mut *mut _ as *mut *mut c_void
+            );
 
+            WinError::from_hresult_or_ok(hr, || CommandQueue{
+                ptr: ComPtr::new(ret)
+            })
+        }
+    }
+
+    /// attempts to create a command allocator
+    pub fn create_command_allocator(
+        &mut self, list_type: CommandListType
+    ) -> Result<CommandAllocator, WinError> {
+        unsafe {
+            let mut ret = ::std::mem::uninitialized();
+            let hr = self.ptr.CreateCommandAllocator(
+                ::std::mem::transmute(list_type),
+                & ::dxguid::IID_ID3D12CommandQueue,
+                &mut ret as *mut *mut _ as *mut *mut c_void
+            );
+
+            WinError::from_hresult_or_ok(hr, || CommandAllocator{
+                ptr: ComPtr::new(ret)
+            })
+        }
+    }
+
+    // TODO: attempts to create a command list. blocker: PSO
 }
 
 bitflags! {
@@ -65,3 +102,30 @@ impl From<FeatureLevel> for ::winapi::D3D_FEATURE_LEVEL {
         ::winapi::D3D_FEATURE_LEVEL(level.bits())
     }
 }
+
+/// a COM object created by some `Device`
+pub trait DeviceChild {
+    /// get the parent device of `self`
+    fn get_device(&mut self) -> Result<Device, WinError>;
+}
+
+// utility macro for `impl DeviceChild for Child{ptr:ComPtr<T>}`
+macro_rules! impl_device_child {
+    ($Child: ty, $ptr: ident) => {
+        impl DeviceChild for $Child {
+            fn get_device(&mut self) -> Result<Device, WinError> { unsafe {
+                let mut ptr: *mut ::winapi::ID3D12Device = ::std::mem::uninitialized();
+                let hr = self.$ptr.GetDevice(
+                    & ::dxguid::IID_ID3D12Device,
+                    &mut ptr as *mut *mut _ as *mut *mut ::std::os::raw::c_void
+                );
+                ::error::WinError::from_hresult_or_ok(hr, || {
+                    ::device::Device{ptr: ::comptr::ComPtr::new(ptr)}
+                })
+            }}
+        }
+    }
+}
+
+impl_device_child!(CommandQueue, ptr);
+impl_device_child!(CommandAllocator, ptr);

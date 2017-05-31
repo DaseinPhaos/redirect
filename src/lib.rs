@@ -20,6 +20,7 @@ pub mod swapchain;
 pub mod resource;
 pub mod device;
 pub mod factory;
+pub mod command;
 
 #[repr(C)]
 pub struct InputElementBuilder<'a> {
