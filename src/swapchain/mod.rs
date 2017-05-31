@@ -17,7 +17,7 @@ use error::WinError;
 /// link between the graphics API and the target surface
 #[derive(Debug)]
 pub struct SwapChain {
-    ptr: ComPtr<IDXGISwapChain3>,
+    pub ptr: ComPtr<IDXGISwapChain3>,
 }
 
 impl SwapChain {
@@ -104,7 +104,15 @@ impl SwapChain {
         }
     }
 
-    // TODO: add method for fullscreen description
+    /// get fullscreen description
+    #[inline]
+    pub fn get_fullscreen_desc(&mut self) -> Result<FullScreenDesc, WinError> {
+        unsafe {
+            let mut ret = ::std::mem::uninitialized();
+            let hr = self.ptr.GetFullscreenDesc(&mut ret);
+            WinError::from_hresult_or_ok(hr, || ::std::mem::transmute(ret))
+        }
+    }
 
     /// get the underlying `HWMD` handle for the swapchain object
     #[inline]
@@ -203,6 +211,53 @@ impl SwapChainDesc {
             alpha_mode: Default::default(),
             flags: Default::default(),
         }
+    }
+}
+
+impl From<SwapChainDesc> for ::winapi::DXGI_SWAP_CHAIN_DESC1 {
+    #[inline]
+    fn from(desc: SwapChainDesc) -> Self {
+        unsafe {
+            ::std::mem::transmute(desc)
+        }
+    }
+}
+
+/// optional description of a fullsceen swapchain
+#[repr(C)]
+#[derive(Clone, Copy, Debug)]
+pub struct FullScreenDesc {
+    /// numerator of the refresh rate
+    pub refresh_numerator: u32,
+    /// denominator of the refresh rate
+    pub refresh_denominator: u32,
+    /// the method the raster uses to create an image on the surface
+    pub scanline_order: ScanlineOrder,
+    /// scaling mode
+    pub scaling: ModeScaling,
+    /// whether the swapchain is windowed
+    pub windowed: Bool,
+}
+
+impl Default for FullScreenDesc {
+    /// default to 60fps, unspecified order and scaling, fullscreen
+    #[inline]
+    fn default() -> FullScreenDesc {
+        FullScreenDesc{
+            refresh_numerator: 60,
+            refresh_denominator: 1,
+            scanline_order: Default::default(),
+            scaling: Default::default(),
+            windowed: false.into()
+        }
+    }
+}
+
+impl From<FullScreenDesc> for ::winapi::DXGI_SWAP_CHAIN_FULLSCREEN_DESC {
+    #[inline]
+    fn from(desc: FullScreenDesc) -> Self {
+        // TODO: double check
+        unsafe { ::std::mem::transmute(desc)}
     }
 }
 
@@ -398,5 +453,43 @@ impl Default for PresentFlags {
     #[inline]
     fn default() -> Self {
         PRESENT_FLAG_NONE
+    }
+}
+
+bitflags!{
+    /// method the raster uses to create an image on the surface
+    #[repr(C)]
+    pub struct ScanlineOrder: u32 {
+        const SCANLINE_ORDER_UNSPECIFIED = 0;
+        /// image is created from the first scanline to the last without skipping any
+        const SCANLINE_ORDER_PROGRESSIVE = 1;
+        /// image is created beginning with the upper field
+        const SCANLINE_ORDER_UPPER_FIELD_FIRST = 2;
+        /// image is created beginning with the lower field
+        const SCANLINE_ORDER_LOWER_FIELD_FIRST = 3;
+    }
+}
+
+impl Default for ScanlineOrder {
+    #[inline]
+    fn default() -> Self {
+        SCANLINE_ORDER_UNSPECIFIED
+    }
+}
+
+bitflags!{
+    /// scaling behavior for an image on a monitor
+    #[repr(C)]
+    pub struct ModeScaling: u32 {
+        const MODE_SCALING_UNSPECIFIED = 0;
+        const MODE_SCALING_CENTERED = 1;
+        const MODE_SCALING_STRETCHED = 2;
+    }
+}
+
+impl Default for ModeScaling {
+    #[inline]
+    fn default() -> Self {
+        MODE_SCALING_UNSPECIFIED
     }
 }
