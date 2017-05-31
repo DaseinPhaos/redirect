@@ -1,0 +1,13 @@
+[package]
+name = "redirect"
+version = "0.1.0"
+authors = ["Luxko <liarluxlux@gmail.com>"]
+license = "Apache-2.0"
+keywords = ["graphics"]
+
+[dependencies]
+winapi = "0.2"
+d3d12-sys = "*"
+dxguid-sys = "*"
+dxgi-sys = "*"
+bitflags = "0.9"
