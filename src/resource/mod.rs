@@ -8,8 +8,11 @@
 
 //! resource
 
-pub mod usage;
+mod usage;
 pub use self::usage::*;
+
+mod heap;
+pub use self::heap::*;
 
 use format::*;
 use swapchain::SampleDesc;

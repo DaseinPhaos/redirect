@@ -11,7 +11,7 @@
 use comptr::ComPtr;
 use winapi::IDXGISwapChain3;
 use format::*;
-use resource::usage::*;
+use resource::*;
 use error::WinError;
 
 /// link between the graphics API and the target surface

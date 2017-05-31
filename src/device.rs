@@ -14,6 +14,7 @@ use error::WinError;
 use std::os::raw::c_void;
 use factory::Adapter;
 use command::{CommandQueue, CommandQueueDesc, CommandAllocator, CommandListType};
+use resource::{Heap, HeapDesc};
 
 /// a 3D display adapter
 #[derive(Debug, Clone)]
@@ -77,6 +78,22 @@ impl Device {
             );
 
             WinError::from_hresult_or_ok(hr, || CommandAllocator{
+                ptr: ComPtr::new(ret)
+            })
+        }
+    }
+
+    /// attempts to create a heap
+    pub fn create_heap(&mut self, desc: &HeapDesc) -> Result<Heap, WinError> {
+        unsafe {
+            let mut ret = ::std::mem::uninitialized();
+            let hr = self.ptr.CreateHeap(
+                desc as *const _ as *const ::winapi::D3D12_HEAP_DESC,
+                & ::dxguid::IID_ID3D12Heap,
+                &mut ret as *mut *mut _ as *mut *mut c_void
+            );
+
+            WinError::from_hresult_or_ok(hr, || Heap{
                 ptr: ComPtr::new(ret)
             })
         }
