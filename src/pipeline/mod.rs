@@ -41,5 +41,41 @@ pub struct GraphicsPipelineStateDesc {
     pub sample_desc: SampleDesc,
     pub node_mask: u32,
     // TODO: caches?
-    // TODO: flags
+    pub flags: PipelineStateFlags,
+}
+
+#[derive(Clone, Debug)]
+pub struct GraphicsPipelineStateBuilder {
+    // TODO: shader byte codes
+    pub stream_output: so::DescBuilder,
+    pub blend_state: blend::BlendDesc,
+    pub sample_mask: u32,
+    pub rasterizer_state: rasterizer::RasterizerDesc,
+    pub depth_stencil_state: ds::DepthStencilDesc,
+    pub input_layout: ia::InputLayoutBuilder,
+    pub strip_cut_value: ia::StripCutValue,
+    pub primitive_topology_type: ia::PrimitiveTopologyType,
+    pub num_render_targets: u32,
+    pub rtv_formats: [DxgiFormat; 8],
+    pub dsv_format: DxgiFormat,
+    pub sample_desc: SampleDesc,
+    pub node_mask: u32,
+    // TODO: caches?
+    pub flags: PipelineStateFlags,
+}
+
+// TODO: add methods for the builder
+
+bitflags!{
+    pub struct PipelineStateFlags {
+        const PIPELINE_STATE_FLAG_NONE        = 0;
+        const PIPELINE_STATE_FLAG_TOOL_DEBUG  = 0x1;
+    }
+}
+
+impl Default for PipelineStateFlags{
+    #[inline]
+    fn default() -> Self {
+        PIPELINE_STATE_FLAG_NONE
+    }
 }

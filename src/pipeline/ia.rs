@@ -10,6 +10,34 @@
 
 use std::os::raw::c_char;
 use format::DxgiFormat;
+use smallvec::SmallVec;
+use std::marker::PhantomData;
+
+/// a input layout constructor
+#[derive(Clone, Debug, Default)]
+pub struct InputLayoutBuilder {
+    pub elements: SmallVec<[InputElementDesc; 8]>,
+}
+
+impl InputLayoutBuilder{
+    #[inline]
+    pub fn new() -> Self {
+        Default::default()
+    }
+
+    pub fn build(&self) -> (
+        ::winapi::D3D12_INPUT_LAYOUT_DESC, PhantomData<&InputLayoutBuilder>
+    ) {
+        (
+            ::winapi::D3D12_INPUT_LAYOUT_DESC{
+                pInputElementDescs: self.elements.as_ptr() as *const _,
+                NumElements: self.elements.len() as u32
+            },
+            Default::default()
+        )
+    }
+}
+
 
 /// a single input element
 #[repr(C)]
