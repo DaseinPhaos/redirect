@@ -25,6 +25,7 @@ pub mod command;
 pub mod pipeline;
 pub mod shader;
 pub mod sampler;
+pub mod fence;
 
 #[repr(C)]
 pub struct InputElementBuilder<'a> {

@@ -16,6 +16,7 @@ use factory::Adapter;
 use command::{CommandQueue, CommandQueueDesc, CommandAllocator, CommandListType};
 use resource::*;
 use pipeline::rootsig::{RootSig, RootSigDescBlob};
+use fence::{Fence, FenceFlags};
 
 /// a 3D display adapter
 #[derive(Debug, Clone)]
@@ -148,6 +149,23 @@ impl Device {
             WinError::from_hresult_or_ok(hr, || CommittedResource::from_raw(
                 RawResource{ptr: ComPtr::new(ptr)}
             ))
+        }
+    }
+
+    /// attempts to create a fence
+    pub fn create_fence(&mut self, initial_value: u64, flags: FenceFlags) -> Result<Fence, WinError> {
+        unsafe {
+            let mut ret = ::std::mem::uninitialized();
+            let hr = self.ptr.CreateFence(
+                initial_value,
+                ::std::mem::transmute(flags),
+                & ::dxguid::IID_ID3D12Fence,
+                &mut ret as *mut *mut _ as *mut *mut _
+            );
+
+            WinError::from_hresult_or_ok(hr, || Fence{
+                ptr: ComPtr::new(ret)
+            })
         }
     }
 
