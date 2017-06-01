@@ -14,6 +14,9 @@ pub use self::usage::*;
 mod heap;
 pub use self::heap::*;
 
+mod raw;
+pub use self::raw::*;
+
 use format::*;
 use swapchain::SampleDesc;
 
@@ -183,4 +186,81 @@ impl Default for ResourceFlags {
     }
 }
 
+bitflags!{
+    /// the state of a resource regarding how it is being used. [more](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn986744%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396)
+    #[repr(C)]
+    pub struct ResourceStates: u32 {
+        const RESOURCE_STATE_COMMON                      = 0;
+        const RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER  = 0x1;
+        const RESOURCE_STATE_INDEX_BUFFER                = 0x2;
+        const RESOURCE_STATE_RENDER_TARGET               = 0x4;
+        const RESOURCE_STATE_UNORDERED_ACCESS            = 0x8;
+        const RESOURCE_STATE_DEPTH_WRITE                 = 0x10;
+        const RESOURCE_STATE_DEPTH_READ                  = 0x20;
+        const RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE   = 0x40;
+        const RESOURCE_STATE_PIXEL_SHADER_RESOURCE       = 0x80;
+        const RESOURCE_STATE_STREAM_OUT                  = 0x100;
+        const RESOURCE_STATE_INDIRECT_ARGUMENT           = 0x200;
+        const RESOURCE_STATE_COPY_DEST                   = 0x400;
+        const RESOURCE_STATE_COPY_SOURCE                 = 0x800;
+        const RESOURCE_STATE_RESOLVE_DEST                = 0x1000;
+        const RESOURCE_STATE_RESOLVE_SOURCE              = 0x2000;
+        const RESOURCE_STATE_GENERIC_READ = ((((0x1|0x2)|0x40)|0x80)|0x200)|0x800;
+        const RESOURCE_STATE_PRESENT                     = 0;
+        const RESOURCE_STATE_PREDICATION                 = 0x200;
+    }
+}
+
 // TODO: find out a sound way to work with different types of resources
+
+/// a committed resource, backed up by an implicit heap
+#[derive(Clone, Debug)]
+pub struct CommittedResource{
+    raw: RawResource
+}
+
+impl CommittedResource {
+    #[inline]
+    pub unsafe fn from_raw(raw: RawResource) -> CommittedResource {
+        CommittedResource{raw}
+    }
+
+    #[inline]
+    pub fn as_raw(&mut self) -> &mut RawResource {
+        &mut self.raw
+    }
+}
+
+/// a placed resource, backed up by an explicit heap
+#[derive(Clone, Debug)]
+pub struct PlacedResource{
+    raw: RawResource,
+    heap: Heap,
+    heap_offset: u64,
+}
+
+impl PlacedResource {
+    #[inline]
+    pub unsafe fn from_raw(raw: RawResource, heap: Heap, heap_offset: u64) -> Self {
+        PlacedResource{
+            raw, heap, heap_offset
+        }
+    }
+
+    #[inline]
+    pub fn as_raw(&mut self) -> &mut RawResource {
+        &mut self.raw
+    }
+
+    #[inline]
+    pub fn get_placed_heap(&self) -> &Heap {
+        &self.heap
+    }
+
+    #[inline]
+    pub fn heap_offset(&self) -> u64 {
+        self.heap_offset
+    }
+}
+
+// TODO: reserved resource?

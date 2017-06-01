@@ -16,16 +16,41 @@ use error::WinError;
 #[derive(Clone, Debug)]
 pub struct Heap {
     pub ptr: ComPtr<ID3D12Heap>,
+    size: u64,
+    alignment: u64,
 }
 
 impl Heap {
+    /// get a heap from a ComPtr
+    #[inline]
+    pub fn from_comptr(ptr: ComPtr<ID3D12Heap>) -> Heap {
+        let mut ret = Heap{ptr, size: 0, alignment: 0};
+        let desc = ret.get_desc();
+        ret.size = desc.size;
+        ret.alignment = desc.alignment.bits();
+        ret
+    }
+
     /// get heap descriptions
+    #[inline]
     pub fn get_desc(&mut self) -> HeapDesc {
         unsafe {
             let mut ret = ::std::mem::uninitialized();
             self.ptr.GetDesc(&mut ret);
             ::std::mem::transmute(ret)
         }
+    }
+
+    /// get heap size
+    #[inline]
+    pub fn size(&self) -> u64 {
+        self.size
+    }
+
+    /// get heap alignment
+    #[inline]
+    pub fn alignment(&self) -> u64 {
+        self.alignment
     }
 }
 
@@ -41,6 +66,16 @@ pub struct HeapDesc {
     pub alignment: HeapAlignment,
     /// misc flags
     pub flags: HeapFlags,
+}
+
+impl HeapDesc{
+    /// construction
+    #[inline]
+    pub fn new(size: u64, properties: HeapProperties, flags: HeapFlags) -> HeapDesc {
+        HeapDesc{
+            size, properties, flags, alignment: Default::default(),
+        }
+    }
 }
 
 /// describes heap properties

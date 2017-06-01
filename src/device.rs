@@ -14,7 +14,7 @@ use error::WinError;
 use std::os::raw::c_void;
 use factory::Adapter;
 use command::{CommandQueue, CommandQueueDesc, CommandAllocator, CommandListType};
-use resource::{Heap, HeapDesc};
+use resource::*;
 
 /// a 3D display adapter
 #[derive(Debug, Clone)]
@@ -93,9 +93,65 @@ impl Device {
                 &mut ret as *mut *mut _ as *mut *mut c_void
             );
 
-            WinError::from_hresult_or_ok(hr, || Heap{
-                ptr: ComPtr::new(ret)
-            })
+            WinError::from_hresult_or_ok(hr, || Heap::from_comptr(
+                ComPtr::new(ret)
+            ))
+        }
+    }
+
+    /// attempts to create a committed resource
+    pub fn create_committed_resource(
+        &mut self, heap_properties: &HeapProperties, 
+        heap_flags: HeapFlags, desc: &ResourceDesc
+    ) -> Result<CommittedResource, WinError> {
+        let initial_state = match heap_properties.heap_type {
+            HEAP_TYPE_UPLOAD => ::winapi::D3D12_RESOURCE_STATE_GENERIC_READ,
+            HEAP_TYPE_READBACK => ::winapi::D3D12_RESOURCE_STATE_COPY_DEST,
+            _ => ::winapi::D3D12_RESOURCE_STATE_COMMON,
+        };
+        unsafe {
+            let mut ptr = ::std::mem::uninitialized();
+            let hr = self.ptr.CreateCommittedResource(
+                heap_properties as *const _ as *const _,
+                ::std::mem::transmute(heap_flags),
+                desc as *const _ as *const _,
+                initial_state,
+                ::std::ptr::null(),
+                & ::dxguid::IID_ID3D12Resource,
+                &mut ptr as *mut _ as *mut _
+            );
+
+            WinError::from_hresult_or_ok(hr, || CommittedResource::from_raw(
+                RawResource{ptr: ComPtr::new(ptr)}
+            ))
+        }
+    }
+
+    /// attempts to create a placed resource
+    pub fn create_placed_resource(
+        &mut self, heap: &mut Heap, heap_offset: u64, desc: &ResourceDesc
+    ) -> Result<PlacedResource, WinError> {
+        let heap_properties = heap.get_desc().properties;
+        let initial_state = match heap_properties.heap_type {
+            HEAP_TYPE_UPLOAD => ::winapi::D3D12_RESOURCE_STATE_GENERIC_READ,
+            HEAP_TYPE_READBACK => ::winapi::D3D12_RESOURCE_STATE_COPY_DEST,
+            _ => ::winapi::D3D12_RESOURCE_STATE_COMMON,
+        };
+        unsafe {
+            let mut ptr = ::std::mem::uninitialized();
+            let hr = self.ptr.CreatePlacedResource(
+                heap.ptr.as_mut_ptr(),
+                heap_offset,
+                desc as *const _ as *const _,
+                initial_state,
+                ::std::ptr::null(),
+                & ::dxguid::IID_ID3D12Resource,
+                &mut ptr as *mut _ as *mut _
+            );
+
+            WinError::from_hresult_or_ok(hr, || PlacedResource::from_raw(
+                RawResource{ptr: ComPtr::new(ptr)}, heap.clone(), heap_offset
+            ))
         }
     }
 
@@ -146,3 +202,4 @@ macro_rules! impl_device_child {
 
 impl_device_child!(CommandQueue, ptr);
 impl_device_child!(CommandAllocator, ptr);
+impl_device_child!(Heap, ptr);
