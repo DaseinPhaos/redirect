@@ -30,6 +30,12 @@ impl RawResource {
         }
     }
 
+    /// get the GPU virtual address for a buffer resource, `0` for texture resources
+    #[inline]
+    pub fn get_gpu_vaddress(&mut self) -> GpuVAddress {
+        unsafe { GpuVAddress{ptr: self.ptr.GetGPUVirtualAddress()}}
+    }
+
     /// attempt to get the attached heap's info. This method would only work
     /// on committed or placed resources, not on reserved ones.
     #[inline]
@@ -117,7 +123,7 @@ impl RawResource {
     }
 }
 
-/// a resource chunk description
+/// describes a chunk of resource
 #[derive(Copy, Clone, Debug)]
 pub struct ResourceChunkDesc {
     /// pointer to the head of data
@@ -127,6 +133,25 @@ pub struct ResourceChunkDesc {
     /// distance from one depth slice of data to the next
     pub depth_pitch: u32,
 }
+
+/// GPU virtual device
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+pub struct GpuVAddress {
+    pub ptr: u64,
+}
+
+// impl AsRef<::winapi::D3D12_GPU_VIRTUAL_ADDRESS> for GpuVAddress {
+//     fn as_ref(&self) -> &::winapi::D3D12_GPU_VIRTUAL_ADDRESS {
+//         &self.ptr
+//     }
+// }
+
+// impl AsMut<::winapi::D3D12_GPU_VIRTUAL_ADDRESS> for GpuVAddress {
+//     fn as_mut(&mut self) -> &mut ::winapi::D3D12_GPU_VIRTUAL_ADDRESS {
+//         &mut self.ptr
+//     }
+// }
 
 /// a 3D box
 #[repr(C)]

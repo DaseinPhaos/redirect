@@ -179,13 +179,21 @@ bitflags!{
     /// misc heap options. [more info](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn986730(v=vs.85).aspx)
     pub struct HeapFlags: u32 {
         const HEAP_FLAG_NONE                            = 0;
+        /// a [shared heap](https://msdn.microsoft.com/zh-cn/library/windows/desktop/mt186623(v=vs.85).aspx)
         const HEAP_FLAG_SHARED                          = 0x1;
+        /// the heap isn't allowed to contain buffers
         const HEAP_FLAG_DENY_BUFFERS                    = 0x4;
+        /// the heap can contain swapchain surfaces
         const HEAP_FLAG_ALLOW_DISPLAY                   = 0x8;
+        /// the heap can be shored across adapters
         const HEAP_FLAG_SHARED_CROSS_ADAPTER            = 0x20;
+        /// the heap can't store render target or depth stencil textures
         const HEAP_FLAG_DENY_RT_DS_TEXTURES             = 0x40;
+        /// the heap can't contain textures without `ALLOW_RENDER_TARGET` or `ALLOW_DEPTH_STENCIL` flags
         const HEAP_FLAG_DENY_NON_RT_DS_TEXTURES         = 0x80;
+        /// unsupported
         const HEAP_FLAG_HARDWARE_PROTECTED              = 0x100;
+        /// allow tools to support `MEM_WRITE_WATCH`
         const HEAP_FLAG_ALLOW_WRITE_WATCH               = 0x200;
         const HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES  = 0;
         const HEAP_FLAG_ALLOW_ONLY_BUFFERS              = 0xc0;

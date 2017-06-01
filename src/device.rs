@@ -127,6 +127,17 @@ impl Device {
         }
     }
 
+    /// get resource allocation info from the resource description
+    pub fn get_resource_alloc_info(&mut self, desc: &ResourceDesc, visible_mask: u32) -> ResourceAllocInfo {
+        unsafe {
+            let mut ret = ::std::mem::uninitialized();
+            self.ptr.GetResourceAllocationInfo(
+                visible_mask, 1, desc as *const _ as *const _, &mut ret
+            );
+            ::std::mem::transmute(ret)
+        }
+    }
+
     /// attempts to create a placed resource
     pub fn create_placed_resource(
         &mut self, heap: &mut Heap, heap_offset: u64, desc: &ResourceDesc
@@ -137,6 +148,9 @@ impl Device {
             HEAP_TYPE_READBACK => ::winapi::D3D12_RESOURCE_STATE_COPY_DEST,
             _ => ::winapi::D3D12_RESOURCE_STATE_COMMON,
         };
+        let alloc_info = self.get_resource_alloc_info(
+            desc, heap_properties.visible_node_mask
+        );
         unsafe {
             let mut ptr = ::std::mem::uninitialized();
             let hr = self.ptr.CreatePlacedResource(
@@ -150,12 +164,15 @@ impl Device {
             );
 
             WinError::from_hresult_or_ok(hr, || PlacedResource::from_raw(
-                RawResource{ptr: ComPtr::new(ptr)}, heap.clone(), heap_offset
+                RawResource{ptr: ComPtr::new(ptr)}, heap.clone(), heap_offset, alloc_info
             ))
         }
     }
 
     // TODO: attempts to create a command list. blocker: PSO
+
+    // TODO: add method for ReservedResouce creation. blocker: ReservedResource
+    // TODO: add methods for resource tiling
 }
 
 bitflags! {
@@ -203,3 +220,18 @@ macro_rules! impl_device_child {
 impl_device_child!(CommandQueue, ptr);
 impl_device_child!(CommandAllocator, ptr);
 impl_device_child!(Heap, ptr);
+impl_device_child!(RawResource, ptr);
+
+impl DeviceChild for CommittedResource {
+    #[inline]
+    fn get_device(&mut self) -> Result<Device, WinError> {
+        self.as_raw().get_device()
+    }
+}
+
+impl DeviceChild for PlacedResource {
+    #[inline]
+    fn get_device(&mut self) -> Result<Device, WinError> {
+        self.as_raw().get_device()
+    }
+}

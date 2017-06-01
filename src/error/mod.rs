@@ -11,6 +11,7 @@
 use ::winapi::{HRESULT, SUCCEEDED};
 
 /// an winerror
+// TODO: add useful error messages
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct WinError {
     pub hr: HRESULT,
