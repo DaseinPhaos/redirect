@@ -10,6 +10,8 @@ use comptr::ComPtr;
 use winapi::ID3D12CommandQueue;
 use error::WinError;
 use super::list::*;
+use smallvec::SmallVec;
+use fence::Fence;
 
 /// A GPU command queue, providing methods for command submission,
 /// execution synchronization, etc.
@@ -21,13 +23,64 @@ pub struct CommandQueue {
 impl CommandQueue {
     // TODO: add method for `CopyTileMapping, UpdateTileMappings`, block on resources
 
-    // TODO: add method for command list execution
+    /// determine the rate the GPU timestamp counter increments
+    #[inline]
+    pub fn get_timestamp_frequency(&mut self) -> Result<u64, WinError> {
+        let mut ret = 0;
+        let hr = unsafe { self.ptr.GetTimestampFrequency(&mut ret)};
+        WinError::from_hresult_or_ok(hr, || ret)
+    }
 
-    // TODO: add method for time stamp calibration
+    /// samples the CPU and GPU timestamp counters at the same moment in time.
+    /// return (CPUTimestamp, GPUTimestamp) on success
+    #[inline]
+    pub fn get_clock_calibration(&mut self) -> Result<(u64, u64), WinError> {
+        let mut gpu = 0;
+        let mut cpu = 0;
+        let hr = unsafe { self.ptr.GetClockCalibration(&mut gpu, &mut cpu)};
+        WinError::from_hresult_or_ok(hr, || (cpu, gpu))
+    }
+
+    /// add one command list to the GPU execution queue
+    #[inline]
+    pub fn execute_command_list(&mut self, list: &GraphicsCommandList) {
+        let mut ptr = list.ptr.as_mut_ptr() as *mut ::winapi::ID3D12CommandList;
+        unsafe {
+            self.ptr.ExecuteCommandLists(1, &mut ptr);
+        }
+    }
+
+    /// add a sequence of command lists to the GPU execution queue
+    pub fn execute_command_lists(&mut self, lists: &[GraphicsCommandList]) {
+        let mut raw_lists: SmallVec<[*mut ::winapi::ID3D12CommandList; 8]> = Default::default();
+        for list in lists {
+            raw_lists.push(list.ptr.as_mut_ptr() as *mut _);
+        }
+        let ptr = raw_lists.as_mut_ptr();
+        unsafe {
+            self.ptr.ExecuteCommandLists(lists.len() as u32, ptr);
+        }
+    }
+
+    /// use GPU to update a fence to a specified value
+    #[inline]
+    pub fn signal(&mut self, fence: &Fence, value: u64) -> Result<(), WinError> {
+        let raw_fence = fence.ptr.as_mut_ptr();
+        unsafe {
+            WinError::from_hresult(self.ptr.Signal(raw_fence, value))
+        }
+    }
+
+    /// wait until the specified fence reaches or exceeds the specified value
+    #[inline]
+    pub fn wait(&mut self, fence: &Fence, value: u64) -> Result<(), WinError> {
+        let raw_fence = fence.ptr.as_mut_ptr();
+        unsafe {
+            WinError::from_hresult(self.ptr.Wait(raw_fence, value))
+        }
+    }
 
     // TODO: add method for PIX events?
-
-    // TODO: add method for `Signal, Wait`
 
     /// get description of this queue
     pub fn get_desc(&mut self) -> CommandQueueDesc {

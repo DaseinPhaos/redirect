@@ -263,6 +263,7 @@ impl_device_child!(CommandQueue, ptr);
 impl_device_child!(CommandAllocator, ptr);
 impl_device_child!(Heap, ptr);
 impl_device_child!(RawResource, ptr);
+impl_device_child!(Fence, ptr);
 
 impl DeviceChild for CommittedResource {
     #[inline]
