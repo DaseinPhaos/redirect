@@ -15,6 +15,7 @@ use std::os::raw::c_void;
 use factory::Adapter;
 use command::{CommandQueue, CommandQueueDesc, CommandAllocator, CommandListType};
 use resource::*;
+use rootsig::{RootSig, RootSigDescBlob};
 
 /// a 3D display adapter
 #[derive(Debug, Clone)]
@@ -43,6 +44,29 @@ impl Device {
             );
             WinError::from_hresult_or_ok(hr, || Device{
                 ptr: ComPtr::new(ptr)
+            })
+        }
+    }
+
+    /// attempts to create a root signature from a description blob
+    #[inline]
+    pub fn create_root_sig(
+        &mut self, node_mask: u32, desc_blob: &RootSigDescBlob
+    ) -> Result<RootSig, WinError> {
+        unsafe {
+            let pblob = desc_blob.ptr.as_mut_ptr();
+            let length = (*pblob).GetBufferSize();
+            let pblob = (*pblob).GetBufferPointer();
+
+            let mut ret = ::std::mem::uninitialized();
+            let hr = self.ptr.CreateRootSignature(
+                node_mask, pblob, length,
+                & ::dxguid::IID_ID3D12RootSignature,
+                &mut ret as *mut *mut _ as *mut *mut _
+            );
+            
+            WinError::from_hresult_or_ok(hr, || RootSig{
+                ptr: ComPtr::new(ret)
             })
         }
     }

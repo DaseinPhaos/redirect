@@ -12,6 +12,7 @@ extern crate winapi;
 extern crate d3d12;
 extern crate dxguid;
 extern crate dxgi;
+extern crate smallvec;
 
 mod comptr;
 pub mod error;
@@ -21,6 +22,10 @@ pub mod resource;
 pub mod device;
 pub mod factory;
 pub mod command;
+pub mod pipeline;
+pub mod rootsig;
+pub mod shader;
+pub mod sampler;
 
 #[repr(C)]
 pub struct InputElementBuilder<'a> {
