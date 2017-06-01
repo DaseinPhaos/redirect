@@ -67,7 +67,7 @@ pub struct GraphicsPipelineStateBuilder {
 // TODO: add methods for the builder
 
 bitflags!{
-    pub struct PipelineStateFlags {
+    pub struct PipelineStateFlags: u32 {
         const PIPELINE_STATE_FLAG_NONE        = 0;
         const PIPELINE_STATE_FLAG_TOOL_DEBUG  = 0x1;
     }

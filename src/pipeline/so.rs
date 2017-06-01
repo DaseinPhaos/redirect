@@ -13,6 +13,7 @@ use std::os::raw::c_char;
 use std::marker::PhantomData;
 
 /// stream output description
+#[derive(Clone, Debug)]
 pub struct DescBuilder {
     pub entries: SmallVec<[DeclarationEntry; 8]>,
     /// buffer strides
