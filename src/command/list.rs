@@ -20,7 +20,7 @@ bitflags!{
         /// from the direct list, where it must be opearated on
         const COMMAND_LIST_TYPE_BUNDLE = 1;
         /// computing command list
-        const COMMAND_LIST_TYPE_COMPUT = 2;
+        const COMMAND_LIST_TYPE_COMPUTE = 2;
         /// copying(drawing) command list
         const COMMAND_LIST_TYPE_COPY = 3;
     }
