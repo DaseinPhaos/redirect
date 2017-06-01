@@ -23,7 +23,6 @@ pub mod device;
 pub mod factory;
 pub mod command;
 pub mod pipeline;
-pub mod rootsig;
 pub mod shader;
 pub mod sampler;
 

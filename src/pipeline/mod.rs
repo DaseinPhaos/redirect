@@ -8,4 +8,11 @@
 
 //! describes graphics and compute pipelines
 
+// TODO: add graphic pipeline state description structure
+// blockers: shader, rootsignature
 
+pub mod so;
+pub mod blend;
+pub mod rootsig;
+pub mod rasterizer;
+pub mod ds;

@@ -15,7 +15,7 @@ use std::os::raw::c_void;
 use factory::Adapter;
 use command::{CommandQueue, CommandQueueDesc, CommandAllocator, CommandListType};
 use resource::*;
-use rootsig::{RootSig, RootSigDescBlob};
+use pipeline::rootsig::{RootSig, RootSigDescBlob};
 
 /// a 3D display adapter
 #[derive(Debug, Clone)]
