@@ -47,6 +47,7 @@ impl Default for RasterizerDesc {
 }
 
 bitflags!{
+    #[repr(C)]
     pub struct FillMode: u32 {
         const FILL_MODE_WIREFRAME = 2;
         const FILL_MODE_SOLID = 3;
@@ -54,6 +55,7 @@ bitflags!{
 }
 
 bitflags!{
+    #[repr(C)]
     pub struct CullMode: u32 {
         const CULL_MODE_NONE = 1;
         const CULL_MODE_FRONT = 2;
@@ -62,6 +64,7 @@ bitflags!{
 }
 
 bitflags!{
+    #[repr(C)]
     pub struct ConservativeMode: u32 {
         const CONSERVATIVE_MODE_OFF = 0;
         const CONSERVATIVE_MODE_ON = 1;

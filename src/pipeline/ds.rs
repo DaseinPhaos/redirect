@@ -68,6 +68,7 @@ impl Default for StencilOpDesc{
 }
 
 bitflags!{
+    #[repr(C)]
     pub struct DepthWriteMask: u32 {
         const DEPTH_WRITE_MASK_ZERO = 0;
         const DEPTH_WRITE_MASK_ALL = 1;
@@ -75,6 +76,7 @@ bitflags!{
 }
 
 bitflags!{
+    #[repr(C)]
     pub struct StencilOp: u32 {
         const STENCIL_OP_KEEP      = 1;
         const STENCIL_OP_ZERO      = 2;

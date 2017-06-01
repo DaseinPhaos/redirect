@@ -80,6 +80,7 @@ impl Default for RenderTargetBlendDesc {
 
 bitflags!{
     /// a blend factor
+    #[repr(C)]
     pub struct Blend: u32 {
         const BLEND_ZERO              = 1;
         const BLEND_ONE               = 2;
@@ -103,6 +104,7 @@ bitflags!{
 
 bitflags!{
     /// a blend operation
+    #[repr(C)]
     pub struct BlendOp: u32 {
         const BLEND_OP_ADD           = 1;
         const BLEND_OP_SUBTRACT      = 2;
@@ -114,6 +116,7 @@ bitflags!{
 
 bitflags!{
     /// a logic operation
+    #[repr(C)]
     pub struct LogicOp: u32 {
         const LOGIC_OP_CLEAR          = 0;
         const LOGIC_OP_SET            = LOGIC_OP_CLEAR.bits +1;
@@ -136,6 +139,7 @@ bitflags!{
 
 bitflags!{
     /// color write mask of a blend operation
+    #[repr(C)]
     pub struct ColorWriteMask: u8 {
         const COLOR_WRITE_ENABLE_RED = 1;
         const COLOR_WRITE_ENABLE_GREEN = 2;
