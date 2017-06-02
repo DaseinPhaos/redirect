@@ -11,6 +11,7 @@
 pub use ::winapi::dxgiformat::*;
 pub type DxgiFormat = DXGI_FORMAT;
 
+/// ffi for win32 boolean values
 #[repr(C)]
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
 pub struct Bool{inner: ::winapi::BOOL}
@@ -49,4 +50,17 @@ impl From<Bool> for ::winapi::BOOL {
     fn from(v: Bool) -> Self {
         v.inner
     }
+}
+
+/// convert a possibly null ended `[WCHAR]` into a `OsString`
+#[inline]
+pub fn from_wchar_slice(chars: &[::winapi::WCHAR]) -> ::std::ffi::OsString {
+    let mut end = chars.len();
+    for (i, wchar) in chars.iter().enumerate() {
+        if *wchar == 0 {
+            end = i;
+            break;
+        }
+    }
+    <::std::ffi::OsString as ::std::os::windows::ffi::OsStringExt>::from_wide(&chars[..end])
 }

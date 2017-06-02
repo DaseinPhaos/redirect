@@ -159,6 +159,18 @@ pub struct AdapterDesc {
     pub flags: AdapterFlags,
 }
 
+impl ::std::fmt::Debug for AdapterDesc {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> Result<(), ::std::fmt::Error> {
+        write!(f, "AdapterDesc {{ description: {:?}, vendor_id: {:?}, device_id: {:?}, revision: {:?}, dedicated_vmem: {:?}, dedicated_smem: {:?}, shared_smem: {:?}, luid: {:?}, flags: {:?} }}", ::format::from_wchar_slice(&self.description), self.vendor_id, self.device_id, self.revision, self.dedicated_vmem, self.dedicated_smem, self.shared_smem, self.luid, self.flags)
+    }
+}
+
+impl ::std::fmt::Display for AdapterDesc {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> Result<(), ::std::fmt::Error> {
+        write!(f, "{:?}", ::format::from_wchar_slice(&self.description))
+    }
+}
+
 bitflags!{
     /// adapter flags
     pub struct AdapterFlags: u32 {
@@ -199,4 +211,45 @@ impl<'a> Iterator for OutputIter<'a> {
 #[derive(Debug, Clone)]
 pub struct Output {
     pub ptr: ComPtr<IDXGIOutput>,
+}
+
+impl Output {
+    // TODO: add more methods?
+
+    /// get basic description for the output
+    #[inline]
+    pub fn get_desc(&mut self) -> Result<OutputDesc, WinError> {
+        unsafe {
+            let mut ret = ::std::mem::uninitialized();
+            let hr = self.ptr.GetDesc(&mut ret as *mut _ as *mut _);
+            WinError::from_hresult_or_ok(hr, || ret)
+        }
+    }
+}
+
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+pub struct OutputDesc {
+    pub name: [::winapi::WCHAR; 32],
+    pub descktop_coordinates: ::winapi::RECT,
+    pub attached_to_desktop: ::format::Bool,
+    pub rotation: RotationMode,
+    pub hmonitor: ::winapi::HMONITOR,
+}
+
+impl ::std::fmt::Display for OutputDesc {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> Result<(), ::std::fmt::Error> {
+        write!(f, "{:?}", ::format::from_wchar_slice(&self.name))
+    }
+}
+
+bitflags!{
+    /// rotation mode for the monitor
+    pub struct RotationMode: u32 {
+        const ROTATION_MODE_UNSPECIFIED = 0;
+        const ROTATION_MODE_IDENTITY = 1;
+        const ROTATION_MODE_ROTATE90 = 2;
+        const ROTATION_MODE_ROTATE180 = 3;
+        const ROTATION_MODE_ROTATE270 = 4;
+    }
 }

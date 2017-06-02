@@ -12,3 +12,10 @@ dxguid-sys = "*"
 dxgi-sys = "*"
 bitflags = "0.9"
 smallvec = "0.4"
+
+[[example]]
+name = "initialize"
+path = "examples/initialize.rs"
+
+[dev-dependencies]
+winit = "0.6"
