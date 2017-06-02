@@ -24,7 +24,6 @@ pub mod factory;
 pub mod command;
 pub mod pipeline;
 pub mod shader;
-pub mod sampler;
 pub mod fence;
 pub mod descriptor;
 

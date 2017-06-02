@@ -7,7 +7,7 @@
 // except according to those terms.
 
 use comptr::ComPtr;
-use winapi::{ID3D12CommandList, ID3D12GraphicsCommandList};
+use winapi::ID3D12GraphicsCommandList;
 use error::WinError;
 
 bitflags!{

@@ -22,6 +22,7 @@ pub mod rootsig;
 pub mod rasterizer;
 pub mod ds;
 pub mod ia;
+pub mod sampler;
 
 pub type SampleDesc = ::swapchain::SampleDesc;
 
@@ -106,5 +107,20 @@ impl Default for PipelineStateFlags{
     #[inline]
     fn default() -> Self {
         PIPELINE_STATE_FLAG_NONE
+    }
+}
+
+bitflags!{
+    /// comparison options, specifying under which circumstance the comparison passes
+    #[repr(C)]
+    pub struct ComparisonFunc: u32 {
+        const COMPARISON_FUNC_NEVER          = 1;
+        const COMPARISON_FUNC_LESS           = 2;
+        const COMPARISON_FUNC_EQUAL          = 3;
+        const COMPARISON_FUNC_LESS_EQUAL     = 4;
+        const COMPARISON_FUNC_GREATER        = 5;
+        const COMPARISON_FUNC_NOT_EQUAL      = 6;
+        const COMPARISON_FUNC_GREATER_EQUAL  = 7;
+        const COMPARISON_FUNC_ALWAYS         = 8;
     }
 }

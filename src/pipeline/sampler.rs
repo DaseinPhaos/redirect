@@ -8,6 +8,8 @@
 
 //! texture sampling schemes
 
+use super::*;
+
 /// describes a static sampler
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
@@ -122,21 +124,6 @@ impl Default for TextureAddressMode {
     #[inline]
     fn default() -> Self {
         TEXTURE_ADDRESS_MODE_WRAP
-    }
-}
-
-bitflags!{
-    /// comparison options, specifying under which circumstance the comparison passes
-    #[repr(C)]
-    pub struct ComparisonFunc: u32 {
-        const COMPARISON_FUNC_NEVER          = 1;
-        const COMPARISON_FUNC_LESS           = 2;
-        const COMPARISON_FUNC_EQUAL          = 3;
-        const COMPARISON_FUNC_LESS_EQUAL     = 4;
-        const COMPARISON_FUNC_GREATER        = 5;
-        const COMPARISON_FUNC_NOT_EQUAL      = 6;
-        const COMPARISON_FUNC_GREATER_EQUAL  = 7;
-        const COMPARISON_FUNC_ALWAYS         = 8;
     }
 }
 

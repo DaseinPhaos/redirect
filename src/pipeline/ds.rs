@@ -7,10 +7,8 @@
 // except according to those terms.
 
 //! depth stencil states
-
+use super::*;
 use format::Bool;
-
-pub type ComparisonFunc = ::sampler::ComparisonFunc;
 
 /// describes the depth-stencil state
 #[repr(C)]
@@ -32,7 +30,7 @@ impl Default for DepthStencilDesc {
         DepthStencilDesc{
             depth: true.into(),
             depth_write_mask: DEPTH_WRITE_MASK_ALL,
-            depth_func: ::sampler::COMPARISON_FUNC_LESS,
+            depth_func: COMPARISON_FUNC_LESS,
             stencil: false.into(),
             stencil_read_mask: 0,
             stencil_write_mask: 0,
@@ -62,7 +60,7 @@ impl Default for StencilOpDesc{
             fail: STENCIL_OP_KEEP,
             depth_fail: STENCIL_OP_KEEP,
             pass: STENCIL_OP_KEEP,
-            func: ::sampler::COMPARISON_FUNC_NEVER,
+            func: COMPARISON_FUNC_NEVER,
         }
     }
 }

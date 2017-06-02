@@ -13,7 +13,7 @@ use winapi::{ID3D12DescriptorHeap, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12
 use resource::RawResource;
 use error::WinError;
 use device::Device;
-use super::desc::SrvDesc;
+use super::desc::{SrvDesc, CbvDesc, RtvDesc, DsvDesc, SamplerDesc};
 
 
 /// descriptor heap builder struct
@@ -135,7 +135,7 @@ impl DescriptorHeapBuilder {
     }
 }
 
-
+/// a heap that can hold cbv, srv and uavs.
 #[derive(Clone, Debug)]
 pub struct CbvSrvUavHeap {
     pub ptr: ComPtr<ID3D12DescriptorHeap>,
@@ -171,6 +171,54 @@ impl CbvSrvUavHeap{
             )
         }
     }
+
+    /// create a uav on this heap at `index`.
+    /// `None` resource creates a null-binding providing 0 reads and discared writes.
+    /// `None` desc creates a default view if possible, inheriting resource format and descriptions. [more info](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn788674(v=vs.85).aspx)
+    pub fn create_uav(
+        &mut self, device: &mut Device,
+        resource: Option<&RawResource>,  // TODO: typed resources?
+        counter: Option<&RawResource>,
+        desc: Option<&SrvDesc>,
+        index: u32
+    ) {
+        let presource = if let Some(resource) = resource {
+            resource.ptr.as_mut_ptr()
+        } else {
+            ::std::ptr::null_mut()
+        };
+        let pcounter = if let Some(counter) = counter {
+            counter.ptr.as_mut_ptr()
+        } else {
+            ::std::ptr::null_mut()
+        };
+        let cdesc = if let Some(desc) = desc {
+            desc.into_cstruct()
+        } else {
+            unsafe {::std::mem::uninitialized()}
+        };
+        let pdesc = if desc.is_some() { &cdesc as *const _ } else {::std::ptr::null()};
+        unsafe {
+            device.ptr.CreateUnorderedAccessView(
+                presource, pcounter, pdesc as *const _, 
+                ::std::mem::transmute(self.get_cpu_handle(index))
+            )
+        }
+    }
+
+    /// create a cbv on this heap at `index`.
+    /// TODO: double check optional desc
+    pub fn create_cbv(
+        &mut self, device: &mut Device, desc: &CbvDesc, index: u32
+    ) {
+        let cpuhandle = self.get_cpu_handle(index);
+        unsafe {
+            device.ptr.CreateConstantBufferView(
+                desc as *const _ as *const _,
+                ::std::mem::transmute(cpuhandle)
+            )
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -180,6 +228,34 @@ pub struct RtvHeap {
     pub handle_increment_size: u32,
 }
 
+impl RtvHeap {
+    /// create a render target view on the given resource.
+    /// A `None` desc means to create a default view if possible
+    pub fn create_rtv(
+        &mut self, device: &mut Device, resource: Option<&mut RawResource>,
+        desc: Option<&RtvDesc>, index: u32
+    ) {
+        let presource = if let Some(resource) = resource {
+            resource.ptr.as_mut_ptr()
+        } else {
+            ::std::ptr::null_mut()
+        };
+        let cdesc = if let Some(desc) = desc {
+            desc.into_cstruct()
+        } else {
+            unsafe {::std::mem::uninitialized()}
+        };
+
+        let pdesc = if desc.is_some() { &cdesc as *const _ } else {::std::ptr::null()};
+        unsafe {
+            device.ptr.CreateRenderTargetView(
+                presource, pdesc as *const _, 
+                ::std::mem::transmute(self.get_cpu_handle(index))
+            )
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct DsvHeap {
     pub ptr: ComPtr<ID3D12DescriptorHeap>,
@@ -187,11 +263,53 @@ pub struct DsvHeap {
     pub handle_increment_size: u32,
 }
 
+impl DsvHeap{
+    /// create a depth stencil view on the given resource.
+    /// A `None` desc means to create a default view if possible
+    pub fn create_dsv(
+        &mut self, device: &mut Device, resource: Option<&mut RawResource>,
+        desc: Option<&DsvDesc>, index: u32
+    ) {
+        let presource = if let Some(resource) = resource {
+            resource.ptr.as_mut_ptr()
+        } else {
+            ::std::ptr::null_mut()
+        };
+        let cdesc = if let Some(desc) = desc {
+            desc.into_cstruct()
+        } else {
+            unsafe {::std::mem::uninitialized()}
+        };
+
+        let pdesc = if desc.is_some() { &cdesc as *const _ } else {::std::ptr::null()};
+        unsafe {
+            device.ptr.CreateDepthStencilView(
+                presource, pdesc as *const _, 
+                ::std::mem::transmute(self.get_cpu_handle(index))
+            )
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct SamplerHeap {
     pub ptr: ComPtr<ID3D12DescriptorHeap>,
     pub num_descriptors: u32,
     pub handle_increment_size: u32,
+}
+
+impl SamplerHeap {
+    /// create a sampler object on the heap
+    pub fn create_sampler(
+        &mut self, device: &mut Device, desc: &SamplerDesc, index: u32
+    ) {
+        unsafe {
+            device.ptr.CreateSampler(
+                desc as *const _ as *const _,
+                ::std::mem::transmute(self.get_cpu_handle(index))
+            )
+        }
+    }
 }
 
 #[derive(Copy, Clone, Debug)]

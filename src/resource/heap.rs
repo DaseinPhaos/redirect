@@ -10,7 +10,6 @@
 
 use winapi::ID3D12Heap;
 use comptr::ComPtr;
-use error::WinError;
 
 /// a continous memory region
 #[derive(Clone, Debug)]

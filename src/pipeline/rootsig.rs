@@ -13,7 +13,7 @@ use smallvec::SmallVec;
 use comptr::ComPtr;
 use winapi::{ID3D12RootSignature, ID3DBlob};
 use error::WinError;
-use sampler::StaticSamplerDesc;
+use super::sampler::StaticSamplerDesc;
 
 /// a root signature
 #[derive(Clone, Debug)]

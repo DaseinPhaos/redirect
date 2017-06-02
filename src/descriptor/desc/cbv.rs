@@ -6,10 +6,16 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-//! a relatively small block of data that fully describles an object to the GPU.
+//! constant buffer view description
 
-pub mod heap;
-pub use self::heap::*;
+use resource::GpuVAddress;
 
-pub mod desc;
-pub use self::desc::*;
+/// describes constant buffer view
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+pub struct CbvDesc {
+    /// the gpu virtual address of the viewed virtual buffer
+    pub buffer_location: GpuVAddress,
+    /// size of the viewed buffer in bytes
+    pub size: u32,
+}
