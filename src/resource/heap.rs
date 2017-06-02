@@ -159,6 +159,7 @@ impl Default for MemoryPoolPreference {
 
 bitflags!{
     /// heap alignment
+    #[repr(C)]
     pub struct HeapAlignment: u64 {
         /// alias for 64kb
         const HEAP_ALIGNMENT_DEFAULT = 0;
@@ -176,6 +177,7 @@ impl Default for HeapAlignment {
 
 bitflags!{
     /// misc heap options. [more info](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn986730(v=vs.85).aspx)
+    #[repr(C)]
     pub struct HeapFlags: u32 {
         const HEAP_FLAG_NONE                            = 0;
         /// a [shared heap](https://msdn.microsoft.com/zh-cn/library/windows/desktop/mt186623(v=vs.85).aspx)

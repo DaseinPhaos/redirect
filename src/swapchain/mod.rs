@@ -419,6 +419,7 @@ impl Default for SwapChainFlags {
 
 bitflags!{
     /// options for frame presentation
+    #[repr(C)]
     pub struct PresentFlags: u32 {
         /// present a frame from each buffer (starting from the current one)
         /// to the output

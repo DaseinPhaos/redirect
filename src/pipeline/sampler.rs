@@ -129,6 +129,7 @@ impl Default for TextureAddressMode {
 
 bitflags!{
     /// border colors
+    #[repr(C)]
     pub struct BorderColor: u32 {
         const BORDER_COLOR_TRANSPARENT_BLACK = 0;
         const BORDER_COLOR_OPAQUE_BLACK = BORDER_COLOR_TRANSPARENT_BLACK.bits + 1;

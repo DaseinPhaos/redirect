@@ -13,6 +13,24 @@ use format::DxgiFormat;
 use smallvec::SmallVec;
 use std::marker::PhantomData;
 
+/// a index buffer view
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+pub struct IndexBufferView {
+    pub location: ::resource::GpuVAddress,
+    pub size: u32,
+    pub format: ::format::DxgiFormat,
+}
+
+/// a vertex buffer view
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+pub struct VertexBufferView {
+    pub location: ::resource::GpuVAddress,
+    pub size: u32,
+    pub stride: u32,
+}
+
 /// a input layout constructor
 #[derive(Clone, Debug, Default)]
 pub struct InputLayoutBuilder {
@@ -92,5 +110,53 @@ bitflags!{
         const PRIMITIVE_TOPOLOGY_TYPE_LINE       = 2;
         const PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE   = 3;
         const PRIMITIVE_TOPOLOGY_TYPE_PATCH      = 4;
+    }
+}
+
+bitflags!{
+    #[repr(C)]
+    pub struct PrimitiveTopology: u32 {
+        const PRIMITIVE_TOPOLOGY_UNDEFINED                     = 0;
+        const PRIMITIVE_TOPOLOGY_POINTLIST                     = 1;
+        const PRIMITIVE_TOPOLOGY_LINELIST                      = 2;
+        const PRIMITIVE_TOPOLOGY_LINESTRIP                     = 3;
+        const PRIMITIVE_TOPOLOGY_TRIANGLELIST                  = 4;
+        const PRIMITIVE_TOPOLOGY_TRIANGLESTRIP                 = 5;
+        const PRIMITIVE_TOPOLOGY_LINELIST_ADJ                  = 10;
+        const PRIMITIVE_TOPOLOGY_LINESTRIP_ADJ                 = 11;
+        const PRIMITIVE_TOPOLOGY_TRIANGLELIST_ADJ              = 12;
+        const PRIMITIVE_TOPOLOGY_TRIANGLESTRIP_ADJ             = 13;
+        const PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST     = 33;
+        const PRIMITIVE_TOPOLOGY_2_CONTROL_POINT_PATCHLIST     = 34;
+        const PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST     = 35;
+        const PRIMITIVE_TOPOLOGY_4_CONTROL_POINT_PATCHLIST     = 36;
+        const PRIMITIVE_TOPOLOGY_5_CONTROL_POINT_PATCHLIST     = 37;
+        const PRIMITIVE_TOPOLOGY_6_CONTROL_POINT_PATCHLIST     = 38;
+        const PRIMITIVE_TOPOLOGY_7_CONTROL_POINT_PATCHLIST     = 39;
+        const PRIMITIVE_TOPOLOGY_8_CONTROL_POINT_PATCHLIST     = 40;
+        const PRIMITIVE_TOPOLOGY_9_CONTROL_POINT_PATCHLIST     = 41;
+        const PRIMITIVE_TOPOLOGY_10_CONTROL_POINT_PATCHLIST    = 42;
+        const PRIMITIVE_TOPOLOGY_11_CONTROL_POINT_PATCHLIST    = 43;
+        const PRIMITIVE_TOPOLOGY_12_CONTROL_POINT_PATCHLIST    = 44;
+        const PRIMITIVE_TOPOLOGY_13_CONTROL_POINT_PATCHLIST    = 45;
+        const PRIMITIVE_TOPOLOGY_14_CONTROL_POINT_PATCHLIST    = 46;
+        const PRIMITIVE_TOPOLOGY_15_CONTROL_POINT_PATCHLIST    = 47;
+        const PRIMITIVE_TOPOLOGY_16_CONTROL_POINT_PATCHLIST    = 48;
+        const PRIMITIVE_TOPOLOGY_17_CONTROL_POINT_PATCHLIST    = 49;
+        const PRIMITIVE_TOPOLOGY_18_CONTROL_POINT_PATCHLIST    = 50;
+        const PRIMITIVE_TOPOLOGY_19_CONTROL_POINT_PATCHLIST    = 51;
+        const PRIMITIVE_TOPOLOGY_20_CONTROL_POINT_PATCHLIST    = 52;
+        const PRIMITIVE_TOPOLOGY_21_CONTROL_POINT_PATCHLIST    = 53;
+        const PRIMITIVE_TOPOLOGY_22_CONTROL_POINT_PATCHLIST    = 54;
+        const PRIMITIVE_TOPOLOGY_23_CONTROL_POINT_PATCHLIST    = 55;
+        const PRIMITIVE_TOPOLOGY_24_CONTROL_POINT_PATCHLIST    = 56;
+        const PRIMITIVE_TOPOLOGY_25_CONTROL_POINT_PATCHLIST    = 57;
+        const PRIMITIVE_TOPOLOGY_26_CONTROL_POINT_PATCHLIST    = 58;
+        const PRIMITIVE_TOPOLOGY_27_CONTROL_POINT_PATCHLIST    = 59;
+        const PRIMITIVE_TOPOLOGY_28_CONTROL_POINT_PATCHLIST    = 60;
+        const PRIMITIVE_TOPOLOGY_29_CONTROL_POINT_PATCHLIST    = 61;
+        const PRIMITIVE_TOPOLOGY_30_CONTROL_POINT_PATCHLIST    = 62;
+        const PRIMITIVE_TOPOLOGY_31_CONTROL_POINT_PATCHLIST    = 63;
+        const PRIMITIVE_TOPOLOGY_32_CONTROL_POINT_PATCHLIST    = 64;
     }
 }

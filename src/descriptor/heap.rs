@@ -312,15 +312,16 @@ impl SamplerHeap {
     }
 }
 
+/// 
 #[derive(Copy, Clone, Debug)]
 #[repr(C)]
-pub struct CpuDHHandle {
+pub struct CpuDescrptorHandle {
     pub ptr: usize,
 }
 
 #[derive(Copy, Clone, Debug)]
 #[repr(C)]
-pub struct GpuDHHandle {
+pub struct GpuDescrptorHandle {
     pub ptr: u64,
 }
 
@@ -329,10 +330,10 @@ pub trait DescriptorHeap {
     fn get_type(&self) -> ::winapi::D3D12_DESCRIPTOR_HEAP_TYPE;
 
     /// get Cpu handle of a descriptor at `offset` on the heap
-    fn get_cpu_handle(&mut self, offset: u32) -> CpuDHHandle;
+    fn get_cpu_handle(&mut self, offset: u32) -> CpuDescrptorHandle;
 
     /// get Gpu handle of a descriptor at `offset` on the heap
-    fn get_gpu_handle(&mut self, offset: u32) -> GpuDHHandle;
+    fn get_gpu_handle(&mut self, offset: u32) -> GpuDescrptorHandle;
 
     /// perform immediate copy of a slice of descriptors on CPU side through the given device
     fn copy_descriptors_to(
@@ -349,9 +350,9 @@ macro_rules! impl_dh {
                 $Type
             }
 
-            fn get_cpu_handle(&mut self, offset: u32) -> CpuDHHandle {
+            fn get_cpu_handle(&mut self, offset: u32) -> CpuDescrptorHandle {
                 assert!(offset<self.$msize);
-                let mut ret = CpuDHHandle{ptr: 0};
+                let mut ret = CpuDescrptorHandle{ptr: 0};
                 unsafe {
                     self.$ptr.GetCPUDescriptorHandleForHeapStart(
                         &mut ret as *mut _ as *mut _
@@ -361,9 +362,9 @@ macro_rules! impl_dh {
                 ret
             }
 
-            fn get_gpu_handle(&mut self, offset: u32) -> GpuDHHandle {
+            fn get_gpu_handle(&mut self, offset: u32) -> GpuDescrptorHandle {
                 assert!(offset<self.$msize);
-                let mut ret = GpuDHHandle{ptr: 0};
+                let mut ret = GpuDescrptorHandle{ptr: 0};
                 unsafe {
                     self.$ptr.GetGPUDescriptorHandleForHeapStart(
                         &mut ret as *mut _ as *mut _

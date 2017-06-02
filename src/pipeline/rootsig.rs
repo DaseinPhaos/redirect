@@ -203,6 +203,7 @@ pub struct DescriptorRange {
 
 bitflags!{
     /// type of a descriptor range
+    #[repr(C)]
     pub struct DescriptorRangeType: u32 {
         const DESCRIPTOR_RANGE_TYPE_SRV      = 0;
         const DESCRIPTOR_RANGE_TYPE_UAV      = DESCRIPTOR_RANGE_TYPE_SRV.bits + 1;

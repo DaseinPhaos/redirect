@@ -10,6 +10,7 @@
 
 bitflags! {
     /// resource usage flags
+    #[repr(C)]
     pub struct Usage: u32 {
         /// cpu don't have access to this resource
         const USAGE_CPU_NONE = 0;

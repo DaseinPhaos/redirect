@@ -90,13 +90,14 @@ pub struct GraphicsPipelineStateBuilder {
     pub dsv_format: DxgiFormat,
     pub sample_desc: SampleDesc,
     pub node_mask: u32,
-    // TODO: caches?
+    pub cache: Option<PipelineStateCache>,
     pub flags: PipelineStateFlags,
 }
 
 // TODO: add methods for the builder
 
 bitflags!{
+    #[repr(C)]
     pub struct PipelineStateFlags: u32 {
         const PIPELINE_STATE_FLAG_NONE        = 0;
         const PIPELINE_STATE_FLAG_TOOL_DEBUG  = 0x1;

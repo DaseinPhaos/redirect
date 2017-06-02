@@ -173,6 +173,7 @@ impl ::std::fmt::Display for AdapterDesc {
 
 bitflags!{
     /// adapter flags
+    #[repr(C)]
     pub struct AdapterFlags: u32 {
         const ADAPTER_FLAG_NONE = 0;
         /// reserved flag
@@ -231,7 +232,7 @@ impl Output {
 #[derive(Copy, Clone, Debug)]
 pub struct OutputDesc {
     pub name: [::winapi::WCHAR; 32],
-    pub descktop_coordinates: ::winapi::RECT,
+    pub descktop_coordinates: ::format::Rect,
     pub attached_to_desktop: ::format::Bool,
     pub rotation: RotationMode,
     pub hmonitor: ::winapi::HMONITOR,
@@ -245,6 +246,7 @@ impl ::std::fmt::Display for OutputDesc {
 
 bitflags!{
     /// rotation mode for the monitor
+    #[repr(C)]
     pub struct RotationMode: u32 {
         const ROTATION_MODE_UNSPECIFIED = 0;
         const ROTATION_MODE_IDENTITY = 1;

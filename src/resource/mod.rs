@@ -17,6 +17,9 @@ pub use self::heap::*;
 mod raw;
 pub use self::raw::*;
 
+mod barrier;
+pub use self::barrier::*;
+
 use format::*;
 use swapchain::SampleDesc;
 
@@ -282,13 +285,18 @@ impl PlacedResource {
     }
 
     #[inline]
-    pub fn heap_offset(&self) -> u64 {
+    pub fn get_heap_offset(&self) -> u64 {
         self.heap_offset
+    }
+
+    #[inline]
+    pub fn get_alloc_info(&self) -> ResourceAllocInfo {
+        self.alloc_info
     }
 }
 
 #[repr(C)]
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct ResourceAllocInfo {
     /// consumed size of the resource on paged heap
     pub size: u64,

@@ -62,6 +62,7 @@ impl Default for Shader4ComponentMapping {
 
 bitflags!{
     /// specifies how memory gets routed by a srv
+    #[repr(C)]
     pub struct ShaderComponentMapping: u32 {
         /// indicates return component 0, i.e. R in RGBA
         const SHADER_COMPONENT_MAPPING_FROM_MEMORY_COMPONENT_0 = 0;

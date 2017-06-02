@@ -10,6 +10,7 @@
 
 pub use ::winapi::dxgiformat::*;
 pub type DxgiFormat = DXGI_FORMAT;
+pub type Rect = ::winapi::D3D12_RECT;
 
 /// ffi for win32 boolean values
 #[repr(C)]
