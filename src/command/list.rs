@@ -37,3 +37,13 @@ impl Default for CommandListType {
 pub struct GraphicsCommandList {
     pub ptr: ComPtr<ID3D12GraphicsCommandList>,
 }
+
+// TODO: distinct bundle from direct command lists at type level?
+
+impl GraphicsCommandList {
+    // TODO: add methods for queries. blocker: Query interface
+
+    // TODO: add methods descriptor manipulation. blocker: descriptor interface
+
+    // TODO: should drawing methods be delegated or not?
+}

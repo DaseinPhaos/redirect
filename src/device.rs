@@ -17,6 +17,7 @@ use command::{CommandQueue, CommandQueueDesc, CommandAllocator, CommandListType}
 use resource::*;
 use pipeline::rootsig::{RootSig, RootSigDescBlob};
 use fence::{Fence, FenceFlags};
+use descriptor::{CbvSrvUavHeap, RtvHeap, DsvHeap, SamplerHeap, DescriptorHeapBuilder};
 
 /// a 3D display adapter
 #[derive(Debug, Clone)]
@@ -211,7 +212,29 @@ impl Device {
         }
     }
 
-    // TODO: attempts to create a command list. blocker: PSO
+    #[inline]
+    pub fn create_cbv_srv_uav_heap(&mut self, builder: &DescriptorHeapBuilder) -> Result<CbvSrvUavHeap, WinError> {
+        builder.build_cbv_srv_uav_heap(self)
+    }
+
+    #[inline]
+    pub fn create_rtv_heap(&mut self, builder: &DescriptorHeapBuilder) -> Result<RtvHeap, WinError> {
+        builder.build_rtv_heap(self)
+    }
+
+    #[inline]
+    pub fn create_dsv_heap(&mut self, builder: &DescriptorHeapBuilder) -> Result<DsvHeap, WinError> {
+        builder.build_dsv_heap(self)
+    }
+
+    #[inline]
+    pub fn create_sampler_heap(&mut self, builder: &DescriptorHeapBuilder) -> Result<SamplerHeap, WinError> {
+        builder.build_sampler_heap(self)
+    }
+
+    // TODO: attempts to create a command list. blocker: PSO, typed command lists? relation ship with command allocators?
+
+    // TODO: attempts to create a pipeline state. blocker: PSO desc
 
     // TODO: add method for ReservedResouce creation. blocker: ReservedResource
     // TODO: add methods for resource tiling
@@ -264,6 +287,10 @@ impl_device_child!(CommandAllocator, ptr);
 impl_device_child!(Heap, ptr);
 impl_device_child!(RawResource, ptr);
 impl_device_child!(Fence, ptr);
+impl_device_child!(CbvSrvUavHeap, ptr);
+impl_device_child!(DsvHeap, ptr);
+impl_device_child!(RtvHeap, ptr);
+impl_device_child!(SamplerHeap, ptr);
 
 impl DeviceChild for CommittedResource {
     #[inline]

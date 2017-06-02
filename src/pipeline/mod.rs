@@ -12,6 +12,9 @@
 // blockers: shader, rootsignature
 
 use format::DxgiFormat;
+use winapi::{ID3D12PipelineState, ID3DBlob};
+use error::WinError;
+use comptr::ComPtr;
 
 pub mod so;
 pub mod blend;
@@ -21,6 +24,32 @@ pub mod ds;
 pub mod ia;
 
 pub type SampleDesc = ::swapchain::SampleDesc;
+
+/// a pipeline state object
+#[derive(Clone, Debug)]
+pub struct PipelineState {
+    pub ptr: ComPtr<ID3D12PipelineState>,
+}
+
+/// a pipeline state cached blob
+#[derive(Clone, Debug)]
+pub struct PipelineStateCache {
+    pub ptr: ComPtr<ID3DBlob>,
+}
+
+impl PipelineState {
+    /// get the cached blob
+    #[inline]
+    pub fn get_cached_blob(&mut self) -> Result<PipelineStateCache, WinError> {
+        unsafe {
+            let mut ret = ::std::mem::uninitialized();
+            let hr = self.ptr.GetCachedBlob(&mut ret);
+            WinError::from_hresult_or_ok(hr, || PipelineStateCache{
+                ptr: ComPtr::new(ret)
+            })
+        }
+    }
+}
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
