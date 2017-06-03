@@ -11,6 +11,7 @@
 use smallvec::SmallVec;
 use std::os::raw::c_char;
 use std::marker::PhantomData;
+use std::ffi::CStr;
 use resource::{RawResource, GpuVAddress};
 
 /// stream output buffer view
@@ -39,18 +40,18 @@ impl Default for StreamOutputBufferView {
 
 /// stream output description
 #[derive(Clone, Debug)]
-pub struct DescBuilder {
-    pub entries: SmallVec<[DeclarationEntry; 8]>,
+pub struct DescBuilder<'a> {
+    pub entries: SmallVec<[DeclarationEntry<'a>; 8]>,
     /// buffer strides
     pub strides: SmallVec<[u32; 8]>,
     /// index of the stream to be sent to the rasterizer stage
     pub rasterized_stream: u32,
 }
 
-impl DescBuilder {
+impl<'a> DescBuilder<'a> {
     /// construction
     #[inline]
-    pub fn new(rasterized_stream: u32) -> DescBuilder {
+    pub fn new(rasterized_stream: u32) -> DescBuilder<'a> {
         DescBuilder{
             entries: Default::default(),
             strides: Default::default(),
@@ -75,11 +76,11 @@ impl DescBuilder {
 /// describes an entry in a stream output slot
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
-pub struct DeclarationEntry {
+pub struct DeclarationEntry<'a> {
     /// zero based stream index
     pub stream: u32,
     /// `0` ended semantic name of the element
-    semantic_name: *const c_char, // TODO: deal with lifetimes
+    semantic_name: *const c_char,
     /// zero based element index
     pub semantic_index: u32,
     /// component of the entry to begin writing to. valid in [0..3]
@@ -88,4 +89,5 @@ pub struct DeclarationEntry {
     pub component_count: u8,
     /// associated stream output buffer that is bound to the pipeline. valid in [0..3]
     pub output_slot: u8,
+    _pd: PhantomData<&'a CStr>, // TODO: check if legit
 }
