@@ -12,6 +12,7 @@ use winapi::ID3D12Resource;
 use comptr::ComPtr;
 use error::WinError;
 use super::*;
+use format::Box3u;
 
 /// a raw resource
 #[derive(Clone, Debug)]
@@ -141,22 +142,9 @@ pub struct GpuVAddress {
     pub ptr: u64,
 }
 
-// impl AsRef<::winapi::D3D12_GPU_VIRTUAL_ADDRESS> for GpuVAddress {
-//     fn as_ref(&self) -> &::winapi::D3D12_GPU_VIRTUAL_ADDRESS {
-//         &self.ptr
-//     }
-// }
-
-// impl AsMut<::winapi::D3D12_GPU_VIRTUAL_ADDRESS> for GpuVAddress {
-//     fn as_mut(&mut self) -> &mut ::winapi::D3D12_GPU_VIRTUAL_ADDRESS {
-//         &mut self.ptr
-//     }
-// }
-
-/// a 3D box
-#[repr(C)]
-#[derive(Copy, Clone, Debug)]
-pub struct Box3u {
-    pub left: u32, pub top: u32, pub front: u32,
-    pub right: u32, pub bottom: u32, pub back: u32
+impl From<GpuVAddress> for ::winapi::D3D12_GPU_VIRTUAL_ADDRESS {
+    #[inline]
+    fn from(addr: GpuVAddress) -> Self {
+        unsafe {::std::mem::transmute(addr)}
+    }
 }

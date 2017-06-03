@@ -83,6 +83,7 @@ pub struct DsvTex2DMsArrayDesc{
 bitflags!{
     /// dsv misc flags. specifying read only would allow more than one dsv to be
     /// bound to the pipeline (on a same resource) simultaneously
+    #[repr(C)]
     pub struct DsvFlags: u32 {
         const DSV_FLAG_NONE = 0;
         const DSV_FLAG_READ_ONLY_DEPTH = 0x1;

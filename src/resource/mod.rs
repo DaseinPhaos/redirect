@@ -303,4 +303,52 @@ pub struct ResourceAllocInfo {
     pub alignment: u64,
 }
 
+/// describes a resource used for GPU texture copying
+#[derive(Copy, Clone, Debug)]
+pub struct TextureCopyLocation {
+    ptr: *mut ::winapi::ID3D12Resource,
+    pub copy_type: TextureCopyType,
+}
+
+impl From<TextureCopyLocation> for ::winapi::D3D12_TEXTURE_COPY_LOCATION {
+    #[inline]
+    fn from(loc: TextureCopyLocation) -> Self {
+        unsafe {
+            let mut ret: Self = ::std::mem::uninitialized();
+            ret.pResource = loc.ptr;
+            match loc.copy_type {
+                TextureCopyType::SubresourceIndex(idx) => {
+                    ret.Type = ::winapi::D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+                    ret.u = ::std::mem::transmute_copy(&idx);
+                },
+                TextureCopyType::PlacedFootprint(footprint) => {
+                    ret.Type = ::winapi::D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+                    ret.u = ::std::mem::transmute(footprint);
+                },
+            }
+
+            ret
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
+pub enum TextureCopyType {
+    SubresourceIndex(u32),
+    PlacedFootprint(PlacedSubresourceFootprint),
+}
+
+/// [more info](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn986749(v=vs.85).aspx)
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+pub struct PlacedSubresourceFootprint {
+    /// offset within the parent resource
+    pub offset: u64,
+    pub format: DxgiFormat,
+    pub width: u32,
+    pub height: u32,
+    pub depth: u32,
+    pub row_pitch: u32,
+}
+
 // TODO: reserved resource?

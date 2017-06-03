@@ -9,20 +9,70 @@
 //! resource barriers
 
 use super::{PlacedResource, ResourceStates, RawResource};
+use smallvec::SmallVec;
+use std::borrow::Borrow;
+
+/// resource barrier builder
+#[derive(Clone, Debug, Default)]
+pub struct ResourceBarrierBuilder {
+    barriers: SmallVec<[::winapi::D3D12_RESOURCE_BARRIER; 8]>,
+}
+
+impl ResourceBarrierBuilder {
+    #[inline]
+    pub fn new() -> Self { Default::default() }
+
+    #[inline]
+    pub fn push(&mut self, barrier: ResourceBarrier) {
+        self.barriers.push(barrier.into())
+    }
+
+    #[inline]
+    pub fn as_ffi_slice(&self) -> &[::winapi::D3D12_RESOURCE_BARRIER] {
+        self.barriers.borrow()
+    }
+}
 
 /// resource barriers
 #[derive(Copy, Clone, Debug)]
-pub struct ResourceBarrierBuilder{
+pub struct ResourceBarrier{
     pub flags: ResourceBarrierFlags,
     pub barrier_type: ResourceBarrierType,
 }
 
-#[repr(C)]
-#[derive(Copy, Clone, Debug)]
-pub struct ResourceBarrierBindHelper {
-    pub barrier_type: ::winapi::D3D12_RESOURCE_BARRIER_TYPE,
-    pub flags: ResourceBarrierFlags,
+impl ResourceBarrier {
+    #[inline]
+    pub fn new(barrier: ResourceBarrierType) -> ResourceBarrier {
+        ResourceBarrier{
+            flags: Default::default(),
+            barrier_type: barrier,
+        }
+    }
+}
 
+impl From<ResourceBarrier> for ::winapi::D3D12_RESOURCE_BARRIER {
+    #[inline]
+    fn from(barrier: ResourceBarrier) -> Self {
+        unsafe {
+            let mut ret: Self = ::std::mem::uninitialized();
+            ret.Flags = ::std::mem::transmute(barrier.flags);
+            match barrier.barrier_type {
+                ResourceBarrierType::Transition(transition) => {
+                    ret.Type = ::winapi::D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+                    ret.u = ::std::mem::transmute_copy(&transition);
+                },
+                ResourceBarrierType::Aliasing(aliasing) => {
+                    ret.Type = ::winapi::D3D12_RESOURCE_BARRIER_TYPE_ALIASING;
+                    ret.u = ::std::mem::transmute_copy(&aliasing);
+                },
+                ResourceBarrierType::Uav(uav) => {
+                    ret.Type = ::winapi::D3D12_RESOURCE_BARRIER_TYPE_UAV;
+                    ret.u = ::std::mem::transmute_copy(&uav);
+                }
+            }
+            ret
+        }
+    }
 }
 
 #[derive(Copy, Clone, Debug)]

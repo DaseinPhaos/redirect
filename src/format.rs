@@ -12,6 +12,34 @@ pub use ::winapi::dxgiformat::*;
 pub type DxgiFormat = DXGI_FORMAT;
 pub type Rect = ::winapi::D3D12_RECT;
 
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+pub struct Viewport {
+    pub tlx: f32,
+    pub tly: f32,
+    pub width: f32,
+    pub height: f32,
+    pub mindepth: f32,
+    pub maxdepth: f32,
+}
+
+/// a 3D box
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+pub struct Box3u {
+    pub left: u32, pub top: u32, pub front: u32,
+    pub right: u32, pub bottom: u32, pub back: u32
+}
+
+impl Viewport {
+    #[inline]
+    pub fn new(width: f32, height: f32) -> Viewport {
+        Viewport{
+            tlx: 0.0f32, tly: 0.0f32, width, height, mindepth: 0.0f32, maxdepth: 1.0f32,
+        }
+    }
+}
+
 /// ffi for win32 boolean values
 #[repr(C)]
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]

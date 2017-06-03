@@ -11,6 +11,31 @@
 use smallvec::SmallVec;
 use std::os::raw::c_char;
 use std::marker::PhantomData;
+use resource::{RawResource, GpuVAddress};
+
+/// stream output buffer view
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+pub struct StreamOutputBufferView {
+    pub loc: GpuVAddress,
+    pub size: u64,
+    pub filled_size: u64, // TODO: change type to GPUVAddress?
+}
+
+// TODO: find out a nicer way to deal with resources
+impl StreamOutputBufferView {
+    pub fn new(resource: &mut RawResource, size: u64, filled_size: u64) -> Self {
+        StreamOutputBufferView{
+            loc: resource.get_gpu_vaddress(), size, filled_size,
+        }
+    }
+}
+
+impl Default for StreamOutputBufferView {
+    fn default() -> Self {
+        unsafe { ::std::mem::zeroed() }
+    }
+}
 
 /// stream output description
 #[derive(Clone, Debug)]

@@ -139,8 +139,8 @@ impl DescriptorHeapBuilder {
 #[derive(Clone, Debug)]
 pub struct CbvSrvUavHeap {
     pub ptr: ComPtr<ID3D12DescriptorHeap>,
-    pub num_descriptors: u32,
-    pub handle_increment_size: u32,
+    num_descriptors: u32,
+    handle_increment_size: u32,
 }
 
 impl CbvSrvUavHeap{
@@ -167,7 +167,7 @@ impl CbvSrvUavHeap{
         unsafe {
             device.ptr.CreateShaderResourceView(
                 presource, pdesc as *const _, 
-                ::std::mem::transmute(self.get_cpu_handle(index))
+                self.get_cpu_handle(index).into()
             )
         }
     }
@@ -201,7 +201,7 @@ impl CbvSrvUavHeap{
         unsafe {
             device.ptr.CreateUnorderedAccessView(
                 presource, pcounter, pdesc as *const _, 
-                ::std::mem::transmute(self.get_cpu_handle(index))
+                self.get_cpu_handle(index).into()
             )
         }
     }
@@ -211,11 +211,10 @@ impl CbvSrvUavHeap{
     pub fn create_cbv(
         &mut self, device: &mut Device, desc: &CbvDesc, index: u32
     ) {
-        let cpuhandle = self.get_cpu_handle(index);
         unsafe {
             device.ptr.CreateConstantBufferView(
                 desc as *const _ as *const _,
-                ::std::mem::transmute(cpuhandle)
+                self.get_cpu_handle(index).into()                
             )
         }
     }
@@ -224,8 +223,8 @@ impl CbvSrvUavHeap{
 #[derive(Clone, Debug)]
 pub struct RtvHeap {
     pub ptr: ComPtr<ID3D12DescriptorHeap>,
-    pub num_descriptors: u32,
-    pub handle_increment_size: u32,
+    num_descriptors: u32,
+    handle_increment_size: u32,
 }
 
 impl RtvHeap {
@@ -250,7 +249,7 @@ impl RtvHeap {
         unsafe {
             device.ptr.CreateRenderTargetView(
                 presource, pdesc as *const _, 
-                ::std::mem::transmute(self.get_cpu_handle(index))
+                self.get_cpu_handle(index).into()
             )
         }
     }
@@ -259,8 +258,8 @@ impl RtvHeap {
 #[derive(Clone, Debug)]
 pub struct DsvHeap {
     pub ptr: ComPtr<ID3D12DescriptorHeap>,
-    pub num_descriptors: u32,
-    pub handle_increment_size: u32,
+    num_descriptors: u32,
+    handle_increment_size: u32,
 }
 
 impl DsvHeap{
@@ -285,7 +284,7 @@ impl DsvHeap{
         unsafe {
             device.ptr.CreateDepthStencilView(
                 presource, pdesc as *const _, 
-                ::std::mem::transmute(self.get_cpu_handle(index))
+                self.get_cpu_handle(index).into()
             )
         }
     }
@@ -294,8 +293,8 @@ impl DsvHeap{
 #[derive(Clone, Debug)]
 pub struct SamplerHeap {
     pub ptr: ComPtr<ID3D12DescriptorHeap>,
-    pub num_descriptors: u32,
-    pub handle_increment_size: u32,
+    num_descriptors: u32,
+    handle_increment_size: u32,
 }
 
 impl SamplerHeap {
@@ -306,7 +305,7 @@ impl SamplerHeap {
         unsafe {
             device.ptr.CreateSampler(
                 desc as *const _ as *const _,
-                ::std::mem::transmute(self.get_cpu_handle(index))
+                self.get_cpu_handle(index).into()
             )
         }
     }
@@ -315,14 +314,28 @@ impl SamplerHeap {
 /// 
 #[derive(Copy, Clone, Debug)]
 #[repr(C)]
-pub struct CpuDescrptorHandle {
+pub struct CpuDescriptorHandle {
     pub ptr: usize,
+}
+
+impl From<CpuDescriptorHandle> for ::winapi::D3D12_CPU_DESCRIPTOR_HANDLE {
+    #[inline]
+    fn from(h: CpuDescriptorHandle) -> Self {
+        unsafe { ::std::mem::transmute(h) }
+    }
 }
 
 #[derive(Copy, Clone, Debug)]
 #[repr(C)]
-pub struct GpuDescrptorHandle {
+pub struct GpuDescriptorHandle {
     pub ptr: u64,
+}
+
+impl From<GpuDescriptorHandle> for ::winapi::D3D12_GPU_DESCRIPTOR_HANDLE {
+    #[inline]
+    fn from(h: GpuDescriptorHandle) -> Self {
+        unsafe { ::std::mem::transmute(h) }
+    }
 }
 
 pub trait DescriptorHeap {
@@ -330,16 +343,22 @@ pub trait DescriptorHeap {
     fn get_type(&self) -> ::winapi::D3D12_DESCRIPTOR_HEAP_TYPE;
 
     /// get Cpu handle of a descriptor at `offset` on the heap
-    fn get_cpu_handle(&mut self, offset: u32) -> CpuDescrptorHandle;
+    fn get_cpu_handle(&mut self, offset: u32) -> CpuDescriptorHandle;
 
     /// get Gpu handle of a descriptor at `offset` on the heap
-    fn get_gpu_handle(&mut self, offset: u32) -> GpuDescrptorHandle;
+    fn get_gpu_handle(&mut self, offset: u32) -> GpuDescriptorHandle;
 
     /// perform immediate copy of a slice of descriptors on CPU side through the given device
     fn copy_descriptors_to(
         &mut self, dst: &mut Self, device: &mut Device,
         src_offset: u32, dst_offset: u32, num_descriptors: u32
     );
+
+    /// get the number of descriptors this heap can hold
+    fn len(&self) -> u32;
+
+    /// get the handle incremental size of this heap
+    fn get_handle_increment_size(&self) -> u32;
 }
 
 macro_rules! impl_dh {
@@ -350,9 +369,9 @@ macro_rules! impl_dh {
                 $Type
             }
 
-            fn get_cpu_handle(&mut self, offset: u32) -> CpuDescrptorHandle {
+            fn get_cpu_handle(&mut self, offset: u32) -> CpuDescriptorHandle {
                 assert!(offset<self.$msize);
-                let mut ret = CpuDescrptorHandle{ptr: 0};
+                let mut ret = CpuDescriptorHandle{ptr: 0};
                 unsafe {
                     self.$ptr.GetCPUDescriptorHandleForHeapStart(
                         &mut ret as *mut _ as *mut _
@@ -362,9 +381,9 @@ macro_rules! impl_dh {
                 ret
             }
 
-            fn get_gpu_handle(&mut self, offset: u32) -> GpuDescrptorHandle {
+            fn get_gpu_handle(&mut self, offset: u32) -> GpuDescriptorHandle {
                 assert!(offset<self.$msize);
-                let mut ret = GpuDescrptorHandle{ptr: 0};
+                let mut ret = GpuDescriptorHandle{ptr: 0};
                 unsafe {
                     self.$ptr.GetGPUDescriptorHandleForHeapStart(
                         &mut ret as *mut _ as *mut _
@@ -384,12 +403,18 @@ macro_rules! impl_dh {
                 unsafe {
                     device.ptr.CopyDescriptorsSimple(
                         num_descriptors,
-                        ::std::mem::transmute(dst.get_cpu_handle(dst_offset)),
-                        ::std::mem::transmute(self.get_cpu_handle(src_offset)),
+                        dst.get_cpu_handle(dst_offset).into(),
+                        self.get_cpu_handle(src_offset).into(),
                         heap_type
                     )
                 }
             }
+
+            #[inline]
+            fn len(&self) -> u32 { self.$msize }
+
+            #[inline]
+            fn get_handle_increment_size(&self) -> u32 { self.$item_size }
         }
     }
 }
