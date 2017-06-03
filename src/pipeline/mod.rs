@@ -74,25 +74,25 @@ pub struct GraphicsPipelineStateDesc {
     pub flags: PipelineStateFlags,
 }
 
-#[derive(Clone, Debug)]
-pub struct GraphicsPipelineStateBuilder {
-    // TODO: shader byte codes
-    pub stream_output: so::DescBuilder,
-    pub blend_state: blend::BlendDesc,
-    pub sample_mask: u32,
-    pub rasterizer_state: rasterizer::RasterizerDesc,
-    pub depth_stencil_state: ds::DepthStencilDesc,
-    pub input_layout: ia::InputLayoutBuilder,
-    pub strip_cut_value: ia::StripCutValue,
-    pub primitive_topology_type: ia::PrimitiveTopologyType,
-    pub num_render_targets: u32,
-    pub rtv_formats: [DxgiFormat; 8],
-    pub dsv_format: DxgiFormat,
-    pub sample_desc: SampleDesc,
-    pub node_mask: u32,
-    pub cache: Option<PipelineStateCache>,
-    pub flags: PipelineStateFlags,
-}
+// #[derive(Clone, Debug)]
+// pub struct GraphicsPipelineStateBuilder {
+//     // TODO: shader byte codes
+//     pub stream_output: so::DescBuilder,
+//     pub blend_state: blend::BlendDesc,
+//     pub sample_mask: u32,
+//     pub rasterizer_state: rasterizer::RasterizerDesc,
+//     pub depth_stencil_state: ds::DepthStencilDesc,
+//     pub input_layout: ia::InputLayoutBuilder,
+//     pub strip_cut_value: ia::StripCutValue,
+//     pub primitive_topology_type: ia::PrimitiveTopologyType,
+//     pub num_render_targets: u32,
+//     pub rtv_formats: [DxgiFormat; 8],
+//     pub dsv_format: DxgiFormat,
+//     pub sample_desc: SampleDesc,
+//     pub node_mask: u32,
+//     pub cache: Option<PipelineStateCache>,
+//     pub flags: PipelineStateFlags,
+// }
 
 // TODO: add methods for the builder
 

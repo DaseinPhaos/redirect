@@ -12,6 +12,7 @@ use std::os::raw::c_char;
 use format::DxgiFormat;
 use smallvec::SmallVec;
 use std::marker::PhantomData;
+use std::ffi::CStr;
 
 /// a index buffer view
 #[repr(C)]
@@ -33,34 +34,34 @@ pub struct VertexBufferView {
 
 /// a input layout constructor
 #[derive(Clone, Debug, Default)]
-pub struct InputLayoutBuilder {
-    pub elements: SmallVec<[InputElementDesc; 8]>,
+pub struct InputLayoutBuilder<'a> {
+    pub elements: SmallVec<[InputElementDesc<'a>; 8]>,
 }
 
-impl InputLayoutBuilder{
+impl<'a> InputLayoutBuilder<'a>{
     #[inline]
     pub fn new() -> Self {
         Default::default()
     }
 
-    pub fn build(&self) -> (
-        ::winapi::D3D12_INPUT_LAYOUT_DESC, PhantomData<&InputLayoutBuilder>
-    ) {
-        (
-            ::winapi::D3D12_INPUT_LAYOUT_DESC{
-                pInputElementDescs: self.elements.as_ptr() as *const _,
-                NumElements: self.elements.len() as u32
-            },
-            Default::default()
-        )
-    }
+    // pub fn build(&self) -> (
+    //     ::winapi::D3D12_INPUT_LAYOUT_DESC, PhantomData<&InputLayoutBuilder>
+    // ) {
+    //     (
+    //         ::winapi::D3D12_INPUT_LAYOUT_DESC{
+    //             pInputElementDescs: self.elements.as_ptr() as *const _,
+    //             NumElements: self.elements.len() as u32
+    //         },
+    //         Default::default()
+    //     )
+    // }
 }
 
 
 /// a single input element
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
-pub struct InputElementDesc {
+pub struct InputElementDesc<'a> {
     pub semantic_name: *const c_char,
     pub semantic_index: u32,
     pub format: DxgiFormat,
@@ -68,18 +69,21 @@ pub struct InputElementDesc {
     pub aligned_byte_offset: u32,
     pub input_slot_class: InputClassification,
     pub instance_data_step_rate: u32,
+    _pd: PhantomData<&'a CStr>, // TODO: check if legit
 }
 
-impl InputElementDesc{
+impl<'a> InputElementDesc<'a>{
     #[inline]
     pub unsafe fn new(
-        semantic_name: *const c_char, semantic_index: u32, format: DxgiFormat
+        semantic_name: &'a CStr, semantic_index: u32, format: DxgiFormat
     ) -> Self {
         InputElementDesc{
-            semantic_name, semantic_index, format,
-            input_slot: 0, aligned_byte_offset: ::winapi::D3D12_APPEND_ALIGNED_ELEMENT,
+            semantic_name: semantic_name.as_ptr(), 
+            semantic_index, format, input_slot: 0, 
+            aligned_byte_offset: ::winapi::D3D12_APPEND_ALIGNED_ELEMENT,
             input_slot_class: INPUT_CLASSIFICATION_PER_VERTEX,
-            instance_data_step_rate: 0
+            instance_data_step_rate: 0,
+            _pd: Default::default(),
         }
     }
 }
