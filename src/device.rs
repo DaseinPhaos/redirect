@@ -13,9 +13,10 @@ use winapi::ID3D12Device;
 use error::WinError;
 use std::os::raw::c_void;
 use factory::Adapter;
-use command::{CommandQueue, CommandQueueDesc, CommandAllocator, CommandListType};
+use command::{CommandQueue, CommandQueueDesc, CommandAllocator, CommandListType, GraphicsCommandList};
 use resource::*;
 use pipeline::rootsig::{RootSig, RootSigDescBlob};
+use pipeline::PipelineState;
 use fence::{Fence, FenceFlags};
 use descriptor::{CbvSrvUavHeap, RtvHeap, DsvHeap, SamplerHeap, DescriptorHeapBuilder};
 
@@ -232,7 +233,30 @@ impl Device {
         builder.build_sampler_heap(self)
     }
 
-    // TODO: attempts to create a command list. blocker: PSO, typed command lists? relation ship with command allocators?
+    // TODO: typed command lists? relation ship with command allocators?
+    #[inline]
+    pub fn create_command_list(
+        &mut self, node_mask: u32, list_type: CommandListType,
+        alloc: &mut CommandAllocator, initial_state: Option<&PipelineState>
+    ) -> Result<GraphicsCommandList, WinError> {
+        let initial_state = if let Some(state) = initial_state {
+            state.ptr.as_mut_ptr()
+        } else {
+            ::std::ptr::null_mut()
+        };
+        unsafe {
+            let mut ret = ::std::mem::uninitialized();
+            let hr = self.ptr.CreateCommandList(
+                node_mask, ::std::mem::transmute(list_type), alloc.ptr.as_mut_ptr(),
+                initial_state, & ::dxguid::IID_ID3D12GraphicsCommandList,
+                &mut ret as *mut *mut _ as *mut *mut _
+            );
+
+            WinError::from_hresult_or_ok(hr, || GraphicsCommandList{
+                ptr: ComPtr::new(ret)
+            })
+        }
+    }
 
     // TODO: attempts to create a pipeline state. blocker: PSO desc
 
@@ -291,6 +315,8 @@ impl_device_child!(CbvSrvUavHeap, ptr);
 impl_device_child!(DsvHeap, ptr);
 impl_device_child!(RtvHeap, ptr);
 impl_device_child!(SamplerHeap, ptr);
+impl_device_child!(GraphicsCommandList, ptr);
+impl_device_child!(PipelineState, ptr);
 
 impl DeviceChild for CommittedResource {
     #[inline]

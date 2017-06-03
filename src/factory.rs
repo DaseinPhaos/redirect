@@ -16,6 +16,7 @@ use error::WinError;
 use std::os::raw::c_void;
 use swapchain::{SwapChain, SwapChainDesc, FullScreenDesc};
 use device::Device;
+use command::CommandQueue;
 
 /// dxgi API entry point
 #[derive(Debug, Clone)]
@@ -49,7 +50,7 @@ impl Factory {
     /// create a swap chain
     #[inline]
     pub fn create_swapchain_for_hwnd(
-        &mut self, device: &Device, // FIXME: this should be a command queue
+        &mut self, queue: &CommandQueue, // FIXME: this should be a command queue
         hwnd: ::winapi::HWND, // TODO: change?
         desc: &SwapChainDesc,
         fullscreen_desc: Option<&FullScreenDesc>,
@@ -68,7 +69,7 @@ impl Factory {
         unsafe {
             let mut ptr: *mut IDXGISwapChain3 = ::std::mem::uninitialized();
             let hr = self.ptr.CreateSwapChainForHwnd(
-                device.ptr.as_mut_ptr() as *mut _,
+                queue.ptr.as_mut_ptr() as *mut _,
                 hwnd,
                 desc as *const _ as *const ::winapi::DXGI_SWAP_CHAIN_DESC1,
                 fullscreen_desc,
