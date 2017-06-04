@@ -10,6 +10,7 @@
 
 use super::*;
 
+/// common methods for a command list
 pub trait CommandList {
     /// get type of this command list
     fn get_type(&mut self) -> CommandListType;
@@ -42,12 +43,6 @@ pub trait CommandList {
         &mut self, param_index: u32, resource: &mut RawResource
     );
 
-    /// set a decriptor table in the graphics root signature TODO: double check
-    fn set_graphics_root_dt<H: Into<::winapi::D3D12_GPU_DESCRIPTOR_HANDLE>>
-    (
-        &mut self, param_index: u32, base_descriptor: H
-    );
-
     /// set the compute root signature. TODO: distince root signatures
     fn set_compute_rootsig(&mut self, rootsig: &::pipeline::rootsig::RootSig);
 
@@ -75,12 +70,6 @@ pub trait CommandList {
     /// set a uav in the compute root signature
     fn set_compute_root_uav(
         &mut self, param_index: u32, resource: &mut RawResource
-    );
-
-    /// set a decriptor table in the compute root signature TODO: double check
-    fn set_compute_root_dt<H: Into<::winapi::D3D12_GPU_DESCRIPTOR_HANDLE>>
-    (
-        &mut self, param_index: u32, base_descriptor: H
     );
 
     /// execute a command list from a thread group. [more info](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903871(v=vs.85).aspx)
@@ -182,17 +171,6 @@ macro_rules! impl_common_commands {
         )}
     }
 
-    /// set a decriptor table in the graphics root signature
-    #[inline]
-    fn set_graphics_root_dt<H: Into<::winapi::D3D12_GPU_DESCRIPTOR_HANDLE>>
-    (
-        &mut self, param_index: u32, base_descriptor: H
-    ) {
-        unsafe { self.ptr.SetGraphicsRootDescriptorTable(
-            param_index, base_descriptor.into()
-        )}
-    }
-
     /// set the compute root signature. TODO: distince root signatures
     #[inline]
     fn set_compute_rootsig(&mut self, rootsig: &::pipeline::rootsig::RootSig) {
@@ -245,17 +223,6 @@ macro_rules! impl_common_commands {
     ) {
         unsafe { self.ptr.SetComputeRootUnorderedAccessView(
             param_index, resource.get_gpu_vaddress().into()
-        )}
-    }
-
-    /// set a decriptor table in the compute root signature
-    #[inline]
-    fn set_compute_root_dt<H: Into<::winapi::D3D12_GPU_DESCRIPTOR_HANDLE>>
-    (
-        &mut self, param_index: u32, base_descriptor: H
-    ) {
-        unsafe { self.ptr.SetComputeRootDescriptorTable(
-            param_index, base_descriptor.into()
         )}
     }
     
@@ -357,5 +324,48 @@ macro_rules! impl_common_commands {
     // TODO: should drawing methods be delegated or not?
 }}}
 
+/// common methods for a command list with bounded descriptor heaps
+pub trait CommandListWithHeap {
+    /// set a decriptor table in the graphics root signature TODO: double check
+    fn set_graphics_root_dt<H: Into<::winapi::D3D12_GPU_DESCRIPTOR_HANDLE>>
+    (
+        &mut self, param_index: u32, base_descriptor: H
+    );
+
+    /// set a decriptor table in the compute root signature TODO: double check
+    fn set_compute_root_dt<H: Into<::winapi::D3D12_GPU_DESCRIPTOR_HANDLE>>
+    (
+        &mut self, param_index: u32, base_descriptor: H
+    );
+}
+
+macro_rules! impl_common_with_heap_commands{
+    ($Type: ident) => {
+impl<'a> CommandListWithHeap for $Type<'a> {
+    /// set a decriptor table in the graphics root signature
+    #[inline]
+    fn set_graphics_root_dt<H: Into<::winapi::D3D12_GPU_DESCRIPTOR_HANDLE>>
+    (
+        &mut self, param_index: u32, base_descriptor: H
+    ) {
+        unsafe { self.ptr.SetGraphicsRootDescriptorTable(
+            param_index, base_descriptor.into()
+        )}
+    }
+
+    /// set a decriptor table in the compute root signature
+    #[inline]
+    fn set_compute_root_dt<H: Into<::winapi::D3D12_GPU_DESCRIPTOR_HANDLE>>
+    (
+        &mut self, param_index: u32, base_descriptor: H
+    ) {
+        unsafe { self.ptr.SetComputeRootDescriptorTable(
+            param_index, base_descriptor.into()
+        )}
+    }
+}}}
+
 impl_common_commands!(DirectCommandListRecording);
 impl_common_commands!(BundleRecording);
+impl_common_with_heap_commands!(DirectCommandListRecording);
+impl_common_with_heap_commands!(BundleRecordingWithHeap);
