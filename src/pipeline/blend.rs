@@ -22,6 +22,16 @@ pub struct BlendDesc {
     pub render_targets: [RenderTargetBlendDesc; 8],
 }
 
+impl Default for BlendDesc {
+    fn default() -> Self {
+        BlendDesc{
+            alpha_to_coverage: false.into(),
+            independent_blend: false.into(),
+            render_targets: [Default::default(); 8],
+        }
+    }
+}
+
 /// describes the blend state for a render target
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]

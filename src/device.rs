@@ -16,7 +16,7 @@ use factory::Adapter;
 use command::{CommandQueue, CommandQueueDesc, CommandAllocator, CommandListType, GraphicsCommandList};
 use resource::*;
 use pipeline::rootsig::{RootSig, RootSigDescBlob};
-use pipeline::PipelineState;
+use pipeline::{PipelineState, GraphicsPipelineStateBuilder};
 use fence::{Fence, FenceFlags};
 use descriptor::{CbvSrvUavHeap, RtvHeap, DsvHeap, SamplerHeap, DescriptorHeapBuilder};
 
@@ -49,6 +49,14 @@ impl Device {
                 ptr: ComPtr::new(ptr)
             })
         }
+    }
+
+    /// attempts to create a graphics pipeline state object
+    #[inline]
+    pub fn create_graphics_pso<'a>(
+        &mut self, pso: &mut GraphicsPipelineStateBuilder<'a>
+    ) -> Result<PipelineState, WinError> {
+        pso.build(self)
     }
 
     /// attempts to create a root signature from a description blob

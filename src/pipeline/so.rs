@@ -73,6 +73,12 @@ impl<'a> DescBuilder<'a> {
     }
 }
 
+impl<'a> Default for DescBuilder<'a> {
+    fn default() -> Self {
+        DescBuilder::new(0)
+    }
+}
+
 /// describes an entry in a stream output slot
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]

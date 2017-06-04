@@ -18,39 +18,66 @@ use smallvec::SmallVec;
 
 /// a compiled piece of VS shader byte code
 #[derive(Debug, Clone)]
-pub struct VsShaderByteCode {
+pub struct VsShaderBytecode {
     pub ptr: ComPtr<ID3DBlob>,
 }
 
 /// a compiled piece of PS shader byte code
 #[derive(Debug, Clone)]
-pub struct PsShaderByteCode {
+pub struct PsShaderBytecode {
     pub ptr: ComPtr<ID3DBlob>,
 }
 
 /// a compiled piece of CS shader byte code
 #[derive(Debug, Clone)]
-pub struct CsShaderByteCode {
+pub struct CsShaderBytecode {
     pub ptr: ComPtr<ID3DBlob>,
 }
 
 /// a compiled piece of HS shader byte code
 #[derive(Debug, Clone)]
-pub struct HsShaderByteCode {
+pub struct HsShaderBytecode {
     pub ptr: ComPtr<ID3DBlob>,
 }
 
 /// a compiled piece of GS shader byte code
 #[derive(Debug, Clone)]
-pub struct GsShaderByteCode {
+pub struct GsShaderBytecode {
     pub ptr: ComPtr<ID3DBlob>,
 }
 
 /// a compiled piece of DS shader byte code
 #[derive(Debug, Clone)]
-pub struct DsShaderByteCode {
+pub struct DsShaderBytecode {
     pub ptr: ComPtr<ID3DBlob>,
 }
+
+macro_rules! impl_shader_bytecode {
+    ($Shader: ty) => {
+        impl $Shader {
+            #[inline]
+            pub fn to_shader_bytecode(&mut self) -> ::winapi::D3D12_SHADER_BYTECODE {
+                let mut ret: ::winapi::D3D12_SHADER_BYTECODE = unsafe {
+                    ::std::mem::uninitialized()
+                };
+                ret.pShaderBytecode = unsafe {
+                    self.ptr.GetBufferPointer() as *const _
+                };
+                ret.BytecodeLength = unsafe {
+                    self.ptr.GetBufferSize()
+                };
+                ret
+            }
+        }
+    }
+}
+
+impl_shader_bytecode!(VsShaderBytecode);
+impl_shader_bytecode!(PsShaderBytecode);
+impl_shader_bytecode!(DsShaderBytecode);
+impl_shader_bytecode!(CsShaderBytecode);
+impl_shader_bytecode!(HsShaderBytecode);
+impl_shader_bytecode!(GsShaderBytecode);
 
 /// shader builder
 #[derive(Debug)]
@@ -107,12 +134,12 @@ impl<'a> ShaderBuilder<'a> {
         }
     }
 
-    impl_build!(build_vs, VsShaderByteCode, "vs_5_0\0");
-    impl_build!(build_ps, PsShaderByteCode, "ps_5_0\0");
-    impl_build!(build_hs, HsShaderByteCode, "hs_5_0\0");
-    impl_build!(build_cs, CsShaderByteCode, "cs_5_0\0");
-    impl_build!(build_gs, GsShaderByteCode, "gs_5_0\0");
-    impl_build!(build_ds, DsShaderByteCode, "ds_5_0\0");
+    impl_build!(build_vs, VsShaderBytecode, "vs_5_0\0");
+    impl_build!(build_ps, PsShaderBytecode, "ps_5_0\0");
+    impl_build!(build_hs, HsShaderBytecode, "hs_5_0\0");
+    impl_build!(build_cs, CsShaderBytecode, "cs_5_0\0");
+    impl_build!(build_gs, GsShaderBytecode, "gs_5_0\0");
+    impl_build!(build_ds, DsShaderBytecode, "ds_5_0\0");
 }
 
 /// shader macros

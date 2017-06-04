@@ -11,10 +11,13 @@
 // TODO: add graphic pipeline state description structure
 // blockers: shader, rootsignature
 
+use device::Device;
 use format::DxgiFormat;
 use winapi::{ID3D12PipelineState, ID3DBlob};
 use error::WinError;
 use comptr::ComPtr;
+use shader::*;
+use std::mem::transmute;
 
 pub mod so;
 pub mod blend;
@@ -38,6 +41,16 @@ pub struct PipelineStateCache {
     pub ptr: ComPtr<ID3DBlob>,
 }
 
+impl PipelineStateCache {
+    #[inline]
+    pub fn to_ffi_cache(&mut self) -> ::winapi::D3D12_CACHED_PIPELINE_STATE {
+        unsafe {::winapi::D3D12_CACHED_PIPELINE_STATE{
+            pCachedBlob: self.ptr.GetBufferPointer(),
+            CachedBlobSizeInBytes: self.ptr.GetBufferSize(),
+        }}
+    }
+}
+
 impl PipelineState {
     /// get the cached blob
     #[inline]
@@ -52,17 +65,21 @@ impl PipelineState {
     }
 }
 
-#[repr(C)]
-#[derive(Copy, Clone, Debug)]
-pub struct GraphicsPipelineStateDesc {
-    pub root_sig: *const ::winapi::ID3D12RootSignature, // TODO: ?
-    // TODO: shader byte codes
-    // TODO: pub stream_output: so::StreamOutputDesc?
+/// graphics pso builder
+#[derive(Clone, Debug)]
+pub struct GraphicsPipelineStateBuilder<'a> {
+    pub rootsig: &'a rootsig::RootSig,
+    pub vs: Option<VsShaderBytecode>,
+    pub ps: Option<PsShaderBytecode>,
+    pub ds: Option<DsShaderBytecode>,
+    pub hs: Option<HsShaderBytecode>,
+    pub gs: Option<GsShaderBytecode>,
+    pub stream_output: so::DescBuilder<'a>,
     pub blend_state: blend::BlendDesc,
     pub sample_mask: u32,
     pub rasterizer_state: rasterizer::RasterizerDesc,
     pub depth_stencil_state: ds::DepthStencilDesc,
-    // TODO: pub input_layout: 
+    pub input_layout: ia::InputLayoutBuilder<'a>,
     pub strip_cut_value: ia::StripCutValue,
     pub primitive_topology_type: ia::PrimitiveTopologyType,
     pub num_render_targets: u32,
@@ -70,31 +87,71 @@ pub struct GraphicsPipelineStateDesc {
     pub dsv_format: DxgiFormat,
     pub sample_desc: SampleDesc,
     pub node_mask: u32,
-    // TODO: caches?
+    pub cache: Option<PipelineStateCache>,
     pub flags: PipelineStateFlags,
 }
 
-// #[derive(Clone, Debug)]
-// pub struct GraphicsPipelineStateBuilder {
-//     // TODO: shader byte codes
-//     pub stream_output: so::DescBuilder,
-//     pub blend_state: blend::BlendDesc,
-//     pub sample_mask: u32,
-//     pub rasterizer_state: rasterizer::RasterizerDesc,
-//     pub depth_stencil_state: ds::DepthStencilDesc,
-//     pub input_layout: ia::InputLayoutBuilder,
-//     pub strip_cut_value: ia::StripCutValue,
-//     pub primitive_topology_type: ia::PrimitiveTopologyType,
-//     pub num_render_targets: u32,
-//     pub rtv_formats: [DxgiFormat; 8],
-//     pub dsv_format: DxgiFormat,
-//     pub sample_desc: SampleDesc,
-//     pub node_mask: u32,
-//     pub cache: Option<PipelineStateCache>,
-//     pub flags: PipelineStateFlags,
-// }
+impl<'a> GraphicsPipelineStateBuilder<'a> {
+    #[inline]
+    pub fn new(root_signature: &'a rootsig::RootSig) -> Self {
+        GraphicsPipelineStateBuilder{
+            rootsig: root_signature,
+            vs: None, ps: None, ds: None, hs: None, gs: None,
+            stream_output: Default::default(),
+            blend_state: Default::default(),
+            sample_mask: 0,
+            rasterizer_state: Default::default(),
+            depth_stencil_state: Default::default(),
+            input_layout: Default::default(),
+            strip_cut_value: Default::default(),
+            primitive_topology_type: ia::PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
+            num_render_targets: 1,
+            rtv_formats: [::format::DXGI_FORMAT_UNKNOWN; 8],
+            dsv_format: ::format::DXGI_FORMAT_D24_UNORM_S8_UINT,
+            sample_desc: Default::default(),
+            node_mask: 0,
+            cache: None,
+            flags: PIPELINE_STATE_FLAG_NONE,
+        }
+    }
 
-// TODO: add methods for the builder
+    pub fn build(&mut self, device: &mut Device) -> Result<PipelineState, WinError> {
+        unsafe {
+            let mut desc: ::winapi::D3D12_GRAPHICS_PIPELINE_STATE_DESC = ::std::mem::zeroed();
+            desc.pRootSignature = self.rootsig.ptr.as_mut_ptr();
+            if let Some(ref mut vs) = self.vs { desc.VS = vs.to_shader_bytecode(); }
+            if let Some(ref mut ps) = self.ps { desc.PS = ps.to_shader_bytecode(); }
+            if let Some(ref mut ds) = self.ds { desc.DS = ds.to_shader_bytecode(); }
+            if let Some(ref mut hs) = self.hs { desc.HS = hs.to_shader_bytecode(); }
+            if let Some(ref mut gs) = self.gs { desc.GS = gs.to_shader_bytecode(); }
+            desc.StreamOutput = self.stream_output.build().0;
+            desc.BlendState = transmute(self.blend_state);
+            desc.SampleMask = self.sample_mask;
+            desc.RasterizerState = transmute(self.rasterizer_state);
+            desc.DepthStencilState = transmute(self.depth_stencil_state);
+            desc.InputLayout.pInputElementDescs = self.input_layout.elements.as_ptr() as *const _;
+            desc.InputLayout.NumElements = self.input_layout.elements.len() as u32;
+            desc.IBStripCutValue = transmute(self.strip_cut_value);
+            desc.PrimitiveTopologyType = transmute(self.primitive_topology_type);
+            desc.NumRenderTargets = self.num_render_targets;
+            desc.RTVFormats = transmute(self.rtv_formats);
+            desc.DSVFormat = self.dsv_format;
+            desc.SampleDesc = transmute(self.sample_desc);
+            desc.NodeMask = self.node_mask;
+            if let Some(ref mut pso) = self.cache { desc.CachedPSO = pso.to_ffi_cache(); }
+            desc.Flags = transmute(self.flags);
+
+            let mut ret = ::std::mem::uninitialized();
+            let hr = device.ptr.CreateGraphicsPipelineState(
+                &desc, & ::dxguid::IID_ID3D12PipelineState,
+                &mut ret as *mut *mut _ as *mut *mut _
+            );
+            WinError::from_hresult_or_ok(hr, || PipelineState{
+                ptr: ComPtr::new(ret)
+            })
+        }
+    }
+}
 
 bitflags!{
     #[repr(C)]

@@ -43,18 +43,6 @@ impl<'a> InputLayoutBuilder<'a>{
     pub fn new() -> Self {
         Default::default()
     }
-
-    // pub fn build(&self) -> (
-    //     ::winapi::D3D12_INPUT_LAYOUT_DESC, PhantomData<&InputLayoutBuilder>
-    // ) {
-    //     (
-    //         ::winapi::D3D12_INPUT_LAYOUT_DESC{
-    //             pInputElementDescs: self.elements.as_ptr() as *const _,
-    //             NumElements: self.elements.len() as u32
-    //         },
-    //         Default::default()
-    //     )
-    // }
 }
 
 
@@ -103,6 +91,13 @@ bitflags!{
         const STRIP_CUT_VALUE_DISABLED = 0;
         const STRIP_CUT_VALUE_0XFFFF = 1;
         const STRIP_CUT_VALUE_0XFFFFFFFF = 2;
+    }
+}
+
+impl Default for StripCutValue {
+    #[inline]
+    fn default() -> StripCutValue {
+        STRIP_CUT_VALUE_DISABLED
     }
 }
 
