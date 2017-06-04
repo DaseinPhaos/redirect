@@ -1,9 +1,11 @@
 [package]
 name = "redirect"
-version = "0.0.0"
-authors = ["Luxko <liarluxlux@gmail.com>"]
+version = "0.1.0"
+authors = ["Luxko <luxko@qq.com>"]
 license = "Apache-2.0"
 keywords = ["graphics"]
+categories = ["rendering::graphics-api"]
+description = "A light weight, type safe wrapper around the DirectX12 API"
 
 [dependencies]
 winapi = "0.2"

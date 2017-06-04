@@ -27,25 +27,3 @@ pub mod pipeline;
 pub mod shader;
 pub mod fence;
 pub mod descriptor;
-
-#[repr(C)]
-pub struct InputElementBuilder<'a> {
-    pub semantic_name: &'a str,
-    pub semantic_index: u32,
-    pub format: format::DxgiFormat,
-    pub input_slot: u32,
-    pub aligned_byte_offset: u32,
-    pub input_slot_class: winapi::d3d12::D3D12_INPUT_CLASSIFICATION,
-    pub instance_data_step_rate: u32,
-}
-
-// impl<'a> InputElementBuilder<'a> {
-//     pub fn new(semantic_name: &'a str, format: format::DxgiFormat) -> InputElementBuilder<'a> {
-//         InputElementBuilder{
-//             semantic_name,
-//             semantic_index: 0,
-//             format,
-//             0, 0, 
-//         }
-//     }
-// }
