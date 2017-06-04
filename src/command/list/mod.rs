@@ -9,10 +9,9 @@
 //! command lists
 
 use comptr::ComPtr;
-use winapi::ID3D12GraphicsCommandList;
+use winapi::{ID3D12GraphicsCommandList, ID3D12CommandAllocator};
 use error::WinError;
 use descriptor::heap::*;
-use super::CommandAllocator;
 use pipeline::PipelineState;
 use resource::{RawResource, ResourceBarriersBuilder, TextureCopyLocation};
 

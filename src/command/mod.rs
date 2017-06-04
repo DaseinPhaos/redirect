@@ -8,27 +8,9 @@
 
 //! GPU command encapsulation.
 
-use comptr::ComPtr;
-use winapi::ID3D12CommandAllocator;
-use error::WinError;
-
 mod queue;
 pub use self::queue::*;
 
 mod list;
 pub use self::list::*;
 
-/// An allocator for GPU commands
-#[derive(Debug)]
-pub struct CommandAllocator {
-    pub ptr: ComPtr<ID3D12CommandAllocator>,
-}
-
-impl CommandAllocator {
-    /// indicates that the associated memory would be recycled by the allocator.
-    #[inline]
-    pub fn reset(&mut self) -> Result<(), WinError> {
-        let hr = unsafe {self.ptr.Reset()};
-        WinError::from_hresult(hr)
-    }
-}

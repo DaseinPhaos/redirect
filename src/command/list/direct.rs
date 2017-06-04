@@ -10,6 +10,22 @@
 
 use super::*;
 
+
+/// An allocator for GPU commands
+#[derive(Debug)]
+pub struct DirectCommandAllocator {
+    pub ptr: ComPtr<ID3D12CommandAllocator>,
+}
+
+impl DirectCommandAllocator {
+    /// indicates that the associated memory would be recycled by the allocator.
+    #[inline]
+    pub fn reset(&mut self) -> Result<(), WinError> {
+        let hr = unsafe {self.ptr.Reset()};
+        WinError::from_hresult(hr)
+    }
+}
+
 /// a direct command list
 #[derive(Clone, Debug)]
 pub struct DirectCommandList {
@@ -19,7 +35,7 @@ pub struct DirectCommandList {
 impl DirectCommandList {
     /// start command recording. [more](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903895(v=vs.85).aspx)
     pub fn start<'b>(
-        mut self, alloc: &'b mut CommandAllocator, 
+        mut self, alloc: &'b mut DirectCommandAllocator, 
         initial_state: Option<&'b PipelineState>
     ) -> Result<DirectCommandListRecording<'b>, (WinError, Self)> {
         let p_initial_state = if let Some(initial_state) = initial_state {
@@ -43,7 +59,7 @@ impl DirectCommandList {
 pub struct DirectCommandListRecording<'a> {
     pub ptr: ComPtr<ID3D12GraphicsCommandList>,
     /// command allocator used to back up command recording
-    pub alloc: &'a mut CommandAllocator,
+    pub alloc: &'a mut DirectCommandAllocator,
     /// initial state of this command list
     pub initial_state: Option<&'a PipelineState>,
 }
@@ -236,7 +252,7 @@ impl<'a> DirectCommandListRecording<'a> {
     }
 
     /// synchronizaing multiple access to resources. [more](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903898(v=vs.85).aspx)
-    pub fn resource_barrier(&mut self, barriers: &ResourceBarriersBuilder) {
+    pub fn resource_barriers(&mut self, barriers: &ResourceBarriersBuilder) {
         let barriers = barriers.as_ffi_slice();
         unsafe {
             self.ptr.ResourceBarrier(
@@ -287,7 +303,7 @@ impl<'a> DirectCommandListRecording<'a> {
 
     /// reset a command list back to the initial state. [more](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903895(v=vs.85).aspx)
     pub fn reset<'b>(
-        mut self, alloc: &'b mut CommandAllocator, 
+        mut self, alloc: &'b mut DirectCommandAllocator, 
         initial_state: Option<&'b PipelineState>
     ) -> Result<DirectCommandListRecording<'b>, (WinError, Self)> {
         let p_initial_state = if let Some(initial_state) = initial_state {

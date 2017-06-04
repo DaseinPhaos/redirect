@@ -13,7 +13,7 @@ use winapi::ID3D12Device;
 use error::WinError;
 use std::os::raw::c_void;
 use factory::Adapter;
-use command::{CommandQueue, CommandQueueDesc, CommandAllocator, CommandListType, DirectCommandListRecording, BundleRecording, DirectCommandList, Bundle};
+use command::{CommandQueue, CommandQueueDesc, DirectCommandAllocator, BundleCommandAllocator, DirectCommandListRecording, BundleRecording, DirectCommandList, Bundle};
 use resource::*;
 use pipeline::rootsig::{RootSig, RootSigDescBlob};
 use pipeline::{PipelineState, GraphicsPipelineStateBuilder};
@@ -100,19 +100,33 @@ impl Device {
         }
     }
 
-    /// attempts to create a command allocator
-    pub fn create_command_allocator(
-        &mut self, list_type: CommandListType
-    ) -> Result<CommandAllocator, WinError> {
+    /// attempts to create a direct command allocator
+    pub fn create_direct_command_allocator(&mut self) -> Result<DirectCommandAllocator, WinError> {
         unsafe {
             let mut ret = ::std::mem::uninitialized();
             let hr = self.ptr.CreateCommandAllocator(
-                ::std::mem::transmute(list_type),
-                & ::dxguid::IID_ID3D12CommandQueue,
+                ::winapi::D3D12_COMMAND_LIST_TYPE_DIRECT,
+                & ::dxguid::IID_ID3D12CommandAllocator,
                 &mut ret as *mut *mut _ as *mut *mut c_void
             );
 
-            WinError::from_hresult_or_ok(hr, || CommandAllocator{
+            WinError::from_hresult_or_ok(hr, || DirectCommandAllocator{
+                ptr: ComPtr::new(ret)
+            })
+        }
+    }
+
+    /// attempts to create a bundle command allocator
+    pub fn create_bundle_allocator(&mut self) -> Result<BundleCommandAllocator, WinError> {
+        unsafe {
+            let mut ret = ::std::mem::uninitialized();
+            let hr = self.ptr.CreateCommandAllocator(
+                ::winapi::D3D12_COMMAND_LIST_TYPE_BUNDLE,
+                & ::dxguid::IID_ID3D12CommandAllocator,
+                &mut ret as *mut *mut _ as *mut *mut c_void
+            );
+
+            WinError::from_hresult_or_ok(hr, || BundleCommandAllocator{
                 ptr: ComPtr::new(ret)
             })
         }
@@ -245,7 +259,7 @@ impl Device {
     #[inline]
     pub fn create_direct_command_list<'a>(
         &mut self, node_mask: u32,
-        alloc: &'a mut CommandAllocator, 
+        alloc: &'a mut DirectCommandAllocator, 
         initial_state: Option<&'a PipelineState>
     ) -> Result<DirectCommandListRecording<'a>, WinError> {
         let pinitial_state = if let Some(state) = initial_state {
@@ -273,7 +287,7 @@ impl Device {
     #[inline]
     pub fn create_bundle<'a>(
         &mut self, node_mask: u32,
-        alloc: &'a mut CommandAllocator, 
+        alloc: &'a mut BundleCommandAllocator, 
         initial_state: Option<&PipelineState>
     ) -> Result<BundleRecording<'a>, WinError> {
         let initial_state = if let Some(state) = initial_state {
@@ -346,7 +360,8 @@ macro_rules! impl_device_child {
 }
 
 impl_device_child!(CommandQueue, ptr);
-impl_device_child!(CommandAllocator, ptr);
+impl_device_child!(DirectCommandAllocator, ptr);
+impl_device_child!(BundleCommandAllocator, ptr);
 impl_device_child!(Heap, ptr);
 impl_device_child!(RawResource, ptr);
 impl_device_child!(Fence, ptr);
@@ -357,6 +372,7 @@ impl_device_child!(SamplerHeap, ptr);
 impl_device_child!(DirectCommandList, ptr);
 impl_device_child!(Bundle, ptr);
 impl_device_child!(PipelineState, ptr);
+impl_device_child!(RootSig, ptr);
 
 impl DeviceChild for CommittedResource {
     #[inline]

@@ -11,6 +11,8 @@
 extern crate redirect;
 extern crate winit;
 
+use redirect::descriptor::DescriptorHeap;
+
 fn main() {
     // initialize factory
     let mut factory = redirect::factory::Factory::new().unwrap();
@@ -61,7 +63,41 @@ fn main() {
         ), None, None
     ).expect("swap chain creation failed");
 
+    // create the rtv heap for our backbuffers
+    let mut rtv_heap = redirect::descriptor::DescriptorHeapBuilder::new(
+        2
+    ).build_rtv_heap(&mut device).expect(
+        "rtv heap creation failed"
+    );
+
+    // create rtvs on this heap for the two back buffers
+    let mut backbuffers = [
+        swapchain.get_buffer(0).expect("failed to get buffer 0"), 
+        swapchain.get_buffer(1).expect("failed to get buffer 1"),
+    ];
+    rtv_heap.create_rtv(&mut device, Some(&mut backbuffers[0]), None, 0);
+    rtv_heap.create_rtv(&mut device, Some(&mut backbuffers[1]), None, 1);
+
+    // create a command allocator for direct command list
+    let mut allocator = device.create_direct_command_allocator(
+    ).expect("command allocator creation failed");
+
+    // create a direct command list and start recording
+    let mut cmdlist = device.create_direct_command_list(
+        0, &mut allocator, None
+    ).expect("command list creation failed").close().expect(
+        "command list initial close failed"
+    );
+
+    // create fence for synchronization
+    let mut fence_count = 2;
+    let mut fence = device.create_fence(fence_count, Default::default()).expect(
+        "failed to create the fence"
+    );
+
     println!("Render loop started..");
+    let start_time = std::time::Instant::now();
+    let mut backbuffer_idx = swapchain.get_current_back_buffer_index();
     loop {
         let mut interruptted = false;
         events_loop.poll_events(|event| {
@@ -75,8 +111,48 @@ fn main() {
             }
         });
         if interruptted { break; }
-        let _ = swapchain.present(0, Default::default()).expect(
+
+        // every frame we clear the render target to a diffrent gray scale color,
+        // depending on time
+        while fence.get_completed_value() < fence_count { }
+        allocator.reset().expect("command allocator resetting failed");
+        let subsec = (start_time.elapsed().subsec_nanos() as f32)/1.0e9f32;
+        println!("grey scale: {}", subsec);
+        let color = [subsec, subsec, subsec, subsec];
+        let mut recording = cmdlist.start(&mut allocator, None).expect(
+            "command list start recording failed"
+        );
+        let mut barriers = redirect::resource::ResourceBarriersBuilder::new();
+        barriers.push(redirect::resource::ResourceBarrier::transition(
+            &backbuffers[backbuffer_idx as usize], 0,
+            redirect::resource::RESOURCE_STATE_PRESENT,
+            redirect::resource::RESOURCE_STATE_RENDER_TARGET
+        ));
+        recording.resource_barriers(&barriers);
+        recording.clear_rtv(
+            rtv_heap.get_cpu_handle(backbuffer_idx),
+            &color, None
+        );
+        let mut barriers = redirect::resource::ResourceBarriersBuilder::new();
+        barriers.push(redirect::resource::ResourceBarrier::transition(
+            &backbuffers[backbuffer_idx as usize], 0,
+            redirect::resource::RESOURCE_STATE_RENDER_TARGET,
+            redirect::resource::RESOURCE_STATE_PRESENT
+        ));
+        recording.resource_barriers(&barriers);
+        cmdlist = recording.close().expect(
+            "command list close recording failed"
+        );
+        // command_queue.wait(&fence, fence_count-1).expect("waiting failed");
+        command_queue.execute_command_list(&cmdlist);
+        fence_count+=1;
+        command_queue.signal(&fence, fence_count).expect("signaling failed");
+        
+        // present next frame
+        swapchain.present(0, Default::default()).expect(
             "presentation failed."
         );
+        // update back buffer count
+        backbuffer_idx = (backbuffer_idx + 1)%2;
     }
 }

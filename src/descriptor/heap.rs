@@ -63,11 +63,7 @@ impl DescriptorHeapBuilder {
         let desc = ::winapi::D3D12_DESCRIPTOR_HEAP_DESC{
             Type: ::winapi::D3D12_DESCRIPTOR_HEAP_TYPE_RTV,
             NumDescriptors: self.num_descriptors,
-            Flags: if self.shader_visible {
-                ::winapi::D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE
-            } else {
-                ::winapi::D3D12_DESCRIPTOR_HEAP_FLAG_NONE
-            },
+            Flags: ::winapi::D3D12_DESCRIPTOR_HEAP_FLAG_NONE, // can't be shader visible
             NodeMask: self.node_mask
         };
         unsafe {
@@ -88,11 +84,7 @@ impl DescriptorHeapBuilder {
         let desc = ::winapi::D3D12_DESCRIPTOR_HEAP_DESC{
             Type: ::winapi::D3D12_DESCRIPTOR_HEAP_TYPE_DSV,
             NumDescriptors: self.num_descriptors,
-            Flags: if self.shader_visible {
-                ::winapi::D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE
-            } else {
-                ::winapi::D3D12_DESCRIPTOR_HEAP_FLAG_NONE
-            },
+            Flags: ::winapi::D3D12_DESCRIPTOR_HEAP_FLAG_NONE, // can't be shader visible
             NodeMask: self.node_mask
         };
         unsafe {

@@ -10,6 +10,21 @@
 
 use super::*;
 
+/// An allocator for GPU commands
+#[derive(Debug)]
+pub struct BundleCommandAllocator {
+    pub ptr: ComPtr<ID3D12CommandAllocator>,
+}
+
+impl BundleCommandAllocator {
+    /// indicates that the associated memory would be recycled by the allocator.
+    #[inline]
+    pub fn reset(&mut self) -> Result<(), WinError> {
+        let hr = unsafe {self.ptr.Reset()};
+        WinError::from_hresult(hr)
+    }
+}
+
 /// a command list bundle
 #[derive(Clone, Debug)]
 pub struct Bundle {
@@ -19,7 +34,7 @@ pub struct Bundle {
 impl Bundle {
     /// start command recording. [more](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903895(v=vs.85).aspx)
     pub fn start<'b>(
-        mut self, alloc: &'b mut CommandAllocator, 
+        mut self, alloc: &'b mut BundleCommandAllocator, 
         initial_state: Option<&PipelineState>
     ) -> Result<BundleRecording<'b>, (WinError, Self)> {
         let p_initial_state = if let Some(initial_state) = initial_state {
@@ -43,7 +58,7 @@ impl Bundle {
 pub struct BundleRecording<'a> {
     pub ptr: ComPtr<ID3D12GraphicsCommandList>,
     /// command allocator used to back up command recording
-    pub alloc: &'a mut CommandAllocator,
+    pub alloc: &'a mut BundleCommandAllocator,
 }
 
 impl<'a> BundleRecording<'a> {
@@ -81,7 +96,7 @@ impl<'a> BundleRecording<'a> {
 
     /// reset a bundle back to the initial state. [more](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903895(v=vs.85).aspx)
     pub fn reset<'b>(
-        mut self, alloc: &'b mut CommandAllocator, 
+        mut self, alloc: &'b mut BundleCommandAllocator, 
         initial_state: Option<&PipelineState>
     ) -> Result<BundleRecording<'b>, (WinError, Self)> {
         let p_initial_state = if let Some(initial_state) = initial_state {
@@ -115,13 +130,13 @@ impl<'a> BundleRecording<'a> {
 pub struct BundleRecordingWithHeap<'a> {
     pub ptr: ComPtr<ID3D12GraphicsCommandList>,
     /// command allocator used to back up command recording
-    pub alloc: &'a mut CommandAllocator,
+    pub alloc: &'a mut BundleCommandAllocator,
 }
 
 impl<'a> BundleRecordingWithHeap<'a> {
     /// reset a bundle back to the initial state. [more](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903895(v=vs.85).aspx)
     pub fn reset<'b>(
-        mut self, alloc: &'b mut CommandAllocator, 
+        mut self, alloc: &'b mut BundleCommandAllocator, 
         initial_state: Option<&PipelineState>
     ) -> Result<BundleRecording<'b>, (WinError, Self)> {
         let p_initial_state = if let Some(initial_state) = initial_state {

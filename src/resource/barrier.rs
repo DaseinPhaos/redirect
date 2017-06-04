@@ -48,6 +48,38 @@ impl ResourceBarrier {
             barrier_type: barrier,
         }
     }
+
+    #[inline]
+    pub fn transition(
+        resource: &RawResource, subresource: u32, 
+        before: ResourceStates, after: ResourceStates
+    ) -> ResourceBarrier {
+        ResourceBarrier::new(
+            ResourceBarrierType::Transition(
+                ResourceTransitionBarrier::new(
+                    resource, subresource, before, after
+                )
+            )
+        )
+    }
+
+    #[inline]
+    pub fn aliasing(before: &mut PlacedResource, after: &mut PlacedResource) -> ResourceBarrier {
+        ResourceBarrier::new(
+            ResourceBarrierType::Aliasing(
+                ResourceAliasingBarrier::new(before, after)
+            )
+        )
+    }
+
+    #[inline]
+    pub fn uav(resource: &RawResource) -> ResourceBarrier {
+        ResourceBarrier::new(
+            ResourceBarrierType::Uav(
+                ResourceUavBarrier::new(resource)
+            )
+        )
+    }
 }
 
 impl From<ResourceBarrier> for ::winapi::D3D12_RESOURCE_BARRIER {
