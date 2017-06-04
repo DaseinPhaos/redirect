@@ -14,11 +14,11 @@ use std::borrow::Borrow;
 
 /// resource barrier builder
 #[derive(Clone, Debug, Default)]
-pub struct ResourceBarrierBuilder {
+pub struct ResourceBarriersBuilder {
     barriers: SmallVec<[::winapi::D3D12_RESOURCE_BARRIER; 8]>,
 }
 
-impl ResourceBarrierBuilder {
+impl ResourceBarriersBuilder {
     #[inline]
     pub fn new() -> Self { Default::default() }
 

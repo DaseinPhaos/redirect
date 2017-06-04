@@ -220,6 +220,7 @@ impl CbvSrvUavHeap{
     }
 }
 
+/// a heap that can hold render target views
 #[derive(Clone, Debug)]
 pub struct RtvHeap {
     pub ptr: ComPtr<ID3D12DescriptorHeap>,
@@ -255,6 +256,7 @@ impl RtvHeap {
     }
 }
 
+/// a heap that can hold depth stencil views
 #[derive(Clone, Debug)]
 pub struct DsvHeap {
     pub ptr: ComPtr<ID3D12DescriptorHeap>,
@@ -290,6 +292,7 @@ impl DsvHeap{
     }
 }
 
+/// a heap that can hold samplers
 #[derive(Clone, Debug)]
 pub struct SamplerHeap {
     pub ptr: ComPtr<ID3D12DescriptorHeap>,
@@ -311,42 +314,19 @@ impl SamplerHeap {
     }
 }
 
-/// 
-#[derive(Copy, Clone, Debug)]
-#[repr(C)]
-pub struct CpuDescriptorHandle {
-    pub ptr: usize,
-}
-
-impl From<CpuDescriptorHandle> for ::winapi::D3D12_CPU_DESCRIPTOR_HANDLE {
-    #[inline]
-    fn from(h: CpuDescriptorHandle) -> Self {
-        unsafe { ::std::mem::transmute(h) }
-    }
-}
-
-#[derive(Copy, Clone, Debug)]
-#[repr(C)]
-pub struct GpuDescriptorHandle {
-    pub ptr: u64,
-}
-
-impl From<GpuDescriptorHandle> for ::winapi::D3D12_GPU_DESCRIPTOR_HANDLE {
-    #[inline]
-    fn from(h: GpuDescriptorHandle) -> Self {
-        unsafe { ::std::mem::transmute(h) }
-    }
-}
-
+/// represents a descriptor heap
 pub trait DescriptorHeap {
+    type CpuHandle;
+    type GpuHandle;
+
     /// get type of the heap
     fn get_type(&self) -> ::winapi::D3D12_DESCRIPTOR_HEAP_TYPE;
 
     /// get Cpu handle of a descriptor at `offset` on the heap
-    fn get_cpu_handle(&mut self, offset: u32) -> CpuDescriptorHandle;
+    fn get_cpu_handle(&mut self, offset: u32) -> Self::CpuHandle;
 
     /// get Gpu handle of a descriptor at `offset` on the heap
-    fn get_gpu_handle(&mut self, offset: u32) -> GpuDescriptorHandle;
+    fn get_gpu_handle(&mut self, offset: u32) -> Self::GpuHandle;
 
     /// perform immediate copy of a slice of descriptors on CPU side through the given device
     fn copy_descriptors_to(
@@ -362,16 +342,44 @@ pub trait DescriptorHeap {
 }
 
 macro_rules! impl_dh {
-    ($Heap: ty, $ptr: ident, $msize: ident, $item_size: ident, $Type: ident) => {
+    ($Heap: ty, $ptr: ident, $msize: ident, $item_size: ident, $Type: ident, $CpuHandle: ident, $GpuHandle: ident) => {
+        #[derive(Copy, Clone, Debug)]
+        #[repr(C)]
+        pub struct $CpuHandle {
+            pub ptr: usize,
+        }
+
+        impl From<$CpuHandle> for ::winapi::D3D12_CPU_DESCRIPTOR_HANDLE {
+            #[inline]
+            fn from(h: $CpuHandle) -> Self {
+                unsafe { ::std::mem::transmute(h) }
+            }
+        }
+
+        #[derive(Copy, Clone, Debug)]
+        #[repr(C)]
+        pub struct $GpuHandle {
+            pub ptr: u64,
+        }
+
+        impl From<$GpuHandle> for ::winapi::D3D12_GPU_DESCRIPTOR_HANDLE {
+            #[inline]
+            fn from(h: $GpuHandle) -> Self {
+                unsafe { ::std::mem::transmute(h) }
+            }
+        }
+
         impl DescriptorHeap for $Heap {
+            type GpuHandle = $GpuHandle;
+            type CpuHandle = $CpuHandle;
             #[inline]
             fn get_type(&self) -> ::winapi::D3D12_DESCRIPTOR_HEAP_TYPE {
                 $Type
             }
 
-            fn get_cpu_handle(&mut self, offset: u32) -> CpuDescriptorHandle {
+            fn get_cpu_handle(&mut self, offset: u32) -> $CpuHandle {
                 assert!(offset<self.$msize);
-                let mut ret = CpuDescriptorHandle{ptr: 0};
+                let mut ret = $CpuHandle{ptr: 0};
                 unsafe {
                     self.$ptr.GetCPUDescriptorHandleForHeapStart(
                         &mut ret as *mut _ as *mut _
@@ -381,9 +389,9 @@ macro_rules! impl_dh {
                 ret
             }
 
-            fn get_gpu_handle(&mut self, offset: u32) -> GpuDescriptorHandle {
+            fn get_gpu_handle(&mut self, offset: u32) -> $GpuHandle {
                 assert!(offset<self.$msize);
-                let mut ret = GpuDescriptorHandle{ptr: 0};
+                let mut ret = $GpuHandle{ptr: 0};
                 unsafe {
                     self.$ptr.GetGPUDescriptorHandleForHeapStart(
                         &mut ret as *mut _ as *mut _
@@ -419,7 +427,7 @@ macro_rules! impl_dh {
     }
 }
 
-impl_dh!(CbvSrvUavHeap, ptr, num_descriptors, handle_increment_size, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-impl_dh!(DsvHeap, ptr, num_descriptors, handle_increment_size,  D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
-impl_dh!(RtvHeap, ptr, num_descriptors, handle_increment_size, D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-impl_dh!(SamplerHeap, ptr, num_descriptors, handle_increment_size, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
+impl_dh!(CbvSrvUavHeap, ptr, num_descriptors, handle_increment_size, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, CpuCsuHandle, GpuCsuHandle);
+impl_dh!(DsvHeap, ptr, num_descriptors, handle_increment_size,  D3D12_DESCRIPTOR_HEAP_TYPE_DSV, CpuDsvHandle, GpuDsvHandle);
+impl_dh!(RtvHeap, ptr, num_descriptors, handle_increment_size, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, CpuRtvHandle, GpuRtvHandle);
+impl_dh!(SamplerHeap, ptr, num_descriptors, handle_increment_size, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, CpuSamplerHandle, GpuSamplerHandle);

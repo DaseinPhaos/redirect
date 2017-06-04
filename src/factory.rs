@@ -15,7 +15,6 @@ use winapi::{IDXGIFactory4, IDXGIAdapter1, IDXGISwapChain3, IDXGISwapChain1, IDX
 use error::WinError;
 use std::os::raw::c_void;
 use swapchain::{SwapChain, SwapChainDesc, FullScreenDesc};
-use device::Device;
 use command::CommandQueue;
 
 /// dxgi API entry point

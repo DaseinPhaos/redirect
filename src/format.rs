@@ -93,3 +93,14 @@ pub fn from_wchar_slice(chars: &[::winapi::WCHAR]) -> ::std::ffi::OsString {
     }
     <::std::ffi::OsString as ::std::os::windows::ffi::OsStringExt>::from_wide(&chars[..end])
 }
+
+// /// a data blob
+// #[derive(Clone, Debug)]
+// pub struct DataBlob {
+//     pub ptr: ComPtr<::winapi::ID3DBlob>,
+// }
+
+// impl DataBlob {
+//     /// get pointer to the underlying data
+//     pub fn get_buffer_pointer(&mut self)
+// }
