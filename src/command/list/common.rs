@@ -107,6 +107,19 @@ pub trait CommandList {
     fn set_pipeline_state(
         &mut self, state: Option<&PipelineState>
     );
+
+    /// draw non-indexed, instanced primitives
+    fn draw(
+        &mut self, vertex_per_instance: u32, instance_count: u32, 
+        first_vertex_index: u32, first_instance_index: u32
+    );
+
+    /// draw indexed, instanced primitives
+    fn draw_indexed(
+        &mut self, index_per_instance: u32, instance_count: u32,
+        first_index_index: u32, vertex_index_offset: i32,
+        first_instance_index: u32
+    );
 }
 
 macro_rules! impl_common_commands {
@@ -309,6 +322,31 @@ macro_rules! impl_common_commands {
             ::std::ptr::null_mut()
         };
         unsafe { self.ptr.SetPipelineState(p_state)}
+    }
+
+    /// draw non-indexed, instanced primitives
+    #[inline]
+    fn draw(
+        &mut self, vertex_per_instance: u32, instance_count: u32, 
+        first_vertex_index: u32, first_instance_index: u32
+    ) {
+        unsafe { self.ptr.DrawInstanced(
+            vertex_per_instance, instance_count, 
+            first_vertex_index, first_instance_index
+        )}
+    }
+
+    /// draw indexed, instanced primitives
+    fn draw_indexed(
+        &mut self, index_per_instance: u32, instance_count: u32,
+        first_index_index: u32, vertex_index_offset: i32,
+        first_instance_index: u32
+    ) {
+        unsafe { self.ptr.DrawIndexedInstanced(
+            index_per_instance, instance_count,
+            first_index_index, vertex_index_offset,
+            first_instance_index
+        )}
     }
 
     // TODO: predication
