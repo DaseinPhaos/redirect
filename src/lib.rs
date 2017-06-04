@@ -12,6 +12,7 @@ extern crate winapi;
 extern crate d3d12;
 extern crate dxguid;
 extern crate dxgi;
+extern crate d3dcompiler;
 extern crate smallvec;
 
 mod comptr;
