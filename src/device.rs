@@ -13,7 +13,7 @@ use winapi::ID3D12Device;
 use error::WinError;
 use std::os::raw::c_void;
 use factory::Adapter;
-use command::{CommandQueue, CommandQueueDesc, CommandAllocator, CommandListType, GraphicsCommandList};
+use command::{CommandQueue, CommandQueueDesc, CommandAllocator, CommandListType, DirectCommandListRecording, BundleRecording, DirectCommandList, Bundle};
 use resource::*;
 use pipeline::rootsig::{RootSig, RootSigDescBlob};
 use pipeline::PipelineState;
@@ -233,12 +233,41 @@ impl Device {
         builder.build_sampler_heap(self)
     }
 
-    // TODO: typed command lists? relation ship with command allocators?
+    // TODO: copy or compute command lists?
     #[inline]
-    pub fn create_command_list(
-        &mut self, node_mask: u32, list_type: CommandListType,
-        alloc: &mut CommandAllocator, initial_state: Option<&PipelineState>
-    ) -> Result<GraphicsCommandList, WinError> {
+    pub fn create_direct_command_list<'a>(
+        &mut self, node_mask: u32,
+        alloc: &'a mut CommandAllocator, 
+        initial_state: Option<&'a PipelineState>
+    ) -> Result<DirectCommandListRecording<'a>, WinError> {
+        let pinitial_state = if let Some(state) = initial_state {
+            state.ptr.as_mut_ptr()
+        } else {
+            ::std::ptr::null_mut()
+        };
+        unsafe {
+            let mut ret = ::std::mem::uninitialized();
+            let hr = self.ptr.CreateCommandList(
+                node_mask,
+                ::winapi::D3D12_COMMAND_LIST_TYPE_DIRECT, 
+                alloc.ptr.as_mut_ptr(), pinitial_state, 
+                & ::dxguid::IID_ID3D12GraphicsCommandList,
+                &mut ret as *mut *mut _ as *mut *mut _
+            );
+
+            WinError::from_hresult_or_ok(hr, move || DirectCommandListRecording{
+                ptr: ComPtr::new(ret), alloc, initial_state
+            })
+        }
+    }
+
+    // TODO: copy or compute command lists?
+    #[inline]
+    pub fn create_bundle<'a>(
+        &mut self, node_mask: u32,
+        alloc: &'a mut CommandAllocator, 
+        initial_state: Option<&PipelineState>
+    ) -> Result<BundleRecording<'a>, WinError> {
         let initial_state = if let Some(state) = initial_state {
             state.ptr.as_mut_ptr()
         } else {
@@ -247,13 +276,15 @@ impl Device {
         unsafe {
             let mut ret = ::std::mem::uninitialized();
             let hr = self.ptr.CreateCommandList(
-                node_mask, ::std::mem::transmute(list_type), alloc.ptr.as_mut_ptr(),
-                initial_state, & ::dxguid::IID_ID3D12GraphicsCommandList,
+                node_mask,
+                ::winapi::D3D12_COMMAND_LIST_TYPE_BUNDLE, 
+                alloc.ptr.as_mut_ptr(), initial_state, 
+                & ::dxguid::IID_ID3D12GraphicsCommandList,
                 &mut ret as *mut *mut _ as *mut *mut _
             );
 
-            WinError::from_hresult_or_ok(hr, || GraphicsCommandList{
-                ptr: ComPtr::new(ret)
+            WinError::from_hresult_or_ok(hr, move || BundleRecording{
+                ptr: ComPtr::new(ret), alloc
             })
         }
     }
@@ -315,7 +346,8 @@ impl_device_child!(CbvSrvUavHeap, ptr);
 impl_device_child!(DsvHeap, ptr);
 impl_device_child!(RtvHeap, ptr);
 impl_device_child!(SamplerHeap, ptr);
-impl_device_child!(GraphicsCommandList, ptr);
+impl_device_child!(DirectCommandList, ptr);
+impl_device_child!(Bundle, ptr);
 impl_device_child!(PipelineState, ptr);
 
 impl DeviceChild for CommittedResource {

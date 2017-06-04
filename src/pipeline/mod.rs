@@ -41,7 +41,7 @@ pub struct PipelineStateCache {
 impl PipelineState {
     /// get the cached blob
     #[inline]
-    pub fn get_cached_blob(&mut self) -> Result<PipelineStateCache, WinError> {
+    pub fn cached(&mut self) -> Result<PipelineStateCache, WinError> {
         unsafe {
             let mut ret = ::std::mem::uninitialized();
             let hr = self.ptr.GetCachedBlob(&mut ret);

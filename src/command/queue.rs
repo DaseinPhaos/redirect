@@ -43,7 +43,7 @@ impl CommandQueue {
 
     /// add one command list to the GPU execution queue
     #[inline]
-    pub fn execute_command_list(&mut self, list: &GraphicsCommandList) {
+    pub fn execute_command_list(&mut self, list: &DirectCommandList) {
         let mut ptr = list.ptr.as_mut_ptr() as *mut ::winapi::ID3D12CommandList;
         unsafe {
             self.ptr.ExecuteCommandLists(1, &mut ptr);
@@ -51,7 +51,7 @@ impl CommandQueue {
     }
 
     /// add a sequence of command lists to the GPU execution queue
-    pub fn execute_command_lists(&mut self, lists: &[GraphicsCommandList]) {
+    pub fn execute_command_lists(&mut self, lists: &[DirectCommandList]) {
         let mut raw_lists: SmallVec<[*mut ::winapi::ID3D12CommandList; 8]> = Default::default();
         for list in lists {
             raw_lists.push(list.ptr.as_mut_ptr() as *mut _);

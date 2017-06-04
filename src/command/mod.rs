@@ -19,7 +19,7 @@ mod list;
 pub use self::list::*;
 
 /// An allocator for GPU commands
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct CommandAllocator {
     pub ptr: ComPtr<ID3D12CommandAllocator>,
 }
