@@ -5,6 +5,8 @@ authors = ["Luxko <luxko@qq.com>"]
 license = "Apache-2.0"
 keywords = ["graphics"]
 categories = ["rendering::graphics-api"]
+documentation = "https://daseinphaos.github.io/doc/redirect/"
+repository = "https://github.com/daseinphaos/redirect"
 description = "A light weight, type safe wrapper around the DirectX12 API"
 
 [dependencies]
