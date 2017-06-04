@@ -29,6 +29,21 @@ impl SwapChain {
         }
     }
 
+    /// get buffer at the given index
+    #[inline]
+    pub fn get_buffer(&mut self, index: u32) -> Result<RawResource, WinError> {
+        unsafe {
+            let mut ret = ::std::mem::uninitialized();
+            let hr = self.ptr.GetBuffer(
+                index, & ::dxguid::IID_ID3D12Resource,
+                &mut ret as *mut *mut _ as *mut *mut _
+            );
+            WinError::from_hresult_or_ok(hr, || RawResource{
+                ptr: ComPtr::new(ret)
+            })
+        }
+    }
+
     /// attemp to resize the back buffers with given parameters
     #[inline]
     pub fn resize_buffers(&mut self, params: SwapChainResizeDesc) -> Result<(), WinError> {
@@ -126,7 +141,7 @@ impl SwapChain {
 
     // TODO: add method `get_restrict_to_output`
 
-    // TODO: add method `get_buffer`, `get_containing_output`, `get_fullscreen_state`
+    // TODO: add method `get_containing_output`, `get_fullscreen_state`
 
 
     // TODO: add method to get performance statistics about the last render frame
@@ -355,7 +370,7 @@ bitflags!{
 
 impl Default for SwapEffect {
     fn default() -> SwapEffect {
-        SWAP_EFFECT_DISCARD
+        SWAP_EFFECT_FLIP_DISCARD
     }
 }
 

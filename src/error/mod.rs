@@ -12,9 +12,31 @@ use ::winapi::{HRESULT, SUCCEEDED};
 
 /// an winerror
 // TODO: add useful error messages
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Copy, Clone, PartialEq, Eq)]
 pub struct WinError {
     pub hr: HRESULT,
+}
+
+impl WinError {
+    #[inline]
+    pub fn description(&self) -> &'static str {
+        match self.hr {
+            ::winapi::E_OUTOFMEMORY => "E_OUYOFMEMORY",
+            ::winapi::DXGI_ERROR_INVALID_CALL => "DXGI_ERROR_INVALID_CALL",
+            ::winapi::DXGI_ERROR_DEVICE_HUNG => "DXGI_ERROR_DEVICE_HUNG",
+            ::winapi::DXGI_ERROR_DEVICE_REMOVED => "DXGI_ERROR_DEVICE_REMOVED",
+            ::winapi::DXGI_ERROR_DEVICE_RESET => "DXGI_ERROR_DEVICE_RESET",
+            ::winapi::DXGI_ERROR_DRIVER_INTERNAL_ERROR => "DXGI_ERROR_DRIVER_INTERNAL_ERROR",
+            _ => "Other unknown errors",
+        }
+    }
+}
+
+impl ::std::fmt::Debug for WinError {
+    #[inline]
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> Result<(), ::std::fmt::Error> {
+        write!(f, "WinError {:X} {{ {} }}", self.hr, self.description())
+    }
 }
 
 impl WinError {
