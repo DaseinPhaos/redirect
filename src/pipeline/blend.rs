@@ -76,13 +76,13 @@ impl Default for RenderTargetBlendDesc {
         RenderTargetBlendDesc{
             blend_enabled: false.into(),
             logic_op_enabled: false.into(),
-            src_blend: BLEND_ZERO,
+            src_blend: BLEND_ONE,
             dst_blend: BLEND_ZERO,
             blend_op: BLEND_OP_ADD,
-            src_alpha: BLEND_ZERO,
+            src_alpha: BLEND_ONE,
             dst_alpha: BLEND_ZERO,
             blend_op_alpha: BLEND_OP_ADD,
-            logic_op: LOGIC_OP_AND,
+            logic_op: LOGIC_OP_NOOP,
             write_mask: COLOR_WRITE_ENABLE_ALL,
         }
     }

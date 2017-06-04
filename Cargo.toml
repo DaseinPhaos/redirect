@@ -18,5 +18,9 @@ smallvec = "0.4"
 name = "initialize"
 path = "examples/initialize.rs"
 
+[[example]]
+name = "triangle"
+path = "examples/triangle.rs"
+
 [dev-dependencies]
 winit = "0.6"

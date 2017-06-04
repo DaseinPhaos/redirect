@@ -151,12 +151,13 @@ impl Device {
     /// attempts to create a committed resource
     pub fn create_committed_resource(
         &mut self, heap_properties: &HeapProperties, 
-        heap_flags: HeapFlags, desc: &ResourceDesc
+        heap_flags: HeapFlags, desc: &ResourceDesc,
+        initial_state: ResourceStates
     ) -> Result<CommittedResource, WinError> {
         let initial_state = match heap_properties.heap_type {
             HEAP_TYPE_UPLOAD => ::winapi::D3D12_RESOURCE_STATE_GENERIC_READ,
             HEAP_TYPE_READBACK => ::winapi::D3D12_RESOURCE_STATE_COPY_DEST,
-            _ => ::winapi::D3D12_RESOURCE_STATE_COMMON,
+            _ => unsafe {::std::mem::transmute(initial_state)},
         };
         unsafe {
             let mut ptr = ::std::mem::uninitialized();
@@ -206,13 +207,14 @@ impl Device {
 
     /// attempts to create a placed resource
     pub fn create_placed_resource(
-        &mut self, heap: &mut Heap, heap_offset: u64, desc: &ResourceDesc
+        &mut self, heap: &mut Heap, heap_offset: u64, 
+        desc: &ResourceDesc, initial_state: ResourceStates
     ) -> Result<PlacedResource, WinError> {
         let heap_properties = heap.get_desc().properties;
         let initial_state = match heap_properties.heap_type {
             HEAP_TYPE_UPLOAD => ::winapi::D3D12_RESOURCE_STATE_GENERIC_READ,
             HEAP_TYPE_READBACK => ::winapi::D3D12_RESOURCE_STATE_COPY_DEST,
-            _ => ::winapi::D3D12_RESOURCE_STATE_COMMON,
+            _ => unsafe {::std::mem::transmute(initial_state)},
         };
         let alloc_info = self.get_resource_alloc_info(
             desc, heap_properties.visible_node_mask

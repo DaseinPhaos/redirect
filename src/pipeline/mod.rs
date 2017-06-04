@@ -99,7 +99,7 @@ impl<'a> GraphicsPipelineStateBuilder<'a> {
             vs: None, ps: None, ds: None, hs: None, gs: None,
             stream_output: Default::default(),
             blend_state: Default::default(),
-            sample_mask: 0,
+            sample_mask: ::std::u32::MAX,
             rasterizer_state: Default::default(),
             depth_stencil_state: Default::default(),
             input_layout: Default::default(),
@@ -124,7 +124,7 @@ impl<'a> GraphicsPipelineStateBuilder<'a> {
             if let Some(ref mut ds) = self.ds { desc.DS = ds.to_shader_bytecode(); }
             if let Some(ref mut hs) = self.hs { desc.HS = hs.to_shader_bytecode(); }
             if let Some(ref mut gs) = self.gs { desc.GS = gs.to_shader_bytecode(); }
-            desc.StreamOutput = self.stream_output.build().0;
+            // desc.StreamOutput = self.stream_output.build().0;
             desc.BlendState = transmute(self.blend_state);
             desc.SampleMask = self.sample_mask;
             desc.RasterizerState = transmute(self.rasterizer_state);

@@ -85,7 +85,7 @@ impl ResourceDesc{
         format: DxgiFormat, flags: ResourceFlags
     ) -> ResourceDesc{
         ResourceDesc{
-            dimension: RESOURCE_DIMENSION_TEXTURE1D,
+            dimension: RESOURCE_DIMENSION_TEXTURE2D,
             alignment,
             width: width,
             height: height,
@@ -106,7 +106,7 @@ impl ResourceDesc{
         format: DxgiFormat, flags: ResourceFlags
     ) -> ResourceDesc{
         ResourceDesc{
-            dimension: RESOURCE_DIMENSION_TEXTURE1D,
+            dimension: RESOURCE_DIMENSION_TEXTURE3D,
             alignment, width, height, depth,
             mip_levels: mip_levels,
             format: format,
@@ -232,6 +232,13 @@ bitflags!{
         const RESOURCE_STATE_PRESENT                     = 0;
         /// used for [predication](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903927(v=vs.85).aspx)
         const RESOURCE_STATE_PREDICATION                 = 0x200;
+    }
+}
+
+impl Default for ResourceStates {
+    #[inline]
+    fn default() -> Self {
+        RESOURCE_STATE_GENERIC_READ
     }
 }
 

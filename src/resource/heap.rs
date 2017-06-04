@@ -104,6 +104,13 @@ impl HeapProperties {
     }
 }
 
+impl Default for HeapProperties {
+    #[inline]
+    fn default() -> Self {
+        HeapProperties::new(Default::default())
+    }
+}
+
 bitflags!{
     /// [heap type](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn770374(v=vs.85).aspx).
     #[repr(C)]

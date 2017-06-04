@@ -22,6 +22,7 @@ impl WinError {
     pub fn description(&self) -> &'static str {
         match self.hr {
             ::winapi::E_OUTOFMEMORY => "E_OUYOFMEMORY",
+            ::winapi::E_INVALIDARG => "E_INVALIDARG",
             ::winapi::DXGI_ERROR_INVALID_CALL => "DXGI_ERROR_INVALID_CALL",
             ::winapi::DXGI_ERROR_DEVICE_HUNG => "DXGI_ERROR_DEVICE_HUNG",
             ::winapi::DXGI_ERROR_DEVICE_REMOVED => "DXGI_ERROR_DEVICE_REMOVED",

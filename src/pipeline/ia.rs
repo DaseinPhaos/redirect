@@ -62,12 +62,12 @@ pub struct InputElementDesc<'a> {
 
 impl<'a> InputElementDesc<'a>{
     #[inline]
-    pub unsafe fn new(
-        semantic_name: &'a CStr, semantic_index: u32, format: DxgiFormat
+    pub fn new(
+        semantic_name: &'a CStr, format: DxgiFormat
     ) -> Self {
         InputElementDesc{
             semantic_name: semantic_name.as_ptr(), 
-            semantic_index, format, input_slot: 0, 
+            semantic_index: 0, format, input_slot: 0, 
             aligned_byte_offset: ::winapi::D3D12_APPEND_ALIGNED_ELEMENT,
             input_slot_class: INPUT_CLASSIFICATION_PER_VERTEX,
             instance_data_step_rate: 0,
@@ -157,5 +157,11 @@ bitflags!{
         const PRIMITIVE_TOPOLOGY_30_CONTROL_POINT_PATCHLIST    = 62;
         const PRIMITIVE_TOPOLOGY_31_CONTROL_POINT_PATCHLIST    = 63;
         const PRIMITIVE_TOPOLOGY_32_CONTROL_POINT_PATCHLIST    = 64;
+    }
+}
+
+impl Default for PrimitiveTopology {
+    fn default() -> Self {
+        PRIMITIVE_TOPOLOGY_TRIANGLELIST
     }
 }

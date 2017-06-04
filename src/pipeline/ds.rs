@@ -32,8 +32,8 @@ impl Default for DepthStencilDesc {
             depth_write_mask: DEPTH_WRITE_MASK_ALL,
             depth_func: COMPARISON_FUNC_LESS,
             stencil: false.into(),
-            stencil_read_mask: 0,
-            stencil_write_mask: 0,
+            stencil_read_mask: 0xff,
+            stencil_write_mask: 0xff,
             front_op: Default::default(),
             back_op: Default::default(),
         }
@@ -60,7 +60,7 @@ impl Default for StencilOpDesc{
             fail: STENCIL_OP_KEEP,
             depth_fail: STENCIL_OP_KEEP,
             pass: STENCIL_OP_KEEP,
-            func: COMPARISON_FUNC_NEVER,
+            func: COMPARISON_FUNC_ALWAYS,
         }
     }
 }
