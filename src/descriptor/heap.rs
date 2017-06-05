@@ -19,7 +19,6 @@ use super::desc::{SrvDesc, CbvDesc, RtvDesc, DsvDesc, SamplerDesc};
 /// descriptor heap builder struct
 #[derive(Copy, Clone, Debug)]
 pub struct DescriptorHeapBuilder {
-    pub shader_visible: bool,
     pub num_descriptors: u32,
     pub node_mask: u32,
 }
@@ -28,22 +27,17 @@ impl DescriptorHeapBuilder {
     #[inline]
     pub fn new(num_descriptors: u32) -> Self {
         DescriptorHeapBuilder{
-            shader_visible: true,
             num_descriptors,
             node_mask: 0,
         }
     }
 
-    pub fn build_cbv_srv_uav_heap(&self, device: &mut Device) -> Result<CbvSrvUavHeap, WinError> {
+    pub fn build_csu_heap_shader_visible(&self, device: &mut Device) -> Result<CsuHeapSv, WinError> {
         let desc = ::winapi::D3D12_DESCRIPTOR_HEAP_DESC{
             Type: ::winapi::D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
             NumDescriptors: self.num_descriptors,
-            Flags: if self.shader_visible {
-                ::winapi::D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE
-            } else {
-                ::winapi::D3D12_DESCRIPTOR_HEAP_FLAG_NONE
-            },
-            NodeMask: self.node_mask
+            Flags: ::winapi::D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE,
+            NodeMask: self.node_mask,
         };
         unsafe {
             let mut ret = ::std::mem::uninitialized();
@@ -51,7 +45,28 @@ impl DescriptorHeapBuilder {
                 &desc, & ::dxguid::IID_ID3D12DescriptorHeap,
                 &mut ret as *mut *mut _ as *mut *mut _
             );
-            WinError::from_hresult_or_ok(hr, || CbvSrvUavHeap{
+            WinError::from_hresult_or_ok(hr, || CsuHeapSv{
+                ptr: ComPtr::new(ret),
+                num_descriptors: self.num_descriptors,
+                handle_increment_size: device.ptr.GetDescriptorHandleIncrementSize(::winapi::D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)
+            })
+        }
+    }
+
+    pub fn build_csu_heap(&self, device: &mut Device) -> Result<CsuHeapNsv, WinError> {
+        let desc = ::winapi::D3D12_DESCRIPTOR_HEAP_DESC{
+            Type: ::winapi::D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
+            NumDescriptors: self.num_descriptors,
+            Flags: ::winapi::D3D12_DESCRIPTOR_HEAP_FLAG_NONE,
+            NodeMask: self.node_mask,
+        };
+        unsafe {
+            let mut ret = ::std::mem::uninitialized();
+            let hr = device.ptr.CreateDescriptorHeap(
+                &desc, & ::dxguid::IID_ID3D12DescriptorHeap,
+                &mut ret as *mut *mut _ as *mut *mut _
+            );
+            WinError::from_hresult_or_ok(hr, || CsuHeapNsv{
                 ptr: ComPtr::new(ret),
                 num_descriptors: self.num_descriptors,
                 handle_increment_size: device.ptr.GetDescriptorHandleIncrementSize(::winapi::D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)
@@ -101,15 +116,11 @@ impl DescriptorHeapBuilder {
         }
     }
 
-    pub fn build_sampler_heap(&self, device: &mut Device) -> Result<SamplerHeap, WinError> {
+    pub fn build_sampler_heap_shader_visible(&self, device: &mut Device) -> Result<SamplerHeapSv, WinError> {
         let desc = ::winapi::D3D12_DESCRIPTOR_HEAP_DESC{
             Type: ::winapi::D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER,
             NumDescriptors: self.num_descriptors,
-            Flags: if self.shader_visible {
-                ::winapi::D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE
-            } else {
-                ::winapi::D3D12_DESCRIPTOR_HEAP_FLAG_NONE
-            },
+            Flags: ::winapi::D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE,
             NodeMask: self.node_mask
         };
         unsafe {
@@ -118,7 +129,28 @@ impl DescriptorHeapBuilder {
                 &desc, & ::dxguid::IID_ID3D12DescriptorHeap,
                 &mut ret as *mut *mut _ as *mut *mut _
             );
-            WinError::from_hresult_or_ok(hr, || SamplerHeap{
+            WinError::from_hresult_or_ok(hr, || SamplerHeapSv{
+                ptr: ComPtr::new(ret),
+                num_descriptors: self.num_descriptors,
+                handle_increment_size: device.ptr.GetDescriptorHandleIncrementSize(::winapi::D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER)
+            })
+        }
+    }
+
+    pub fn build_sampler_heap(&self, device: &mut Device) -> Result<SamplerHeapNsv, WinError> {
+        let desc = ::winapi::D3D12_DESCRIPTOR_HEAP_DESC{
+            Type: ::winapi::D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER,
+            NumDescriptors: self.num_descriptors,
+            Flags: ::winapi::D3D12_DESCRIPTOR_HEAP_FLAG_NONE,
+            NodeMask: self.node_mask
+        };
+        unsafe {
+            let mut ret = ::std::mem::uninitialized();
+            let hr = device.ptr.CreateDescriptorHeap(
+                &desc, & ::dxguid::IID_ID3D12DescriptorHeap,
+                &mut ret as *mut *mut _ as *mut *mut _
+            );
+            WinError::from_hresult_or_ok(hr, || SamplerHeapNsv{
                 ptr: ComPtr::new(ret),
                 num_descriptors: self.num_descriptors,
                 handle_increment_size: device.ptr.GetDescriptorHandleIncrementSize(::winapi::D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER)
@@ -127,19 +159,39 @@ impl DescriptorHeapBuilder {
     }
 }
 
-/// a heap that can hold cbv, srv and uavs.
-#[derive(Clone, Debug)]
-pub struct CbvSrvUavHeap {
-    pub ptr: ComPtr<ID3D12DescriptorHeap>,
-    num_descriptors: u32,
-    handle_increment_size: u32,
-}
-
-impl CbvSrvUavHeap{
+pub trait CsuHeap: DescriptorHeap {
     /// create a srv on this heap at `index`.
     /// `None` resource creates a null-binding providing 0 reads and discared writes.
     /// `None` desc creates a default view if possible, inheriting resource format and descriptions
-    pub fn create_srv(
+    fn create_srv(
+        &mut self, device: &mut Device,
+        resource: Option<&RawResource>,  // TODO: typed resources?
+        desc: Option<&SrvDesc>,
+        index: u32
+    );
+
+    /// create a uav on this heap at `index`.
+    /// `None` resource creates a null-binding providing 0 reads and discared writes.
+    /// `None` desc creates a default view if possible, inheriting resource format and descriptions. [more info](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn788674(v=vs.85).aspx)
+    fn create_uav(
+        &mut self, device: &mut Device,
+        resource: Option<&RawResource>,  // TODO: typed resources?
+        counter: Option<&RawResource>,
+        desc: Option<&SrvDesc>,
+        index: u32
+    );
+
+    /// create a cbv on this heap at `index`.
+    /// TODO: double check optional desc
+    fn create_cbv(
+        &mut self, device: &mut Device, desc: &CbvDesc, index: u32
+    );
+}
+
+macro_rules! impl_csu_heap {
+    ($Heap: ty) => {
+impl CsuHeap for $Heap{
+    fn create_srv(
         &mut self, device: &mut Device,
         resource: Option<&RawResource>,  // TODO: typed resources?
         desc: Option<&SrvDesc>,
@@ -163,11 +215,8 @@ impl CbvSrvUavHeap{
             )
         }
     }
-
-    /// create a uav on this heap at `index`.
-    /// `None` resource creates a null-binding providing 0 reads and discared writes.
-    /// `None` desc creates a default view if possible, inheriting resource format and descriptions. [more info](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn788674(v=vs.85).aspx)
-    pub fn create_uav(
+    
+    fn create_uav(
         &mut self, device: &mut Device,
         resource: Option<&RawResource>,  // TODO: typed resources?
         counter: Option<&RawResource>,
@@ -198,9 +247,7 @@ impl CbvSrvUavHeap{
         }
     }
 
-    /// create a cbv on this heap at `index`.
-    /// TODO: double check optional desc
-    pub fn create_cbv(
+    fn create_cbv(
         &mut self, device: &mut Device, desc: &CbvDesc, index: u32
     ) {
         unsafe {
@@ -211,6 +258,27 @@ impl CbvSrvUavHeap{
         }
     }
 }
+    }
+}
+
+/// a heap that can hold cbv, srv and uavs, that is not shader visible.
+#[derive(Clone, Debug)]
+pub struct CsuHeapNsv {
+    pub ptr: ComPtr<ID3D12DescriptorHeap>,
+    num_descriptors: u32,
+    handle_increment_size: u32,
+}
+
+/// a heap that can hold cbv, srv and uavs, that is shader visible.
+#[derive(Clone, Debug)]
+pub struct CsuHeapSv {
+    pub ptr: ComPtr<ID3D12DescriptorHeap>,
+    num_descriptors: u32,
+    handle_increment_size: u32,
+}
+
+impl_csu_heap!(CsuHeapNsv);
+impl_csu_heap!(CsuHeapSv);
 
 /// a heap that can hold render target views
 #[derive(Clone, Debug)]
@@ -284,17 +352,33 @@ impl DsvHeap{
     }
 }
 
-/// a heap that can hold samplers
+/// a heap that can hold samplers, that is not shader visible
 #[derive(Clone, Debug)]
-pub struct SamplerHeap {
+pub struct SamplerHeapNsv {
     pub ptr: ComPtr<ID3D12DescriptorHeap>,
     num_descriptors: u32,
     handle_increment_size: u32,
 }
 
-impl SamplerHeap {
+/// a heap that can hold samplers, that is shader visible
+#[derive(Clone, Debug)]
+pub struct SamplerHeapSv {
+    pub ptr: ComPtr<ID3D12DescriptorHeap>,
+    num_descriptors: u32,
+    handle_increment_size: u32,
+}
+
+pub trait SamplerHeap: DescriptorHeap {
     /// create a sampler object on the heap
-    pub fn create_sampler(
+    fn create_sampler(
+        &mut self, device: &mut Device, desc: &SamplerDesc, index: u32
+    );
+}
+
+macro_rules! impl_sampler_heap {
+    ($Heap: ty) => {
+impl SamplerHeap for $Heap {
+    fn create_sampler(
         &mut self, device: &mut Device, desc: &SamplerDesc, index: u32
     ) {
         unsafe {
@@ -305,11 +389,18 @@ impl SamplerHeap {
         }
     }
 }
+    }
+}
+
+impl_sampler_heap!(SamplerHeapNsv);
+impl_sampler_heap!(SamplerHeapSv);
 
 /// represents a descriptor heap
 pub trait DescriptorHeap {
-    type CpuHandle;
-    type GpuHandle;
+    type CpuHandle: Into<::winapi::D3D12_CPU_DESCRIPTOR_HANDLE>;
+    type GpuHandle: Into<::winapi::D3D12_GPU_DESCRIPTOR_HANDLE>;
+    /// get the raw pointer
+    fn as_raw_ptr(&mut self) -> &mut ComPtr<ID3D12DescriptorHeap>;
 
     /// get type of the heap
     fn get_type(&self) -> ::winapi::D3D12_DESCRIPTOR_HEAP_TYPE;
@@ -320,12 +411,6 @@ pub trait DescriptorHeap {
     /// get Gpu handle of a descriptor at `offset` on the heap
     fn get_gpu_handle(&mut self, offset: u32) -> Self::GpuHandle;
 
-    /// perform immediate copy of a slice of descriptors on CPU side through the given device
-    fn copy_descriptors_to(
-        &mut self, dst: &mut Self, device: &mut Device,
-        src_offset: u32, dst_offset: u32, num_descriptors: u32
-    );
-
     /// get the number of descriptors this heap can hold
     fn len(&self) -> u32;
 
@@ -333,8 +418,8 @@ pub trait DescriptorHeap {
     fn get_handle_increment_size(&self) -> u32;
 }
 
-macro_rules! impl_dh {
-    ($Heap: ty, $ptr: ident, $msize: ident, $item_size: ident, $Type: ident, $CpuHandle: ident, $GpuHandle: ident) => {
+macro_rules! impl_handles {
+    ($CpuHandle: ident, $GpuHandle: ident) => {
         #[derive(Copy, Clone, Debug)]
         #[repr(C)]
         pub struct $CpuHandle {
@@ -360,13 +445,27 @@ macro_rules! impl_dh {
                 unsafe { ::std::mem::transmute(h) }
             }
         }
+    }
+}
 
+impl_handles!(CpuCsuHandle, GpuCsuHandle);
+impl_handles!(CpuRtvHandle, GpuRtvHandle);
+impl_handles!(CpuDsvHandle, GpuDsvHandle);
+impl_handles!(CpuSamplerHandle, GpuSamplerHandle);
+
+macro_rules! impl_dh {
+    ($Heap: ty, $ptr: ident, $msize: ident, $item_size: ident, $Type: ident, $CpuHandle: ident, $GpuHandle: ident) => {
         impl DescriptorHeap for $Heap {
             type GpuHandle = $GpuHandle;
             type CpuHandle = $CpuHandle;
             #[inline]
             fn get_type(&self) -> ::winapi::D3D12_DESCRIPTOR_HEAP_TYPE {
                 $Type
+            }
+
+            #[inline]
+            fn as_raw_ptr(&mut self) -> &mut ComPtr<ID3D12DescriptorHeap> {
+                &mut self.$ptr
             }
 
             fn get_cpu_handle(&mut self, offset: u32) -> $CpuHandle {
@@ -393,23 +492,6 @@ macro_rules! impl_dh {
                 ret
             }
 
-            fn copy_descriptors_to(
-                &mut self, dst: &mut Self, device: &mut Device,
-                src_offset: u32, dst_offset: u32, num_descriptors: u32
-            ) {
-                assert!(src_offset+num_descriptors<=self.$msize);
-                assert!(dst_offset+num_descriptors<=dst.$msize);
-                let heap_type = self.get_type();
-                unsafe {
-                    device.ptr.CopyDescriptorsSimple(
-                        num_descriptors,
-                        dst.get_cpu_handle(dst_offset).into(),
-                        self.get_cpu_handle(src_offset).into(),
-                        heap_type
-                    )
-                }
-            }
-
             #[inline]
             fn len(&self) -> u32 { self.$msize }
 
@@ -419,7 +501,39 @@ macro_rules! impl_dh {
     }
 }
 
-impl_dh!(CbvSrvUavHeap, ptr, num_descriptors, handle_increment_size, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, CpuCsuHandle, GpuCsuHandle);
+impl_dh!(CsuHeapSv, ptr, num_descriptors, handle_increment_size, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, CpuCsuHandle, GpuCsuHandle);
+impl_dh!(CsuHeapNsv, ptr, num_descriptors, handle_increment_size, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, CpuCsuHandle, GpuCsuHandle);
 impl_dh!(DsvHeap, ptr, num_descriptors, handle_increment_size,  D3D12_DESCRIPTOR_HEAP_TYPE_DSV, CpuDsvHandle, GpuDsvHandle);
 impl_dh!(RtvHeap, ptr, num_descriptors, handle_increment_size, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, CpuRtvHandle, GpuRtvHandle);
-impl_dh!(SamplerHeap, ptr, num_descriptors, handle_increment_size, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, CpuSamplerHandle, GpuSamplerHandle);
+impl_dh!(SamplerHeapSv, ptr, num_descriptors, handle_increment_size, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, CpuSamplerHandle, GpuSamplerHandle);
+impl_dh!(SamplerHeapNsv, ptr, num_descriptors, handle_increment_size, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, CpuSamplerHandle, GpuSamplerHandle);
+
+/// represents a descriptor heap that can be used as a copy source
+pub trait DescriptorHeapCopy<T: DescriptorHeap>: DescriptorHeap {
+    /// perform immediate copy of a slice of descriptors on CPU timeslice
+    /// through the given device. `self` must not be shader visible.
+    // TODO: type check for shader visibility?
+    fn copy_descriptors_to(
+        &mut self, dst: &mut T, device: &mut Device,
+        src_offset: u32, dst_offset: u32, num_descriptors: u32
+    ) {
+        assert!(src_offset+num_descriptors<=self.len());
+        assert!(dst_offset+num_descriptors<=dst.len());
+        let heap_type = self.get_type();
+        unsafe {
+            device.ptr.CopyDescriptorsSimple(
+                num_descriptors,
+                dst.get_cpu_handle(dst_offset).into(),
+                self.get_cpu_handle(src_offset).into(),
+                heap_type
+            )
+        }
+    }
+}
+
+impl DescriptorHeapCopy<CsuHeapSv> for CsuHeapNsv {}
+impl DescriptorHeapCopy<CsuHeapNsv> for CsuHeapNsv {}
+impl DescriptorHeapCopy<SamplerHeapSv> for SamplerHeapNsv {}
+impl DescriptorHeapCopy<SamplerHeapNsv> for SamplerHeapNsv {}
+impl DescriptorHeapCopy<RtvHeap> for RtvHeap {}
+impl DescriptorHeapCopy<DsvHeap> for DsvHeap {}

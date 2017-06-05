@@ -64,18 +64,18 @@ pub struct BundleRecording<'a> {
 impl<'a> BundleRecording<'a> {
     // TODO: double check descriptor heap settings
     #[inline]
-    pub fn set_descriptor_heaps(
-        &mut self, cbv_srv_uav_heap: Option<&CbvSrvUavHeap>,
-        sampler_heap: Option<&SamplerHeap>
+    pub fn set_descriptor_heaps<T: CsuHeap, S: SamplerHeap>(
+        &mut self, cbv_srv_uav_heap: Option<&mut T>,
+        sampler_heap: Option<&mut S>
     ) {
         let mut heaps = [
             ::std::ptr::null_mut(), ::std::ptr::null_mut(),
         ];
         if let Some(heap) = cbv_srv_uav_heap {
-            heaps[1] = heap.ptr.as_mut_ptr();
+            heaps[1] = heap.as_raw_ptr().as_mut_ptr();
         }
         if let Some(heap) = sampler_heap {
-            heaps[0] = heap.ptr.as_mut_ptr();
+            heaps[0] = heap.as_raw_ptr().as_mut_ptr();
         }
         unsafe {
             self.ptr.SetDescriptorHeaps(2, heaps.as_mut_ptr())
