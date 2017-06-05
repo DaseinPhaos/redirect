@@ -204,7 +204,9 @@ bitflags!{
         const RESOURCE_STATE_INDEX_BUFFER                = 0x2;
         /// a subresource should be in this state when used as a render target
         const RESOURCE_STATE_RENDER_TARGET               = 0x4;
-        /// a subresource should be in this state when accessed via an UAV
+        /// a subresource should be in this state when accessed via an UAV.
+        /// when in this state, a resource can be accessed for RW from multiple
+        /// command queues simultaneously.
         const RESOURCE_STATE_UNORDERED_ACCESS            = 0x8;
         /// a subresource should be in this state when used for depth write. mutual exclusive
         const RESOURCE_STATE_DEPTH_WRITE                 = 0x10;
@@ -226,7 +228,9 @@ bitflags!{
         const RESOURCE_STATE_RESOLVE_DEST                = 0x1000;
         /// used as the src in a resolve operation
         const RESOURCE_STATE_RESOLVE_SOURCE              = 0x2000;
-        /// required starting state for upload heaps
+        /// required starting state for upload heaps.
+        /// when in this state, a resource can be accessed for reading from
+        /// multiple command queues simultaneously.
         const RESOURCE_STATE_GENERIC_READ = ((((0x1|0x2)|0x40)|0x80)|0x200)|0x800;
         /// alias for `COMMON`
         const RESOURCE_STATE_PRESENT                     = 0;

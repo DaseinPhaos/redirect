@@ -86,8 +86,8 @@ impl<'a> DirectCommandListRecording<'a> {
     }
 
     /// record a command to clear uav. [more info](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903849(v=vs.85).aspx)
-    pub fn clear_uav_f32(
-        &mut self, heap: &mut CbvSrvUavHeap, index: u32,
+    pub fn clear_uav_f32<T: CsuHeap>(
+        &mut self, heap: &mut T, index: u32,
         resource: &mut RawResource, values: &[f32; 4],
         rects: Option<&[::format::Rect]>
     ) {
@@ -108,8 +108,8 @@ impl<'a> DirectCommandListRecording<'a> {
     }
 
     /// record a command to clear uav. [more info](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903849(v=vs.85).aspx)
-    pub fn clear_uav_u32(
-        &mut self, heap: &mut CbvSrvUavHeap, index: u32,
+    pub fn clear_uav_u32<T: CsuHeap>(
+        &mut self, heap: &mut T, index: u32,
         resource: &mut RawResource, values: &[u32; 4],
         rects: Option<&[::format::Rect]>
     ) {
@@ -275,29 +275,21 @@ impl<'a> DirectCommandListRecording<'a> {
 
     // TODO: double check descriptor heap settings
     #[inline]
-    pub fn set_descriptor_heaps(
-        &mut self, cbv_srv_uav_heap: Option<&CbvSrvUavHeap>,
-        rtv_heap: Option<&RtvHeap>, dsv_heap: Option<&DsvHeap>,
-        sampler_heap: Option<&SamplerHeap>
+    pub fn set_descriptor_heaps<T: CsuHeap, S: SamplerHeap>(
+        &mut self, cbv_srv_uav_heap: Option<&mut T>,
+        sampler_heap: Option<&mut S>
     ) {
         let mut heaps = [
             ::std::ptr::null_mut(), ::std::ptr::null_mut(),
-            ::std::ptr::null_mut(), ::std::ptr::null_mut(),
         ];
         if let Some(heap) = cbv_srv_uav_heap {
-            heaps[0] = heap.ptr.as_mut_ptr();
-        }
-        if let Some(heap) = rtv_heap {
-            heaps[1] = heap.ptr.as_mut_ptr();
-        }
-        if let Some(heap) = dsv_heap {
-            heaps[2] = heap.ptr.as_mut_ptr();
+            heaps[1] = heap.as_raw_ptr().as_mut_ptr();
         }
         if let Some(heap) = sampler_heap {
-            heaps[3] = heap.ptr.as_mut_ptr();
+            heaps[0] = heap.as_raw_ptr().as_mut_ptr();
         }
         unsafe {
-            self.ptr.SetDescriptorHeaps(4, heaps.as_mut_ptr())
+            self.ptr.SetDescriptorHeaps(2, heaps.as_mut_ptr())
         }
     }
 
