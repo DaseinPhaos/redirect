@@ -146,7 +146,7 @@ fn main() {
             "command list close recording failed"
         );
         // command_queue.wait(&fence, fence_count-1).expect("waiting failed");
-        command_queue.execute_command_list(&cmdlist);
+        unsafe { command_queue.execute_command_list(&cmdlist); }
         fence_count+=1;
         command_queue.signal(&fence, fence_count).expect("signaling failed");
         

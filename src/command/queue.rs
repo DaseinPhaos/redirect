@@ -42,24 +42,30 @@ impl CommandQueue {
     }
 
     /// add one command list to the GPU execution queue
+    ///
+    /// # Safety
+    /// This method is `unsafe` because it is up to the caller to ensure
+    /// that th list along with the underlying allocator and
+    /// all the resources it is referencing is ready for use by the GPU
     #[inline]
-    pub fn execute_command_list(&mut self, list: &DirectCommandList) {
+    pub unsafe fn execute_command_list(&mut self, list: &DirectCommandList) {
         let mut ptr = list.ptr.as_mut_ptr() as *mut ::winapi::ID3D12CommandList;
-        unsafe {
-            self.ptr.ExecuteCommandLists(1, &mut ptr);
-        }
+        self.ptr.ExecuteCommandLists(1, &mut ptr);
     }
 
     /// add a sequence of command lists to the GPU execution queue
-    pub fn execute_command_lists(&mut self, lists: &[DirectCommandList]) {
+    ///
+    /// # Safety
+    /// This method is `unsafe` because it is up to the caller to ensure
+    /// that these lists along with the underlying allocators, and all
+    /// the resources they are referencing is ready for use by the GPU
+    pub unsafe fn execute_command_lists(&mut self, lists: &[DirectCommandList]) {
         let mut raw_lists: SmallVec<[*mut ::winapi::ID3D12CommandList; 8]> = Default::default();
         for list in lists {
             raw_lists.push(list.ptr.as_mut_ptr() as *mut _);
         }
         let ptr = raw_lists.as_mut_ptr();
-        unsafe {
-            self.ptr.ExecuteCommandLists(lists.len() as u32, ptr);
-        }
+        self.ptr.ExecuteCommandLists(lists.len() as u32, ptr);
     }
 
     /// use GPU to update a fence to a specified value
