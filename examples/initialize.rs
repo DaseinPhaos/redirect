@@ -83,7 +83,9 @@ fn main() {
     ).expect("command allocator creation failed");
 
     // create a direct command list and start recording
-    let mut cmdlist = device.create_direct_command_list(
+    let mut cmdlist = device.create_direct_command_list::<
+        redirect::pipeline::GraphicsPipelineState
+    >(
         0, &mut allocator, None
     ).expect("command list creation failed").close().expect(
         "command list initial close failed"
@@ -119,7 +121,7 @@ fn main() {
         let subsec = (start_time.elapsed().subsec_nanos() as f32)/1.0e9f32;
         let color = (0.5 - subsec).abs();
         let colors = [color, color, color, 1.0];
-        let mut recording = cmdlist.start(&mut allocator, None).expect(
+        let mut recording = cmdlist.start_graphics(&mut allocator, None).expect(
             "command list start recording failed"
         );
         let mut barriers = redirect::resource::ResourceBarriersBuilder::new();

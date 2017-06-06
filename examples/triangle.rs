@@ -12,7 +12,7 @@ extern crate redirect;
 extern crate winit;
 
 use redirect::descriptor::DescriptorHeap;
-use redirect::command::CommandList;
+use redirect::command::GraphicsCommandList;
 
 #[repr(C)]
 #[derive(Copy, Debug, Clone)]
@@ -161,7 +161,9 @@ fn main() {
     ).expect("command allocator creation failed");
 
     // create a direct command list and start recording
-    let mut cmdlist = device.create_direct_command_list(
+    let mut cmdlist = device.create_direct_command_list::<
+        redirect::pipeline::GraphicsPipelineState
+    >(
         0, &mut allocator, None
     ).expect("command list creation failed").close().expect(
         "command list initial close failed"
@@ -197,7 +199,7 @@ fn main() {
         let subsec = (start_time.elapsed().subsec_nanos() as f32)/1.0e9f32;
         let color = (0.5 - subsec).abs();
         let colors = [color, color, color, 1.0];
-        let mut recording = cmdlist.start(&mut allocator, Some(&pso)).expect(
+        let mut recording = cmdlist.start_graphics(&mut allocator, Some(&pso)).expect(
             "command list start recording failed"
         );
         recording.ia_set_primitive_topology(

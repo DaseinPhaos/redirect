@@ -34,10 +34,30 @@ pub struct DirectCommandList {
 
 impl DirectCommandList {
     /// start command recording. [more](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903895(v=vs.85).aspx)
-    pub fn start<'b>(
+    pub fn start_graphics<'b>(
         mut self, alloc: &'b mut DirectCommandAllocator, 
-        initial_state: Option<&'b PipelineState>
-    ) -> Result<DirectCommandListRecording<'b>, (WinError, Self)> {
+        initial_state: Option<&'b GraphicsPipelineState>
+    ) -> Result<DirectCommandListRecording<'b, GraphicsPipelineState>, (WinError, Self)> {
+        let p_initial_state = if let Some(initial_state) = initial_state {
+            initial_state.ptr.as_mut_ptr()
+        } else {
+            ::std::ptr::null_mut()
+        };
+        unsafe {
+            let result = WinError::from_hresult(self.ptr.Reset(alloc.ptr.as_mut_ptr(), p_initial_state));
+            if result.is_ok() {
+                Ok(DirectCommandListRecording{ ptr: self.ptr, alloc, initial_state})
+            } else {
+                Err((result.unwrap_err(), self))
+            }
+        }
+    }
+
+    /// start command recording. [more](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903895(v=vs.85).aspx)
+    pub fn start_compute<'b>(
+        mut self, alloc: &'b mut DirectCommandAllocator, 
+        initial_state: Option<&'b ComputePipelineState>
+    ) -> Result<DirectCommandListRecording<'b, ComputePipelineState>, (WinError, Self)> {
         let p_initial_state = if let Some(initial_state) = initial_state {
             initial_state.ptr.as_mut_ptr()
         } else {
@@ -56,15 +76,15 @@ impl DirectCommandList {
 
 /// a direct command list on recording state
 #[derive(Debug)]
-pub struct DirectCommandListRecording<'a> {
+pub struct DirectCommandListRecording<'a, P: 'a> {
     pub ptr: ComPtr<ID3D12GraphicsCommandList>,
     /// command allocator used to back up command recording
     pub alloc: &'a mut DirectCommandAllocator,
     /// initial state of this command list
-    pub initial_state: Option<&'a PipelineState>,
+    pub initial_state: Option<&'a P>,
 }
 
-impl<'a> DirectCommandListRecording<'a> {
+impl<'a, P: 'a + PipelineState> DirectCommandListRecording<'a, P> {
     /// record a command to clear the dsv. [more info](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903840(v=vs.85).aspx)
     pub fn clear_dsv(
         &mut self, dsv: CpuDsvHandle,
@@ -148,54 +168,6 @@ impl<'a> DirectCommandListRecording<'a> {
         }
     }
 
-    /// record a resource copy operation.
-    ///
-    /// # restrictions
-    ///
-    /// - must be different resources
-    /// - must be the same type
-    /// - must have identical dimensions
-    /// - must have compatible formats
-    /// - [more](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903859(v=vs.85).aspx)
-    #[inline]
-    pub fn copy_resource(
-        &mut self, dst: &mut RawResource, src: &mut RawResource
-    ) {
-        unsafe {
-            self.ptr.CopyResource(dst.ptr.as_mut_ptr(), src.ptr.as_mut_ptr())
-        }
-    }
-
-    /// record a buffer copy operation
-    #[inline]
-    pub fn copy_buffer_region(
-        &mut self, dst: &mut RawResource, dst_offset: u64,
-        src: &mut RawResource, src_offset: u64, size: u64
-    ) {
-        unsafe {
-            self.ptr.CopyBufferRegion(
-                dst.ptr.as_mut_ptr(), dst_offset,
-                src.ptr.as_mut_ptr(), src_offset, size
-            )
-        }
-    }
-
-    /// record a texture copy operation. [more info](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903862(v=vs.85).aspx)
-    #[inline]
-    pub fn copy_texture_region(
-        &mut self, dst: TextureCopyLocation, dstx: u32, dsty: u32, 
-        dstz: u32, src: TextureCopyLocation, src_box: &::format::Box3u
-    ) {
-        let dst = dst.into();
-        let src = src.into();
-        unsafe {
-            self.ptr.CopyTextureRegion(
-                &dst, dstx, dsty, dstz, 
-                &src, src_box as *const _ as *const _
-            )
-        }
-    }
-
     /// execute a bundle. [more](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903882(v=vs.85).aspx)
     #[inline]
     pub fn execute_bundle(&mut self, bundle: &Bundle) {
@@ -266,7 +238,7 @@ impl<'a> DirectCommandListRecording<'a> {
     /// initial_state has to match this state
     pub fn clear_state(&mut self) {
         let p_initial_state = if let Some(initial_state) = self.initial_state {
-            initial_state.ptr.as_mut_ptr()
+            initial_state.as_raw_ptr().as_mut_ptr()
         } else {
             ::std::ptr::null_mut()
         };
@@ -294,12 +266,12 @@ impl<'a> DirectCommandListRecording<'a> {
     }
 
     /// reset a command list back to the initial state. [more](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903895(v=vs.85).aspx)
-    pub fn reset<'b>(
+    pub fn reset<'b, T: PipelineState+'b>(
         mut self, alloc: &'b mut DirectCommandAllocator, 
-        initial_state: Option<&'b PipelineState>
-    ) -> Result<DirectCommandListRecording<'b>, (WinError, Self)> {
+        initial_state: Option<&'b T>
+    ) -> Result<DirectCommandListRecording<'b, T>, (WinError, Self)> {
         let p_initial_state = if let Some(initial_state) = initial_state {
-            initial_state.ptr.as_mut_ptr()
+            initial_state.as_raw_ptr().as_mut_ptr()
         } else {
             ::std::ptr::null_mut()
         };

@@ -16,7 +16,7 @@ use factory::Adapter;
 use command::{CommandQueue, CommandQueueDesc, DirectCommandAllocator, BundleCommandAllocator, DirectCommandListRecording, BundleRecording, DirectCommandList, Bundle};
 use resource::*;
 use pipeline::rootsig::{RootSig, RootSigDescBlob};
-use pipeline::{PipelineState, GraphicsPipelineStateBuilder};
+use pipeline::{PipelineState, GraphicsPipelineState, ComputePipelineState};
 use fence::{Fence, FenceFlags};
 use descriptor::{CsuHeapSv, CsuHeapNsv, RtvHeap, DsvHeap, SamplerHeapSv, SamplerHeapNsv};
 
@@ -49,14 +49,6 @@ impl Device {
                 ptr: ComPtr::new(ptr)
             })
         }
-    }
-
-    /// attempts to create a graphics pipeline state object
-    #[inline]
-    pub fn create_graphics_pso<'a>(
-        &mut self, pso: &mut GraphicsPipelineStateBuilder<'a>
-    ) -> Result<PipelineState, WinError> {
-        pso.build(self)
     }
 
     /// attempts to create a root signature from a description blob
@@ -239,13 +231,13 @@ impl Device {
 
     // TODO: copy or compute command lists?
     #[inline]
-    pub fn create_direct_command_list<'a>(
+    pub fn create_direct_command_list<'a, P: PipelineState>(
         &mut self, node_mask: u32,
         alloc: &'a mut DirectCommandAllocator, 
-        initial_state: Option<&'a PipelineState>
-    ) -> Result<DirectCommandListRecording<'a>, WinError> {
+        initial_state: Option<&'a P>
+    ) -> Result<DirectCommandListRecording<'a, P>, WinError> {
         let pinitial_state = if let Some(state) = initial_state {
-            state.ptr.as_mut_ptr()
+            state.as_raw_ptr().as_mut_ptr()
         } else {
             ::std::ptr::null_mut()
         };
@@ -267,13 +259,13 @@ impl Device {
 
     // TODO: copy or compute command lists?
     #[inline]
-    pub fn create_bundle<'a>(
+    pub fn create_bundle<'a, P: PipelineState>(
         &mut self, node_mask: u32,
         alloc: &'a mut BundleCommandAllocator, 
-        initial_state: Option<&PipelineState>
+        initial_state: Option<&'a P>
     ) -> Result<BundleRecording<'a>, WinError> {
         let initial_state = if let Some(state) = initial_state {
-            state.ptr.as_mut_ptr()
+            state.as_raw_ptr().as_mut_ptr()
         } else {
             ::std::ptr::null_mut()
         };
@@ -355,7 +347,8 @@ impl_device_child!(SamplerHeapSv, ptr);
 impl_device_child!(SamplerHeapNsv, ptr);
 impl_device_child!(DirectCommandList, ptr);
 impl_device_child!(Bundle, ptr);
-impl_device_child!(PipelineState, ptr);
+impl_device_child!(GraphicsPipelineState, ptr);
+impl_device_child!(ComputePipelineState, ptr);
 impl_device_child!(RootSig, ptr);
 
 impl DeviceChild for CommittedResource {

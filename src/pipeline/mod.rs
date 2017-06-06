@@ -30,18 +30,51 @@ pub mod sampler;
 pub type SampleDesc = ::swapchain::SampleDesc;
 
 /// a pipeline state object
+pub trait PipelineState {
+    fn as_raw_ptr(&self) -> &ComPtr<ID3D12PipelineState>;
+}
+
+/// a graphics pipeline state object
 #[derive(Clone, Debug)]
-pub struct PipelineState {
+pub struct GraphicsPipelineState {
     pub ptr: ComPtr<ID3D12PipelineState>,
+}
+
+impl PipelineState for GraphicsPipelineState {
+    #[inline]
+    fn as_raw_ptr(&self) -> &ComPtr<ID3D12PipelineState> { 
+        &self.ptr
+    }
+}
+
+/// a graphics pipeline state cached blob
+#[derive(Clone, Debug)]
+pub struct GraphicsPipelineStateCache {
+    pub ptr: ComPtr<ID3DBlob>,
+}
+
+/// a pipeline state object
+#[derive(Clone, Debug)]
+pub struct ComputePipelineState {
+    pub ptr: ComPtr<ID3D12PipelineState>,
+}
+
+impl PipelineState for ComputePipelineState {
+    #[inline]
+    fn as_raw_ptr(&self) -> &ComPtr<ID3D12PipelineState> { 
+        &self.ptr
+    }
 }
 
 /// a pipeline state cached blob
 #[derive(Clone, Debug)]
-pub struct PipelineStateCache {
+pub struct ComputePipelineStateCache {
     pub ptr: ComPtr<ID3DBlob>,
 }
 
-impl PipelineStateCache {
+macro_rules! impl_cache_methods {
+    ($PS: ident, $PSC: ident) => {
+impl $PSC {
     #[inline]
     pub fn to_ffi_cache(&mut self) -> ::winapi::D3D12_CACHED_PIPELINE_STATE {
         unsafe {::winapi::D3D12_CACHED_PIPELINE_STATE{
@@ -51,19 +84,24 @@ impl PipelineStateCache {
     }
 }
 
-impl PipelineState {
+impl $PS {
     /// get the cached blob
     #[inline]
-    pub fn cached(&mut self) -> Result<PipelineStateCache, WinError> {
+    pub fn cached(&mut self) -> Result<$PSC, WinError> {
         unsafe {
             let mut ret = ::std::mem::uninitialized();
             let hr = self.ptr.GetCachedBlob(&mut ret);
-            WinError::from_hresult_or_ok(hr, || PipelineStateCache{
+            WinError::from_hresult_or_ok(hr, || $PSC{
                 ptr: ComPtr::new(ret)
             })
         }
     }
 }
+    }
+}
+
+impl_cache_methods!(GraphicsPipelineState, GraphicsPipelineStateCache);
+impl_cache_methods!(ComputePipelineState, ComputePipelineStateCache);
 
 /// graphics pso builder
 #[derive(Clone, Debug)]
@@ -87,7 +125,7 @@ pub struct GraphicsPipelineStateBuilder<'a> {
     pub dsv_format: DxgiFormat,
     pub sample_desc: SampleDesc,
     pub node_mask: u32,
-    pub cache: Option<PipelineStateCache>,
+    pub cache: Option<GraphicsPipelineStateCache>,
     pub flags: PipelineStateFlags,
 }
 
@@ -115,7 +153,7 @@ impl<'a> GraphicsPipelineStateBuilder<'a> {
         }
     }
 
-    pub fn build(&mut self, device: &mut Device) -> Result<PipelineState, WinError> {
+    pub fn build(&mut self, device: &mut Device) -> Result<GraphicsPipelineState, WinError> {
         unsafe {
             let mut desc: ::winapi::D3D12_GRAPHICS_PIPELINE_STATE_DESC = ::std::mem::zeroed();
             desc.pRootSignature = self.rootsig.ptr.as_mut_ptr();
@@ -124,7 +162,7 @@ impl<'a> GraphicsPipelineStateBuilder<'a> {
             if let Some(ref mut ds) = self.ds { desc.DS = ds.to_shader_bytecode(); }
             if let Some(ref mut hs) = self.hs { desc.HS = hs.to_shader_bytecode(); }
             if let Some(ref mut gs) = self.gs { desc.GS = gs.to_shader_bytecode(); }
-            // desc.StreamOutput = self.stream_output.build().0;
+            desc.StreamOutput = self.stream_output.build().0;
             desc.BlendState = transmute(self.blend_state);
             desc.SampleMask = self.sample_mask;
             desc.RasterizerState = transmute(self.rasterizer_state);
@@ -146,7 +184,50 @@ impl<'a> GraphicsPipelineStateBuilder<'a> {
                 &desc, & ::dxguid::IID_ID3D12PipelineState,
                 &mut ret as *mut *mut _ as *mut *mut _
             );
-            WinError::from_hresult_or_ok(hr, || PipelineState{
+            WinError::from_hresult_or_ok(hr, || GraphicsPipelineState{
+                ptr: ComPtr::new(ret)
+            })
+        }
+    }
+}
+
+#[repr(C)]
+#[derive(Clone, Debug)]
+pub struct ComputePipelineStateBuilder<'a> {
+    pub rootsig: &'a rootsig::RootSig,
+    pub cs: Option<CsShaderBytecode>,
+    pub node_mask: u32,
+    pub cache: Option<ComputePipelineStateCache>,
+    pub flags: PipelineStateFlags,
+}
+
+impl<'a> ComputePipelineStateBuilder<'a> {
+    #[inline]
+    pub fn new(root_signature: &'a rootsig::RootSig) -> Self {
+        ComputePipelineStateBuilder{
+            rootsig: root_signature,
+            cs: None,
+            node_mask: 0,
+            cache: None,
+            flags: PIPELINE_STATE_FLAG_NONE,
+        }
+    }
+
+    pub fn build(&mut self, device: &mut Device) -> Result<ComputePipelineState, WinError> {
+        unsafe {
+            let mut desc: ::winapi::D3D12_COMPUTE_PIPELINE_STATE_DESC = ::std::mem::zeroed();
+            desc.pRootSignature = self.rootsig.ptr.as_mut_ptr();
+            if let Some(ref mut cs) = self.cs { desc.CS = cs.to_shader_bytecode(); }
+            desc.NodeMask = self.node_mask;
+            if let Some(ref mut pso) = self.cache { desc.CachedPSO = pso.to_ffi_cache(); }
+            desc.Flags = transmute(self.flags);
+
+            let mut ret = ::std::mem::uninitialized();
+            let hr = device.ptr.CreateComputePipelineState(
+                &desc, & ::dxguid::IID_ID3D12PipelineState,
+                &mut ret as *mut *mut _ as *mut *mut _
+            );
+            WinError::from_hresult_or_ok(hr, || ComputePipelineState{
                 ptr: ComPtr::new(ret)
             })
         }
