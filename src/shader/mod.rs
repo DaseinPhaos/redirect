@@ -134,12 +134,12 @@ impl<'a> ShaderBuilder<'a> {
         }
     }
 
-    impl_build!(build_vs, VsShaderBytecode, "vs_5_0\0");
-    impl_build!(build_ps, PsShaderBytecode, "ps_5_0\0");
-    impl_build!(build_hs, HsShaderBytecode, "hs_5_0\0");
-    impl_build!(build_cs, CsShaderBytecode, "cs_5_0\0");
-    impl_build!(build_gs, GsShaderBytecode, "gs_5_0\0");
-    impl_build!(build_ds, DsShaderBytecode, "ds_5_0\0");
+    impl_build!(build_vs, VsShaderBytecode, "vs_5_1\0");
+    impl_build!(build_ps, PsShaderBytecode, "ps_5_1\0");
+    impl_build!(build_hs, HsShaderBytecode, "hs_5_1\0");
+    impl_build!(build_cs, CsShaderBytecode, "cs_5_1\0");
+    impl_build!(build_gs, GsShaderBytecode, "gs_5_1\0");
+    impl_build!(build_ds, DsShaderBytecode, "ds_5_1\0");
 }
 
 /// shader macros
