@@ -302,7 +302,9 @@ pub trait CopyCommandList: CommandList {
         }
     }
 
-    /// record a buffer copy operation
+    /// record a buffer copy operation.
+    /// Linear subresource copying must be aligned to 512 bytes
+    /// constant data reads must be a multiple of 256 bytes from the beginning of the heap
     #[inline]
     fn copy_buffer_region(
         &mut self, dst: &mut RawResource, dst_offset: u64,

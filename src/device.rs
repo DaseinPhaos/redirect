@@ -186,10 +186,18 @@ impl Device {
         }
     }
 
-    /// get resource allocation info from the resource description
-    pub fn get_resource_alloc_info(&mut self, desc: &ResourceDesc, visible_mask: u32) -> ResourceAllocInfo {
+    /// get resource allocation info from the resource description.
+    /// Notice that unlike `ID3D12Device::GetResourceAllocationInfo`, 
+    /// `node_idx` is used instead of `visibleNodeMask`.
+    pub fn get_resource_alloc_info(&mut self, desc: &ResourceDesc, node_idx: u32) -> ResourceAllocInfo {
         unsafe {
             let mut ret = ::std::mem::uninitialized();
+            // TODO: double check
+            let visible_mask = if node_idx == 0 {
+                0
+            } else {
+                1 << node_idx
+            };
             self.ptr.GetResourceAllocationInfo(
                 visible_mask, 1, desc as *const _ as *const _, &mut ret
             );
@@ -197,7 +205,8 @@ impl Device {
         }
     }
 
-    /// attempts to create a placed resource
+    /// attempts to create a placed resource.
+    /// `heap_offset` must be a multiple of resource's alignment.
     pub fn create_placed_resource(
         &mut self, heap: &mut Heap, heap_offset: u64, 
         desc: &ResourceDesc, initial_state: ResourceStates
