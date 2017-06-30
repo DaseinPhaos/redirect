@@ -11,7 +11,7 @@
 //! `Adapter` and `Output`.
 
 use comptr::ComPtr;
-use winapi::{IDXGIFactory4, IDXGIAdapter1, IDXGISwapChain3, IDXGISwapChain1, IDXGIOutput};
+use winapi::{IDXGIFactory4, IDXGIAdapter3, IDXGIAdapter1, IDXGISwapChain3, IDXGISwapChain1, IDXGIOutput};
 use error::WinError;
 use std::os::raw::c_void;
 use swapchain::{SwapChain, SwapChainDesc, FullScreenDesc};
@@ -100,6 +100,17 @@ impl<'a> Iterator for AdapterIter<'a> {
                 old_idx,
                 &mut padapter as *mut *mut _ as *mut *mut IDXGIAdapter1
             );
+            if let Err(_) = WinError::from_hresult(hr) {
+                return None;
+            }
+            let mut adapter1 = ComPtr::new(padapter);
+
+            let mut padapter: *mut IDXGIAdapter3 = ::std::mem::uninitialized();
+            let hr = adapter1.QueryInterface(
+                & ::dxguid::IID_IDXGIAdapter3,
+                &mut padapter as *mut *mut _ as *mut *mut _
+            );
+
             WinError::from_hresult(hr).ok().map(|()| {
                 self.idx += 1;
                 Adapter{
@@ -113,7 +124,7 @@ impl<'a> Iterator for AdapterIter<'a> {
 /// a display subsystem
 #[derive(Debug, Clone)]
 pub struct Adapter {
-    pub ptr: ComPtr<IDXGIAdapter1>,
+    pub ptr: ComPtr<IDXGIAdapter3>,
 }
 
 impl Adapter {
@@ -134,6 +145,36 @@ impl Adapter {
             adapter: self
         }
     }
+
+    /// query adapter memory infos
+    #[inline]
+    pub fn query_mem_info(&mut self, node_idx: u32, local: bool) -> Result<VideoMemInfo, WinError> {
+        let mem_seg_group = if local {
+            ::winapi::DXGI_MEMORY_SEGMENT_GROUP_LOCAL
+        } else {
+            ::winapi::DXGI_MEMORY_SEGMENT_GROUP_NON_LOCAL
+        };
+        unsafe {
+            let mut ret: VideoMemInfo = ::std::mem::uninitialized();
+            let hr = self.ptr.QueryVideoMemoryInfo(
+                node_idx, mem_seg_group, 
+                &mut ret as *mut _ as *mut _
+            );
+            WinError::from_hresult_or_ok(hr, || {
+                ret
+            })
+        }
+    }
+}
+
+/// video memory informaiton
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+pub struct VideoMemInfo {
+    pub budget: u64,
+    pub current_usage: u64,
+    pub available_for_reservation: u64,
+    pub current_reservation: u64,
 }
 
 /// adapter description

@@ -26,6 +26,18 @@ fn main() {
             println!("can't get adapter description.");
         }
 
+        // get and print vram of node 0
+        if let Ok(meminfo) = adapter.query_mem_info(0, true) {
+            println!("Local Memory Info: {:?}", meminfo);
+        } else {
+            println!("can't get local memory info.");
+        }
+        if let Ok(meminfo) = adapter.query_mem_info(0, false) {
+            println!("Nonlocal Memory Info: {:?}", meminfo);
+        } else {
+            println!("can't get non-local memory info.");
+        }
+
         // enumerate avaiable outputs for this adapter
         for mut output in adapter.enumerate_outputs() {
             // get and print output descriptions
