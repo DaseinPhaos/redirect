@@ -6,6 +6,10 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+#![cfg(windows)]
+
+//! `redirect` aims to be a lightweight and type-safe wrapper around the DirectX12 API for the Rust Programming Language.
+
 #[macro_use]
 extern crate bitflags;
 extern crate winapi;

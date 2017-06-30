@@ -4,9 +4,9 @@
 
 [Documentation](https://daseinphaos.github.io/doc/redirect/)
 
-`redirect` aims to be a light weight and type safe wrapper around the DirectX12 API for the Rust Programming Language.
+`redirect` aims to be a lightweight and type-safe wrapper around the DirectX12 API for the Rust Programming Language.
 
-**Warning**: This is a Windows 10 only crate. Using under other toolchains would lead to a compilation failure.
+This is a Windows 10 only crate. Using under other toolchains would be a no-op.
 
 ## Why Bother
 
