@@ -80,6 +80,24 @@ impl Factory {
             })
         }
     }
+
+    #[inline]
+    pub fn create_swapchain<Window: HwndProvider+?Sized>(
+        &mut self, queue: &CommandQueue,
+        window: &Window, desc: &SwapChainDesc,
+        fullscreen_desc: Option<&FullScreenDesc>,
+        restrict_output: Option<&Output>
+    ) -> Result<SwapChain, WinError> {
+        self.create_swapchain_for_hwnd(
+            queue, <Window as HwndProvider>::get_hwnd(window), desc,
+            fullscreen_desc, restrict_output
+        )
+    }
+}
+
+/// a provider for HWND
+pub trait HwndProvider {
+    fn get_hwnd(&self) -> ::winapi::HWND;
 }
 
 /// iterator returned by a factory to retrieve available adapters
