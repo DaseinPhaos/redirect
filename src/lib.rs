@@ -17,6 +17,7 @@ extern crate d3d12;
 extern crate dxguid;
 extern crate dxgi;
 extern crate d3dcompiler;
+extern crate kernel32;
 extern crate smallvec;
 
 mod comptr;
@@ -31,3 +32,4 @@ pub mod pipeline;
 pub mod shader;
 pub mod fence;
 pub mod descriptor;
+pub mod event;

@@ -169,11 +169,12 @@ fn main() {
         "command list initial close failed"
     );
 
-    // create fence for synchronization
+    // create fence and event for synchronization
     let mut fence_count = 2;
     let mut fence = device.create_fence(fence_count, Default::default()).expect(
         "failed to create the fence"
     );
+    let fence_event = redirect::event::Event::default();
 
     println!("Render loop started..");
     let start_time = std::time::Instant::now();
@@ -194,7 +195,9 @@ fn main() {
 
         // every frame we clear the render target to a diffrent gray scale color,
         // depending on time
-        while fence.get_completed_value() < fence_count { }
+        while fence.get_completed_value() < fence_count {
+            fence_event.wait().expect("wait event failed");
+        }
         allocator.reset().expect("command allocator resetting failed");
         let subsec = (start_time.elapsed().subsec_nanos() as f32)/1.0e9f32;
         let color = (0.5 - subsec).abs();
@@ -245,6 +248,9 @@ fn main() {
         // present next frame
         swapchain.present(0, Default::default()).expect(
             "presentation failed."
+        );
+        fence.set_event_on(fence_count, &fence_event).expect(
+            "Set event failed."
         );
         // update back buffer count
         backbuffer_idx = (backbuffer_idx + 1)%2;

@@ -16,7 +16,7 @@ This is a Windows 10 only crate. Using under other toolchains would be a no-op.
 
 ## Current Status
 
-Most of the core API has been ported. Main leftovers include TiledResource, Marker and Event related stuff.
+Most of the core API has been ported. Main leftovers include TiledResource, Marker and some other related stuff.
 `redirect` can now be used to draw a triangle! Checkout `./examples/triangle.rs`.
 
 ## What's Next

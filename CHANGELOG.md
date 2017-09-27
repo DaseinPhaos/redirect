@@ -2,6 +2,8 @@
 
 - Add a trait `factory::HwndProvider`, to bridge a hwnd provider with the swapchain creation API.
 - Add a method `create_swapchain` to create a swapchain directly from a HwndProvider.
+- Add a `event` module for win32 events.
+- Add a `set_event_on` method for `Fence`.
 
 # 0.2.0
 

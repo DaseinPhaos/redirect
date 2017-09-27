@@ -11,6 +11,7 @@
 use winapi::ID3D12Fence;
 use comptr::ComPtr;
 use error::WinError;
+use event::Event;
 
 /// a fence
 #[derive(Clone, Debug)]
@@ -25,7 +26,16 @@ impl Fence {
         unsafe {self.ptr.GetCompletedValue() }
     }
 
-    // TODO: add events?
+    /// set the `event` if fence value reachs `value`
+    // TODO: event lifetime safety?
+    #[inline]
+    pub fn set_event_on<'a>(
+        &mut self, value: u64, event: &'a Event
+    ) -> Result<(), WinError> {unsafe {
+        WinError::from_hresult(
+            self.ptr.SetEventOnCompletion(value, event.get())
+        )
+    }}
 
     /// set the fence to the specified value from CPU side
     #[inline]
