@@ -52,7 +52,7 @@ impl Event {
         }
     }}
 
-    /// Set an event
+    /// set the event
     #[inline]
     pub fn set(&self) -> Result<(), u32> {unsafe {
         match SetEvent(self.handle) {
@@ -76,8 +76,9 @@ impl Event {
         }
     }}
 
+    /// get the event raw handle
     #[inline]
-    pub unsafe fn get(&self) -> HANDLE {
+    pub fn get(&self) -> HANDLE {
         self.handle
     }
 }
@@ -97,13 +98,20 @@ impl Drop for Event {
     }}
 }
 
+unsafe impl Send for Event {}
+unsafe impl Sync for Event {}
+
 /// Event access rights
 bitflags!{
     /// see https://msdn.microsoft.com/en-us/library/windows/desktop/ms686670(v=vs.85).aspx
     #[repr(C)]
     pub struct AccessRight: u32 {
+        /// Check this flag if you want to wait for the event.
         const SYNCHRONIZE = 0x00100000;
+        /// Check this flag if you want everything.
+        /// This is the default flag.
         const ALL_ACCESS = 0x1F0003;
+        /// Check this flag if you want to set/reset the event.
         const MODIFY_STATE = 0x0002;
     }
 }
@@ -114,12 +122,15 @@ impl Default for AccessRight {
     }
 }
 
-/// Event flags
 bitflags!{
+    /// Event flags
     #[repr(C)]
     pub struct Flag: u32 {
+        /// The event would be set right after creation.
         const INITIAL_SET = 0x00000002;
+        /// The event need manually resetting after being set.
         const MANUAL_RESET = 0x00000001;
+        /// The event would be inititially unset, and would automatically reset.
         const NONE = 0x0;
     }
 }
