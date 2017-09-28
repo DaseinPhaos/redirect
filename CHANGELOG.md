@@ -3,6 +3,12 @@
 - impl `Send` and `Sync` for `Event`.
 - exclude `ComPtr` field access from crate-level API.
 - introduce `ResourceAlignment`, change buffer creation API to reflect it.
+- add type traits for heaps
+- add type traits for resources
+- add some type-safe(should be) heap/buffer types
+- `ResourceDesc::buffer` now doesn't take an `alignment` argument
+- remove `CommittedResource`
+- `Device::create_committed_resource` now returns a `RawResource`
 
 # 0.2.1
 - Add a trait `factory::HwndProvider`, to bridge a hwnd provider with the swapchain creation API.

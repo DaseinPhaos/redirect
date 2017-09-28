@@ -13,3 +13,69 @@ pub use self::description::*;
 
 pub mod raw;
 pub use self::raw::*;
+
+pub mod traits;
+pub use self::traits::*;
+
+use device::Device;
+use error::WinError;
+
+/// a safe heap with all properties set to default
+#[derive(Debug, Clone)]
+pub struct DefaultHeap {
+    pub(crate) raw: RawHeap
+}
+
+impl DefaultHeap {
+    #[inline]
+    pub fn new(device: &mut Device, size: u64) -> Result<Self, WinError> {
+        let desc = HeapDesc::new(
+            size,
+            HeapProperties::new(HEAP_TYPE_DEFAULT),
+            HEAP_FLAG_NONE
+        );
+
+        let raw = device.create_heap(&desc)?;
+        Ok(DefaultHeap{raw})
+    }
+}
+
+/// an upload heap with all properties set to default
+#[derive(Debug, Clone)]
+pub struct UploadHeap {
+    pub(crate) raw: RawHeap
+}
+
+impl UploadHeap {
+    #[inline]
+    pub fn new(device: &mut Device, size: u64) -> Result<Self, WinError> {
+        let desc = HeapDesc::new(
+            size,
+            HeapProperties::new(HEAP_TYPE_UPLOAD),
+            HEAP_FLAG_NONE
+        );
+
+        let raw = device.create_heap(&desc)?;
+        Ok(UploadHeap{raw})
+    }
+}
+
+/// an readback heap with all properties set to default
+#[derive(Debug, Clone)]
+pub struct ReadbackHeap {
+    pub(crate) raw: RawHeap
+}
+
+impl ReadbackHeap {
+    #[inline]
+    pub fn new(device: &mut Device, size: u64) -> Result<Self, WinError> {
+        let desc = HeapDesc::new(
+            size,
+            HeapProperties::new(HEAP_TYPE_READBACK),
+            HEAP_FLAG_NONE
+        );
+
+        let raw = device.create_heap(&desc)?;
+        Ok(ReadbackHeap{raw})
+    }
+}

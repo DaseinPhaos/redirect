@@ -8,6 +8,22 @@
 
 //! resource
 
+macro_rules! impl_as_raw {
+    ($Trait: ident, $Type: ident, $Raw: ident) => {
+        impl $Trait for $Type {
+            #[inline]
+            fn as_raw(&self) -> & $Raw {
+                &self.raw
+            }
+
+            #[inline]
+            fn as_raw_mut(&mut self) ->&mut $Raw {
+                &mut self.raw
+            }
+        }
+    }
+}
+
 pub mod usage;
 pub use self::usage::*;
 
@@ -26,27 +42,15 @@ pub use self::barrier::*;
 pub mod state;
 pub use self::state::*;
 
+pub mod traits;
+pub use self::traits::*;
+
+pub mod buffer;
+pub use self::buffer::*;
+
 use format::*;
 
 // TODO: find out a sound way to work with different types of resources
-
-/// a committed resource, backed up by an implicit heap
-#[derive(Clone, Debug)]
-pub struct CommittedResource{
-    raw: RawResource
-}
-
-impl CommittedResource {
-    #[inline]
-    pub unsafe fn from_raw(raw: RawResource) -> CommittedResource {
-        CommittedResource{raw}
-    }
-
-    #[inline]
-    pub fn as_raw(&mut self) -> &mut RawResource {
-        &mut self.raw
-    }
-}
 
 /// a placed resource, backed up by an explicit heap
 #[derive(Clone, Debug)]

@@ -30,10 +30,10 @@ pub struct ResourceDesc {
 impl ResourceDesc{
     /// a buffer description
     #[inline]
-    pub fn buffer(size: u64, flags: ResourceFlags, alignment: ResourceAlignment) -> ResourceDesc{
+    pub fn buffer(size: u64, flags: ResourceFlags) -> ResourceDesc{
         ResourceDesc{
             dimension: RESOURCE_DIMENSION_BUFFER,
-            alignment,
+            alignment: Default::default(),
             width: size,
             height: 1,
             depth: 1,

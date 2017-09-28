@@ -145,7 +145,7 @@ impl Device {
         &mut self, heap_properties: &HeapProperties, 
         heap_flags: HeapFlags, desc: &ResourceDesc,
         initial_state: ResourceStates
-    ) -> Result<CommittedResource, WinError> {
+    ) -> Result<RawResource, WinError> {
         let initial_state = match heap_properties.heap_type {
             HEAP_TYPE_UPLOAD => ::winapi::D3D12_RESOURCE_STATE_GENERIC_READ,
             HEAP_TYPE_READBACK => ::winapi::D3D12_RESOURCE_STATE_COPY_DEST,
@@ -163,9 +163,7 @@ impl Device {
                 &mut ptr as *mut _ as *mut _
             );
 
-            WinError::from_hresult_or_ok(hr, || CommittedResource::from_raw(
-                RawResource{ptr: ComPtr::new(ptr)}
-            ))
+            WinError::from_hresult_or_ok(hr, || RawResource{ptr: ComPtr::new(ptr)})
         }
     }
 
@@ -359,13 +357,6 @@ impl_device_child!(Bundle, ptr);
 impl_device_child!(GraphicsPipelineState, ptr);
 impl_device_child!(ComputePipelineState, ptr);
 impl_device_child!(RootSig, ptr);
-
-impl DeviceChild for CommittedResource {
-    #[inline]
-    fn get_device(&mut self) -> Result<Device, WinError> {
-        self.as_raw().get_device()
-    }
-}
 
 impl DeviceChild for PlacedResource {
     #[inline]

@@ -13,6 +13,7 @@ extern crate winit;
 
 use redirect::descriptor::DescriptorHeap;
 use redirect::command::GraphicsCommandList;
+use redirect::resource::{Resource, CpuWriteBuffer};
 
 #[repr(C)]
 #[derive(Copy, Debug, Clone)]
@@ -77,7 +78,7 @@ fn main() {
         ),
         redirect::resource::RESOURCE_STATE_DEPTH_WRITE
     ).expect("ds buffer creation failed");
-    dsv_heap.create_dsv(&mut device, Some(ds_buffer.as_raw()), None, 0);
+    dsv_heap.create_dsv(&mut device, Some(&mut ds_buffer), None, 0);
 
     // create rtvs on this heap for the two back buffers
     let mut backbuffers = [
@@ -88,32 +89,20 @@ fn main() {
     rtv_heap.create_rtv(&mut device, Some(&mut backbuffers[1]), None, 1);
 
     // create vertex buffer
-    let mut vertex_buffer = device.create_committed_resource(
-        &redirect::resource::HeapProperties::new(
-            redirect::resource::HEAP_TYPE_UPLOAD
-        ),
-        Default::default(),
-        &redirect::resource::ResourceDesc::buffer(
-            256, Default::default(), Default::default()
-        ),
-        Default::default()
-    ).expect("vertex buffer creation failed");
+    let mut vertex_buffer = redirect::resource::UploadBuffer::new(&mut device, 256)
+    .expect("vertex buffer creation failed");
 
     // upload to vertex buffer
-    unsafe {
-        let triangle = [
-            Vertex{position: [0.0, 0.7, 0.2], color: [0.7, 0.6, 0.5, 0.5]},
-            Vertex{position: [-0.5, -0.1, 0.2], color: [0.2, 0.3, 0.4, 1.0]},
-            Vertex{position: [0.5, -0.7, 0.2], color: [0.1, 0.3, 0.1, 1.0]},
-        ];
-        let ptr = vertex_buffer.as_raw().map(0, None).expect("mapping failed") as *mut [Vertex; 3];
-        std::ptr::copy(&triangle, ptr, 1);
-        vertex_buffer.as_raw().unmap(0, None);
-    }
+    let triangle = [
+        Vertex{position: [0.0, 0.7, 0.2], color: [0.7, 0.6, 0.5, 0.5]},
+        Vertex{position: [-0.5, -0.1, 0.2], color: [0.2, 0.3, 0.4, 1.0]},
+        Vertex{position: [0.5, -0.7, 0.2], color: [0.1, 0.3, 0.1, 1.0]},
+    ];
+    vertex_buffer.write_slice(&triangle, None).expect("Writing failed!");
 
     // create vertex buffer view
     let vbv = redirect::pipeline::ia::VertexBufferView{
-        location: vertex_buffer.as_raw().get_gpu_vaddress(),
+        location: vertex_buffer.as_raw_mut().get_gpu_vaddress(),
         size: std::mem::size_of::<Vertex>() as u32 * 3,
         stride: std::mem::size_of::<Vertex>() as u32,
     };

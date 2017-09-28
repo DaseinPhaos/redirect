@@ -10,24 +10,24 @@
 
 use winapi::ID3D12Heap;
 use comptr::ComPtr;
-use super::HeapDesc;
+use super::{HeapDesc, HeapAlignment};
 
 /// a continous memory region
 #[derive(Clone, Debug)]
 pub struct RawHeap {
     pub(crate) ptr: ComPtr<ID3D12Heap>,
     size: u64,
-    alignment: u64,
+    alignment: HeapAlignment,
 }
 
 impl RawHeap {
     /// get a heap from a ComPtr
     #[inline]
     pub fn from_comptr(ptr: ComPtr<ID3D12Heap>) -> RawHeap {
-        let mut ret = RawHeap{ptr, size: 0, alignment: 0};
+        let mut ret = RawHeap{ptr, size: 0, alignment: Default::default()};
         let desc = ret.get_desc();
         ret.size = desc.size;
-        ret.alignment = desc.alignment.bits();
+        ret.alignment = desc.alignment;
         ret
     }
 
@@ -49,7 +49,7 @@ impl RawHeap {
 
     /// get heap alignment
     #[inline]
-    pub fn alignment(&self) -> u64 {
+    pub fn alignment(&self) -> HeapAlignment {
         self.alignment
     }
 }
