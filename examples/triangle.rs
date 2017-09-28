@@ -70,9 +70,10 @@ fn main() {
     let mut ds_buffer = device.create_committed_resource(
         &Default::default(), Default::default(),
         &redirect::resource::ResourceDesc::tex2d(
-            0, width as u64, height, 1, 1,
+            width as u64, height, 1, 1,
             redirect::format::DXGI_FORMAT_D24_UNORM_S8_UINT,
-            redirect::resource::RESOURCE_FLAG_ALLOW_DEPTH_STENCIL
+            redirect::resource::RESOURCE_FLAG_ALLOW_DEPTH_STENCIL,
+            Default::default()
         ),
         redirect::resource::RESOURCE_STATE_DEPTH_WRITE
     ).expect("ds buffer creation failed");
@@ -93,7 +94,7 @@ fn main() {
         ),
         Default::default(),
         &redirect::resource::ResourceDesc::buffer(
-            0, 256, Default::default()
+            256, Default::default(), Default::default()
         ),
         Default::default()
     ).expect("vertex buffer creation failed");

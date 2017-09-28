@@ -304,7 +304,8 @@ impl SwapChainResizeDesc {
     }
 }
 
-/// multi-sampling scheme description
+/// multi-sampling scheme description. Default to count 1 and quality 0,
+/// representing no aa
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
 pub struct SampleDesc {

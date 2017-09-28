@@ -28,7 +28,7 @@ use swapchain::SampleDesc;
 #[derive(Copy, Clone, Debug)]
 pub struct ResourceDesc {
     pub dimension: ResourceDimension,
-    pub alignment: u64,
+    pub alignment: ResourceAlignment,
     pub width: u64,
     pub height: u32,
     pub depth: u16,
@@ -42,7 +42,7 @@ pub struct ResourceDesc {
 impl ResourceDesc{
     /// a buffer description
     #[inline]
-    pub fn buffer(alignment: u64, size: u64, flags: ResourceFlags) -> ResourceDesc{
+    pub fn buffer(size: u64, flags: ResourceFlags, alignment: ResourceAlignment) -> ResourceDesc{
         ResourceDesc{
             dimension: RESOURCE_DIMENSION_BUFFER,
             alignment,
@@ -60,8 +60,8 @@ impl ResourceDesc{
     /// a tex1d description
     #[inline]
     pub fn tex1d(
-        alignment: u64, length: u64, array_size: u16,
-        mip_levels: u16, format: DxgiFormat, flags: ResourceFlags
+        length: u64, array_size: u16, mip_levels: u16, format: DxgiFormat,
+        flags: ResourceFlags, alignment: ResourceAlignment
     ) -> ResourceDesc{
         ResourceDesc{
             dimension: RESOURCE_DIMENSION_TEXTURE1D,
@@ -80,9 +80,8 @@ impl ResourceDesc{
     /// a tex2d description
     #[inline]
     pub fn tex2d(
-        alignment: u64, width: u64, height: u32,
-        array_size: u16, mip_levels: u16,
-        format: DxgiFormat, flags: ResourceFlags
+        width: u64, height: u32, array_size: u16, mip_levels: u16,
+        format: DxgiFormat, flags: ResourceFlags, alignment: ResourceAlignment
     ) -> ResourceDesc{
         ResourceDesc{
             dimension: RESOURCE_DIMENSION_TEXTURE2D,
@@ -101,9 +100,8 @@ impl ResourceDesc{
     /// a tex3d description
     #[inline]
     pub fn tex3d(
-        alignment: u64, width: u64, height: u32,
-        depth: u16, mip_levels: u16,
-        format: DxgiFormat, flags: ResourceFlags
+        width: u64, height: u32, depth: u16, mip_levels: u16,
+        format: DxgiFormat, flags: ResourceFlags, alignment: ResourceAlignment
     ) -> ResourceDesc{
         ResourceDesc{
             dimension: RESOURCE_DIMENSION_TEXTURE3D,
@@ -121,6 +119,28 @@ impl From<ResourceDesc> for ::winapi::D3D12_RESOURCE_DESC {
     #[inline]
     fn from(desc: ResourceDesc) -> Self {
         unsafe{ ::std::mem::transmute(desc)}
+    }
+}
+
+bitflags!{
+    /// alignment of the resource
+    #[repr(C)]
+    pub struct ResourceAlignment: u64 {
+        /// 4mb for msaa textures, 64kb for everything else. This is the deefault.
+        const RESOURCE_DEFAULT_ALIGNED = 0;
+        /// 4kb aligned
+        const RESOURCE_4KB_ALIGNED = 0x1_000;
+        /// 64kb aligned
+        const RESOURCE_64KB_ALIGNED = 0x10_000;
+        /// 4mb aligned
+        const RESOURCE_4MB_ALIGNED = 0x1_000_000;
+    }
+}
+
+impl Default for ResourceAlignment {
+    #[inline]
+    fn default() -> ResourceAlignment {
+        RESOURCE_DEFAULT_ALIGNED
     }
 }
 
@@ -172,12 +192,41 @@ bitflags!{
     /// misc flags for resources. [more info](https://msdn.microsoft.com/library/windows/desktop/dn986742(v=vs.85).aspx)
     #[repr(C)]
     pub struct ResourceFlags: u32 {
+        /// Default flag
         const RESOURCE_FLAG_NONE                       = 0;
+        /// Allow the resource to be used as render target.
+        /// - Should be used with format supporting render target capabilities
+        ///   At current feature level.
+        /// - Can't be used in conjunction with RowMajorLayout when ... (see doc for more)
+        /// - Can't be useed with 4kb resource alignment, or AllowDepthStencil, pr DenyRtDsTextures
         const RESOURCE_FLAG_ALLOW_RENDER_TARGET        = 0x1;
+        /// Allow dsv on the resource, allow resource state transition to DepthWrite/DepthRead.
+        /// - Texture format must support depth stencil capability at the current feature level.
+        /// - Cannot be used with:
+        ///   - Buffer,
+        ///   - 4kb resource alignment,
+        ///   - AllowRenderTarget,
+        ///   - AllowUnorderedAccess,
+        ///   - AllowSimultaneousAccess,
+        ///   - 64KbStandardSwizzle,
+        ///   - RowMajor,
+        ///   - DenyRtDsTextures,
+        ///   - AllowDisplay
         const RESOURCE_FLAG_ALLOW_DEPTH_STENCIL        = 0x2;
+        /// Allow uav on the resource, allow resource state transition to `UnorderedAccess`.
+        /// - Texture format must support unordered access capability at the current feature level.
+        /// - Cannot be used with MSAA and ... (see doc for more)
         const RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS     = 0x4;
+        /// Disallows a srv to be created for the resource,
+        /// as well as disables the resource to transition into the state of SharedResources.
+        /// Must be used with AllowDepthStencil
         const RESOURCE_FLAG_DENY_SHADER_RESOURCE       = 0x8;
+        /// Allows the resource to be used for cross-adapter data, as well as the same features enabled by AllowSimultaneousAccess.
+        /// Must be used with heaps with `SharedCrossAdapter` and not `AllowDisplay`.
         const RESOURCE_FLAG_ALLOW_CROSS_ADAPTER        = 0x10;
+        /// Allows a resource to be simultaneously accessed by multiple different queues, devices or processes
+        /// - Cannot be used with Buffer, coz bbuffer always have this property..>.<
+        /// - Cannot be used with MSAA
         const RESOURCE_FLAG_ALLOW_SIMULTANEOUS_ACCESS  = 0x20;
     }
 }
