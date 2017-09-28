@@ -20,7 +20,7 @@ use command::CommandQueue;
 /// dxgi API entry point
 #[derive(Debug, Clone)]
 pub struct Factory {
-    pub ptr: ComPtr<IDXGIFactory4>,
+    pub(crate) ptr: ComPtr<IDXGIFactory4>,
 }
 
 impl Factory {
@@ -142,7 +142,7 @@ impl<'a> Iterator for AdapterIter<'a> {
 /// a display subsystem
 #[derive(Debug, Clone)]
 pub struct Adapter {
-    pub ptr: ComPtr<IDXGIAdapter3>,
+    pub(crate) ptr: ComPtr<IDXGIAdapter3>,
 }
 
 impl Adapter {
@@ -270,7 +270,7 @@ impl<'a> Iterator for OutputIter<'a> {
 /// a display output, such as a monitor
 #[derive(Debug, Clone)]
 pub struct Output {
-    pub ptr: ComPtr<IDXGIOutput>,
+    pub(crate) ptr: ComPtr<IDXGIOutput>,
 }
 
 impl Output {

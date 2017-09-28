@@ -13,7 +13,7 @@ use super::*;
 /// An allocator for GPU commands
 #[derive(Debug)]
 pub struct BundleCommandAllocator {
-    pub ptr: ComPtr<ID3D12CommandAllocator>,
+    pub(crate) ptr: ComPtr<ID3D12CommandAllocator>,
 }
 
 impl BundleCommandAllocator {
@@ -28,7 +28,7 @@ impl BundleCommandAllocator {
 /// a command list bundle
 #[derive(Clone, Debug)]
 pub struct Bundle {
-    pub ptr: ComPtr<ID3D12GraphicsCommandList>,
+    pub(crate) ptr: ComPtr<ID3D12GraphicsCommandList>,
 }
 
 impl Bundle {
@@ -56,7 +56,7 @@ impl Bundle {
 /// a command list bundle during recording state
 #[derive(Debug)]
 pub struct BundleRecording<'a> {
-    pub ptr: ComPtr<ID3D12GraphicsCommandList>,
+    pub(crate) ptr: ComPtr<ID3D12GraphicsCommandList>,
     /// command allocator used to back up command recording
     pub alloc: &'a mut BundleCommandAllocator,
 }
@@ -116,7 +116,7 @@ impl<'a> BundleRecording<'a> {
 /// a command list bundle during recording state with descriptor heap already set
 #[derive(Debug)]
 pub struct BundleRecordingWithHeap<'a> {
-    pub ptr: ComPtr<ID3D12GraphicsCommandList>,
+    pub(crate) ptr: ComPtr<ID3D12GraphicsCommandList>,
     /// command allocator used to back up command recording
     pub alloc: &'a mut BundleCommandAllocator,
 }

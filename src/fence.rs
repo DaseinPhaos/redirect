@@ -16,7 +16,7 @@ use event::Event;
 /// a fence
 #[derive(Clone, Debug)]
 pub struct Fence {
-    pub ptr: ComPtr<ID3D12Fence>,
+    pub(crate) ptr: ComPtr<ID3D12Fence>,
 }
 
 impl Fence {

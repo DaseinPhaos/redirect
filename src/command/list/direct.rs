@@ -14,7 +14,7 @@ use super::*;
 /// An allocator for GPU commands
 #[derive(Debug)]
 pub struct DirectCommandAllocator {
-    pub ptr: ComPtr<ID3D12CommandAllocator>,
+    pub(crate) ptr: ComPtr<ID3D12CommandAllocator>,
 }
 
 impl DirectCommandAllocator {
@@ -29,7 +29,7 @@ impl DirectCommandAllocator {
 /// a direct command list
 #[derive(Clone, Debug)]
 pub struct DirectCommandList {
-    pub ptr: ComPtr<ID3D12GraphicsCommandList>,
+    pub(crate) ptr: ComPtr<ID3D12GraphicsCommandList>,
 }
 
 impl DirectCommandList {
@@ -77,7 +77,7 @@ impl DirectCommandList {
 /// a direct command list on recording state
 #[derive(Debug)]
 pub struct DirectCommandListRecording<'a, P: 'a> {
-    pub ptr: ComPtr<ID3D12GraphicsCommandList>,
+    pub(crate) ptr: ComPtr<ID3D12GraphicsCommandList>,
     /// command allocator used to back up command recording
     pub alloc: &'a mut DirectCommandAllocator,
     /// initial state of this command list

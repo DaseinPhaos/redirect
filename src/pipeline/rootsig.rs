@@ -18,13 +18,13 @@ use super::sampler::StaticSamplerDesc;
 /// a root signature
 #[derive(Clone, Debug)]
 pub struct RootSig {
-    pub ptr: ComPtr<ID3D12RootSignature>,
+    pub(crate) ptr: ComPtr<ID3D12RootSignature>,
 }
 
 /// a serialized root signature description blob
 #[derive(Clone, Debug)]
 pub struct RootSigDescBlob {
-    pub ptr: ComPtr<ID3DBlob>,
+    pub(crate) ptr: ComPtr<ID3DBlob>,
 }
 
 /// builder for a root signature

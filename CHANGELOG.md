@@ -1,6 +1,7 @@
 # unpublished
 - remove `unsafe` from `Event::get()`.
-- `impl` `Send` and `Sync` for `Event`.
+- impl `Send` and `Sync` for `Event`.
+- exclude `ComPtr` field access from crate-level API.
 
 # 0.2.1
 - Add a trait `factory::HwndProvider`, to bridge a hwnd provider with the swapchain creation API.

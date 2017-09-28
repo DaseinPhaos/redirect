@@ -19,37 +19,37 @@ use smallvec::SmallVec;
 /// a compiled piece of VS shader byte code
 #[derive(Debug, Clone)]
 pub struct VsShaderBytecode {
-    pub ptr: ComPtr<ID3DBlob>,
+    pub(crate) ptr: ComPtr<ID3DBlob>,
 }
 
 /// a compiled piece of PS shader byte code
 #[derive(Debug, Clone)]
 pub struct PsShaderBytecode {
-    pub ptr: ComPtr<ID3DBlob>,
+    pub(crate) ptr: ComPtr<ID3DBlob>,
 }
 
 /// a compiled piece of CS shader byte code
 #[derive(Debug, Clone)]
 pub struct CsShaderBytecode {
-    pub ptr: ComPtr<ID3DBlob>,
+    pub(crate) ptr: ComPtr<ID3DBlob>,
 }
 
 /// a compiled piece of HS shader byte code
 #[derive(Debug, Clone)]
 pub struct HsShaderBytecode {
-    pub ptr: ComPtr<ID3DBlob>,
+    pub(crate) ptr: ComPtr<ID3DBlob>,
 }
 
 /// a compiled piece of GS shader byte code
 #[derive(Debug, Clone)]
 pub struct GsShaderBytecode {
-    pub ptr: ComPtr<ID3DBlob>,
+    pub(crate) ptr: ComPtr<ID3DBlob>,
 }
 
 /// a compiled piece of DS shader byte code
 #[derive(Debug, Clone)]
 pub struct DsShaderBytecode {
-    pub ptr: ComPtr<ID3DBlob>,
+    pub(crate) ptr: ComPtr<ID3DBlob>,
 }
 
 macro_rules! impl_shader_bytecode {

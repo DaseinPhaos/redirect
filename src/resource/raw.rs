@@ -17,7 +17,7 @@ use format::Box3u;
 /// a raw resource
 #[derive(Clone, Debug)]
 pub struct RawResource {
-    pub ptr: ComPtr<ID3D12Resource>,
+    pub(crate) ptr: ComPtr<ID3D12Resource>,
 }
 
 impl RawResource {
@@ -139,7 +139,7 @@ pub struct ResourceChunkDesc {
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
 pub struct GpuVAddress {
-    pub ptr: u64,
+    pub(crate) ptr: u64,
 }
 
 impl From<GpuVAddress> for ::winapi::D3D12_GPU_VIRTUAL_ADDRESS {

@@ -17,7 +17,7 @@ use error::WinError;
 /// link between the graphics API and the target surface
 #[derive(Debug)]
 pub struct SwapChain {
-    pub ptr: ComPtr<IDXGISwapChain3>,
+    pub(crate) ptr: ComPtr<IDXGISwapChain3>,
 }
 
 impl SwapChain {

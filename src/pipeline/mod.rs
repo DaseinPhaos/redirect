@@ -37,7 +37,7 @@ pub trait PipelineState {
 /// a graphics pipeline state object
 #[derive(Clone, Debug)]
 pub struct GraphicsPipelineState {
-    pub ptr: ComPtr<ID3D12PipelineState>,
+    pub(crate) ptr: ComPtr<ID3D12PipelineState>,
 }
 
 impl PipelineState for GraphicsPipelineState {
@@ -50,13 +50,13 @@ impl PipelineState for GraphicsPipelineState {
 /// a graphics pipeline state cached blob
 #[derive(Clone, Debug)]
 pub struct GraphicsPipelineStateCache {
-    pub ptr: ComPtr<ID3DBlob>,
+    pub(crate) ptr: ComPtr<ID3DBlob>,
 }
 
 /// a pipeline state object
 #[derive(Clone, Debug)]
 pub struct ComputePipelineState {
-    pub ptr: ComPtr<ID3D12PipelineState>,
+    pub(crate) ptr: ComPtr<ID3D12PipelineState>,
 }
 
 impl PipelineState for ComputePipelineState {
@@ -69,7 +69,7 @@ impl PipelineState for ComputePipelineState {
 /// a pipeline state cached blob
 #[derive(Clone, Debug)]
 pub struct ComputePipelineStateCache {
-    pub ptr: ComPtr<ID3DBlob>,
+    pub(crate) ptr: ComPtr<ID3DBlob>,
 }
 
 macro_rules! impl_cache_methods {

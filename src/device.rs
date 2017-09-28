@@ -23,7 +23,7 @@ use descriptor::{CsuHeapSv, CsuHeapNsv, RtvHeap, DsvHeap, SamplerHeapSv, Sampler
 /// a 3D display adapter
 #[derive(Debug, Clone)]
 pub struct Device {
-    pub ptr: ComPtr<ID3D12Device>,
+    pub(crate) ptr: ComPtr<ID3D12Device>,
 }
 
 impl Device {

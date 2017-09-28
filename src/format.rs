@@ -97,7 +97,7 @@ pub fn from_wchar_slice(chars: &[::winapi::WCHAR]) -> ::std::ffi::OsString {
 // /// a data blob
 // #[derive(Clone, Debug)]
 // pub struct DataBlob {
-//     pub ptr: ComPtr<::winapi::ID3DBlob>,
+//     pub(crate) ptr: ComPtr<::winapi::ID3DBlob>,
 // }
 
 // impl DataBlob {

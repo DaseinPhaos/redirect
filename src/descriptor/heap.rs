@@ -264,7 +264,7 @@ impl CsuHeap for $Heap{
 /// a heap that can hold cbv, srv and uavs, that is not shader visible.
 #[derive(Clone, Debug)]
 pub struct CsuHeapNsv {
-    pub ptr: ComPtr<ID3D12DescriptorHeap>,
+    pub(crate) ptr: ComPtr<ID3D12DescriptorHeap>,
     num_descriptors: u32,
     handle_increment_size: u32,
 }
@@ -272,7 +272,7 @@ pub struct CsuHeapNsv {
 /// a heap that can hold cbv, srv and uavs, that is shader visible.
 #[derive(Clone, Debug)]
 pub struct CsuHeapSv {
-    pub ptr: ComPtr<ID3D12DescriptorHeap>,
+    pub(crate) ptr: ComPtr<ID3D12DescriptorHeap>,
     num_descriptors: u32,
     handle_increment_size: u32,
 }
@@ -283,7 +283,7 @@ impl_csu_heap!(CsuHeapSv);
 /// a heap that can hold render target views
 #[derive(Clone, Debug)]
 pub struct RtvHeap {
-    pub ptr: ComPtr<ID3D12DescriptorHeap>,
+    pub(crate) ptr: ComPtr<ID3D12DescriptorHeap>,
     num_descriptors: u32,
     handle_increment_size: u32,
 }
@@ -319,7 +319,7 @@ impl RtvHeap {
 /// a heap that can hold depth stencil views
 #[derive(Clone, Debug)]
 pub struct DsvHeap {
-    pub ptr: ComPtr<ID3D12DescriptorHeap>,
+    pub(crate) ptr: ComPtr<ID3D12DescriptorHeap>,
     num_descriptors: u32,
     handle_increment_size: u32,
 }
@@ -355,7 +355,7 @@ impl DsvHeap{
 /// a heap that can hold samplers, that is not shader visible
 #[derive(Clone, Debug)]
 pub struct SamplerHeapNsv {
-    pub ptr: ComPtr<ID3D12DescriptorHeap>,
+    pub(crate) ptr: ComPtr<ID3D12DescriptorHeap>,
     num_descriptors: u32,
     handle_increment_size: u32,
 }
@@ -363,7 +363,7 @@ pub struct SamplerHeapNsv {
 /// a heap that can hold samplers, that is shader visible
 #[derive(Clone, Debug)]
 pub struct SamplerHeapSv {
-    pub ptr: ComPtr<ID3D12DescriptorHeap>,
+    pub(crate) ptr: ComPtr<ID3D12DescriptorHeap>,
     num_descriptors: u32,
     handle_increment_size: u32,
 }
@@ -423,7 +423,7 @@ macro_rules! impl_handles {
         #[derive(Copy, Clone, Debug)]
         #[repr(C)]
         pub struct $CpuHandle {
-            pub ptr: usize,
+            pub(crate) ptr: usize,
         }
 
         impl From<$CpuHandle> for ::winapi::D3D12_CPU_DESCRIPTOR_HANDLE {
@@ -436,7 +436,7 @@ macro_rules! impl_handles {
         #[derive(Copy, Clone, Debug)]
         #[repr(C)]
         pub struct $GpuHandle {
-            pub ptr: u64,
+            pub(crate) ptr: u64,
         }
 
         impl From<$GpuHandle> for ::winapi::D3D12_GPU_DESCRIPTOR_HANDLE {

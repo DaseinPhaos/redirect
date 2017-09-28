@@ -14,7 +14,7 @@ use comptr::ComPtr;
 /// a continous memory region
 #[derive(Clone, Debug)]
 pub struct Heap {
-    pub ptr: ComPtr<ID3D12Heap>,
+    pub(crate) ptr: ComPtr<ID3D12Heap>,
     size: u64,
     alignment: u64,
 }

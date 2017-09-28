@@ -17,7 +17,7 @@ use fence::Fence;
 /// execution synchronization, etc.
 #[derive(Debug, Clone)]
 pub struct CommandQueue {
-    pub ptr: ComPtr<ID3D12CommandQueue>,
+    pub(crate) ptr: ComPtr<ID3D12CommandQueue>,
 }
 
 impl CommandQueue {
