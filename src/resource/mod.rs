@@ -169,7 +169,7 @@ impl Default for TextureLayout {
 }
 
 bitflags!{
-    /// misc flags for resources. [more info](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn986742(v=vs.85).aspx)
+    /// misc flags for resources. [more info](https://msdn.microsoft.com/library/windows/desktop/dn986742(v=vs.85).aspx)
     #[repr(C)]
     pub struct ResourceFlags: u32 {
         const RESOURCE_FLAG_NONE                       = 0;
@@ -190,7 +190,7 @@ impl Default for ResourceFlags {
 }
 
 bitflags!{
-    /// the state of a resource regarding how it is being used. [more](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn986744%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396)
+    /// the state of a resource regarding how it is being used. [more](https://msdn.microsoft.com/library/windows/desktop/dn986744%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396)
     #[repr(C)]
     pub struct ResourceStates: u32 {
         /// resource should be in this state when
@@ -234,7 +234,7 @@ bitflags!{
         const RESOURCE_STATE_GENERIC_READ = ((((0x1|0x2)|0x40)|0x80)|0x200)|0x800;
         /// alias for `COMMON`
         const RESOURCE_STATE_PRESENT                     = 0;
-        /// used for [predication](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903927(v=vs.85).aspx)
+        /// used for [predication](https://msdn.microsoft.com/library/windows/desktop/dn903927(v=vs.85).aspx)
         const RESOURCE_STATE_PREDICATION                 = 0x200;
     }
 }
@@ -349,7 +349,7 @@ pub enum TextureCopyType {
     PlacedFootprint(PlacedSubresourceFootprint),
 }
 
-/// [more info](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn986749(v=vs.85).aspx)
+/// [more info](https://msdn.microsoft.com/library/windows/desktop/dn986749(v=vs.85).aspx)
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
 pub struct PlacedSubresourceFootprint {

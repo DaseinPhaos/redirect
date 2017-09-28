@@ -33,7 +33,7 @@ pub struct DirectCommandList {
 }
 
 impl DirectCommandList {
-    /// start command recording. [more](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903895(v=vs.85).aspx)
+    /// start command recording. [more](https://msdn.microsoft.com/library/windows/desktop/dn903895(v=vs.85).aspx)
     pub fn start_graphics<'b>(
         mut self, alloc: &'b mut DirectCommandAllocator, 
         initial_state: Option<&'b GraphicsPipelineState>
@@ -53,7 +53,7 @@ impl DirectCommandList {
         }
     }
 
-    /// start command recording. [more](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903895(v=vs.85).aspx)
+    /// start command recording. [more](https://msdn.microsoft.com/library/windows/desktop/dn903895(v=vs.85).aspx)
     pub fn start_compute<'b>(
         mut self, alloc: &'b mut DirectCommandAllocator, 
         initial_state: Option<&'b ComputePipelineState>
@@ -85,7 +85,7 @@ pub struct DirectCommandListRecording<'a, P: 'a> {
 }
 
 impl<'a, P: 'a + PipelineState> DirectCommandListRecording<'a, P> {
-    /// record a command to clear the dsv. [more info](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903840(v=vs.85).aspx)
+    /// record a command to clear the dsv. [more info](https://msdn.microsoft.com/library/windows/desktop/dn903840(v=vs.85).aspx)
     pub fn clear_dsv(
         &mut self, dsv: CpuDsvHandle,
         flags: DepthStencilClearFlags, depth: f32, stencil: u8,
@@ -105,7 +105,7 @@ impl<'a, P: 'a + PipelineState> DirectCommandListRecording<'a, P> {
         }
     }
 
-    /// record a command to clear uav. [more info](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903849(v=vs.85).aspx)
+    /// record a command to clear uav. [more info](https://msdn.microsoft.com/library/windows/desktop/dn903849(v=vs.85).aspx)
     pub fn clear_uav_f32<T: CsuHeap>(
         &mut self, heap: &mut T, index: u32,
         resource: &mut RawResource, values: &[f32; 4],
@@ -127,7 +127,7 @@ impl<'a, P: 'a + PipelineState> DirectCommandListRecording<'a, P> {
         }
     }
 
-    /// record a command to clear uav. [more info](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903849(v=vs.85).aspx)
+    /// record a command to clear uav. [more info](https://msdn.microsoft.com/library/windows/desktop/dn903849(v=vs.85).aspx)
     pub fn clear_uav_u32<T: CsuHeap>(
         &mut self, heap: &mut T, index: u32,
         resource: &mut RawResource, values: &[u32; 4],
@@ -168,7 +168,7 @@ impl<'a, P: 'a + PipelineState> DirectCommandListRecording<'a, P> {
         }
     }
 
-    /// execute a bundle. [more](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903882(v=vs.85).aspx)
+    /// execute a bundle. [more](https://msdn.microsoft.com/library/windows/desktop/dn903882(v=vs.85).aspx)
     #[inline]
     pub fn execute_bundle(&mut self, bundle: &Bundle) {
         unsafe { self.ptr.ExecuteBundle(bundle.ptr.as_mut_ptr())}
@@ -208,7 +208,7 @@ impl<'a, P: 'a + PipelineState> DirectCommandListRecording<'a, P> {
         }
     }
 
-    /// resolve a multisampled resource into a non-MS resource. [more](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903897(v=vs.85).aspx)
+    /// resolve a multisampled resource into a non-MS resource. [more](https://msdn.microsoft.com/library/windows/desktop/dn903897(v=vs.85).aspx)
     #[inline]
     pub fn resolve_ms(
         &mut self, dst: &mut RawResource, dst_sub: u32,
@@ -223,7 +223,7 @@ impl<'a, P: 'a + PipelineState> DirectCommandListRecording<'a, P> {
         }
     }
 
-    /// synchronizaing multiple access to resources. [more](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903898(v=vs.85).aspx)
+    /// synchronizaing multiple access to resources. [more](https://msdn.microsoft.com/library/windows/desktop/dn903898(v=vs.85).aspx)
     pub fn resource_barriers(&mut self, barriers: &ResourceBarriersBuilder) {
         let barriers = barriers.as_ffi_slice();
         unsafe {
@@ -265,7 +265,7 @@ impl<'a, P: 'a + PipelineState> DirectCommandListRecording<'a, P> {
         }
     }
 
-    /// reset a command list back to the initial state. [more](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903895(v=vs.85).aspx)
+    /// reset a command list back to the initial state. [more](https://msdn.microsoft.com/library/windows/desktop/dn903895(v=vs.85).aspx)
     pub fn reset<'b, T: PipelineState+'b>(
         mut self, alloc: &'b mut DirectCommandAllocator, 
         initial_state: Option<&'b T>

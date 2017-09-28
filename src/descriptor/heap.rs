@@ -172,7 +172,7 @@ pub trait CsuHeap: DescriptorHeap {
 
     /// create a uav on this heap at `index`.
     /// `None` resource creates a null-binding providing 0 reads and discared writes.
-    /// `None` desc creates a default view if possible, inheriting resource format and descriptions. [more info](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn788674(v=vs.85).aspx)
+    /// `None` desc creates a default view if possible, inheriting resource format and descriptions. [more info](https://msdn.microsoft.com/library/windows/desktop/dn788674(v=vs.85).aspx)
     fn create_uav(
         &mut self, device: &mut Device,
         resource: Option<&RawResource>,  // TODO: typed resources?

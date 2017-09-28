@@ -112,12 +112,22 @@ impl Default for HeapProperties {
 }
 
 bitflags!{
-    /// [heap type](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn770374(v=vs.85).aspx).
+    /// [heap type](https://msdn.microsoft.com/library/windows/desktop/dn770374(v=vs.85).aspx).
     #[repr(C)]
     pub struct HeapType: u32 {
+        /// GPU RW, no CPU access. This is the default heap type.
         const HEAP_TYPE_DEFAULT   = 1;
+        /// Optimal for CPU write.
+        /// Best for CPU write-once, GPU read-once data.
+        /// Resources in this heap must be created with `GENERATE_READ` state, and
+        /// cannot be changed away.
         const HEAP_TYPE_UPLOAD    = 2;
+        /// Optimal for CPU write.
+        /// Best for GPU write-once, CPU readable data.
+        /// Resources in this heap must be created with `COPY_DEST` state, and
+        /// cannot be changed away from this.
         const HEAP_TYPE_READBACK  = 3;
+        /// Custom heap for advanced usage.
         const HEAP_TYPE_CUSTOM    = 4;
     }
 }
@@ -133,24 +143,27 @@ bitflags!{
     /// cpu page properties.
     #[repr(C)]
     pub struct PageProperty: u32 {
-        const CPU_PAGE_PROPERTY_UNKNOWN        = 0;
-        const CPU_PAGE_PROPERTY_NOT_AVAILABLE  = 1;
-        const CPU_PAGE_PROPERTY_WRITE_COMBINE  = 2;
-        const CPU_PAGE_PROPERTY_WRITE_BACK     = 3;
+        /// The default cpu page property.
+        const PAGE_PROPERTY_UNKNOWN        = 0;
+        /// The CPU cannot access the heap, thus no property available.
+        const PAGE_PROPERTY_NOT_AVAILABLE  = 1;
+        const PAGE_PROPERTY_WRITE_COMBINE  = 2;
+        const PAGE_PROPERTY_WRITE_BACK     = 3;
     }
 }
 
 impl Default for PageProperty {
     #[inline]
     fn default() -> PageProperty {
-        CPU_PAGE_PROPERTY_UNKNOWN
+        PAGE_PROPERTY_UNKNOWN
     }
 }
 
 bitflags!{
-    /// memory pool preference. [more info](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn770381(v=vs.85).aspx)
+    /// memory pool preference. [more info](https://msdn.microsoft.com/library/windows/desktop/dn770381(v=vs.85).aspx)
     #[repr(C)]
     pub struct MemoryPoolPreference: u32 {
+        /// The default pool preference.
         const MEMORY_POOL_UNKNOWN  = 0;
         const MEMORY_POOL_L0       = 1;
         const MEMORY_POOL_L1       = 2;
@@ -168,9 +181,11 @@ bitflags!{
     /// heap alignment
     #[repr(C)]
     pub struct HeapAlignment: u64 {
-        /// alias for 64kb
+        /// alias for 64kb, the default.
         const HEAP_ALIGNMENT_DEFAULT = 0;
+        /// 64kb aligned.
         const HEAP_ALIGNMENT_DEFAULT_RESOURCE_PLACEMENT = ::winapi::D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT as u64;
+        /// 4mb aligned. MSAA resource heap must use this alignment.
         const HEAP_ALIGNMENT_DEFAULT_MSAA_RESOURCE_PLACEMENT = ::winapi::D3D12_DEFAULT_MSAA_RESOURCE_PLACEMENT_ALIGNMENT as u64;
     }
 }
@@ -183,11 +198,12 @@ impl Default for HeapAlignment {
 }
 
 bitflags!{
-    /// misc heap options. [more info](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn986730(v=vs.85).aspx)
+    /// misc heap options. [more info](https://msdn.microsoft.com/library/windows/desktop/dn986730(v=vs.85).aspx)
     #[repr(C)]
     pub struct HeapFlags: u32 {
+        /// The default, no options specified.
         const HEAP_FLAG_NONE                            = 0;
-        /// a [shared heap](https://msdn.microsoft.com/zh-cn/library/windows/desktop/mt186623(v=vs.85).aspx)
+        /// a [shared heap](https://msdn.microsoft.com/library/windows/desktop/mt186623(v=vs.85).aspx)
         const HEAP_FLAG_SHARED                          = 0x1;
         /// the heap isn't allowed to contain buffers
         const HEAP_FLAG_DENY_BUFFERS                    = 0x4;

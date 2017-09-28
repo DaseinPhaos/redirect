@@ -138,7 +138,7 @@ impl ResourceTransitionBarrier {
 }
 
 /// describes the transition between usage of two different
-/// resources having mappings into the same heap.
+/// resources mapping into the same heap location.
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
 pub struct ResourceAliasingBarrier {
@@ -147,6 +147,7 @@ pub struct ResourceAliasingBarrier {
 }
 
 impl ResourceAliasingBarrier {
+    // TODO: global aliasing barriers, see remarks in https://msdn.microsoft.com/en-us/library/windows/desktop/dn986739(v=vs.85).aspx
     #[inline]
     pub fn new(before: &mut PlacedResource, after: &mut PlacedResource) -> Self {
         debug_assert_eq!(
@@ -180,11 +181,14 @@ impl ResourceUavBarrier {
 }
 
 bitflags!{
-    /// misc resource barrier flags. [more](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn986741(v=vs.85).aspx)
+    /// misc resource barrier flags. [more](https://msdn.microsoft.com/library/windows/desktop/dn986741(v=vs.85).aspx)
     #[repr(C)]
     pub struct ResourceBarrierFlags: u32 {
+        /// The default, an atomic barrier.
         const RESOURCE_BARRIER_FLAG_NONE = 0;
+        /// Marks the start of a transition, putting the resource in a temporary no-access condition.
         const RESOURCE_BARRIER_FLAG_BEGIN_ONLY = 0x1;
+        /// Marks the end of a transition, restore the resource to the state after transition.
         const RESOURCE_BARRIER_FLAG_END_ONLY = 0x2;
     }
 }

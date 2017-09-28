@@ -14,7 +14,7 @@ use format::Bool;
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
 pub struct BlendDesc {
-    /// whether to use [alpha-to-coverage](https://msdn.microsoft.com/zh-cn/library/windows/desktop/bb205072(v=vs.85).aspx#Alpha_To_Coverage) as a multisampling technique
+    /// whether to use [alpha-to-coverage](https://msdn.microsoft.com/library/windows/desktop/bb205072(v=vs.85).aspx#Alpha_To_Coverage) as a multisampling technique
     pub alpha_to_coverage: Bool,
     /// whether to enable independent blending in simultaneous rendering targets
     pub independent_blend: Bool,

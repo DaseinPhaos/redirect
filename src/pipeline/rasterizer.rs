@@ -10,7 +10,7 @@
 
 use format::Bool;
 
-/// describes the rasterizer state. [more info](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn770387(v=vs.85).aspx)
+/// describes the rasterizer state. [more info](https://msdn.microsoft.com/library/windows/desktop/dn770387(v=vs.85).aspx)
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
 pub struct RasterizerDesc {

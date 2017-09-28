@@ -262,7 +262,7 @@ pub trait ComputeCommandList: CommandList {
         )}
     }
     
-    /// execute a command list from a thread group. [more info](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903871(v=vs.85).aspx)
+    /// execute a command list from a thread group. [more info](https://msdn.microsoft.com/library/windows/desktop/dn903871(v=vs.85).aspx)
     #[inline]
     fn dispatch(&mut self, x: u32, y: u32, z: u32) {
         unsafe { self.as_raw_ptr().Dispatch(x, y, z) }
@@ -292,7 +292,7 @@ pub trait CopyCommandList: CommandList {
     /// - must be the same type
     /// - must have identical dimensions
     /// - must have compatible formats
-    /// - [more](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903859(v=vs.85).aspx)
+    /// - [more](https://msdn.microsoft.com/library/windows/desktop/dn903859(v=vs.85).aspx)
     #[inline]
     fn copy_resource(
         &mut self, dst: &mut RawResource, src: &mut RawResource
@@ -318,7 +318,7 @@ pub trait CopyCommandList: CommandList {
         }
     }
 
-    /// record a texture copy operation. [more info](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903862(v=vs.85).aspx)
+    /// record a texture copy operation. [more info](https://msdn.microsoft.com/library/windows/desktop/dn903862(v=vs.85).aspx)
     #[inline]
     fn copy_texture_region(
         &mut self, dst: TextureCopyLocation, dstx: u32, dsty: u32, 

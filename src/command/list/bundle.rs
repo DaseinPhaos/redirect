@@ -32,7 +32,7 @@ pub struct Bundle {
 }
 
 impl Bundle {
-    /// start command recording. [more](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903895(v=vs.85).aspx)
+    /// start command recording. [more](https://msdn.microsoft.com/library/windows/desktop/dn903895(v=vs.85).aspx)
     pub fn start<'b, P: PipelineState+'b>(
         mut self, alloc: &'b mut BundleCommandAllocator, 
         initial_state: Option<&P>
@@ -82,7 +82,7 @@ impl<'a> BundleRecording<'a> {
         }
     }
 
-    /// reset a bundle back to the initial state. [more](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903895(v=vs.85).aspx)
+    /// reset a bundle back to the initial state. [more](https://msdn.microsoft.com/library/windows/desktop/dn903895(v=vs.85).aspx)
     pub fn reset<'b, P: 'b + PipelineState>(
         mut self, alloc: &'b mut BundleCommandAllocator, 
         initial_state: Option<&P>
@@ -122,7 +122,7 @@ pub struct BundleRecordingWithHeap<'a> {
 }
 
 impl<'a> BundleRecordingWithHeap<'a> {
-    /// reset a bundle back to the initial state. [more](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn903895(v=vs.85).aspx)
+    /// reset a bundle back to the initial state. [more](https://msdn.microsoft.com/library/windows/desktop/dn903895(v=vs.85).aspx)
     pub fn reset<'b, P: 'b + PipelineState>(
         mut self, alloc: &'b mut BundleCommandAllocator, 
         initial_state: Option<&PipelineState>

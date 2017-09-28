@@ -51,7 +51,7 @@ impl RawResource {
         }
     }
 
-    /// get a CPU pointer to the specified subresource. [more info](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn788712(v=vs.85).aspx)
+    /// get a CPU pointer to the specified subresource. [more info](https://msdn.microsoft.com/library/windows/desktop/dn788712(v=vs.85).aspx)
     pub unsafe fn map(
         &mut self, subresource: u32, range: Option<(usize, usize)>
     ) -> Result<*mut u8, WinError> {
@@ -104,7 +104,7 @@ impl RawResource {
         )
     }
 
-    /// use CPU to copy data into a subresource. [more info](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn914416(v=vs.85).aspx)
+    /// use CPU to copy data into a subresource. [more info](https://msdn.microsoft.com/library/windows/desktop/dn914416(v=vs.85).aspx)
     pub unsafe fn write_to_subresource(
         &mut self, dst_subresource: u32, dst_box: Option<&Box3u>, 
         src_desc: ResourceChunkDesc

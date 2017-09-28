@@ -61,7 +61,7 @@ impl StaticSamplerDesc {
 }
 
 bitflags!{
-    /// filtering options for texture sampling. [more info](https://msdn.microsoft.com/zh-cn/library/windows/desktop/dn770367(v=vs.85).aspx)
+    /// filtering options for texture sampling. [more info](https://msdn.microsoft.com/library/windows/desktop/dn770367(v=vs.85).aspx)
     #[repr(C)]
     pub struct Filter: u32 {
         const FILTER_MIN_MAG_MIP_POINT                           = 0;
