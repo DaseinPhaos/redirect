@@ -125,7 +125,7 @@ impl Device {
     }
 
     /// attempts to create a heap
-    pub fn create_heap(&mut self, desc: &HeapDesc) -> Result<Heap, WinError> {
+    pub fn create_heap(&mut self, desc: &HeapDesc) -> Result<RawHeap, WinError> {
         unsafe {
             let mut ret = ::std::mem::uninitialized();
             let hr = self.ptr.CreateHeap(
@@ -134,7 +134,7 @@ impl Device {
                 &mut ret as *mut *mut _ as *mut *mut c_void
             );
 
-            WinError::from_hresult_or_ok(hr, || Heap::from_comptr(
+            WinError::from_hresult_or_ok(hr, || RawHeap::from_comptr(
                 ComPtr::new(ret)
             ))
         }
@@ -208,7 +208,7 @@ impl Device {
     /// attempts to create a placed resource.
     /// `heap_offset` must be a multiple of resource's alignment.
     pub fn create_placed_resource(
-        &mut self, heap: &mut Heap, heap_offset: u64, 
+        &mut self, heap: &mut RawHeap, heap_offset: u64, 
         desc: &ResourceDesc, initial_state: ResourceStates
     ) -> Result<PlacedResource, WinError> {
         let heap_properties = heap.get_desc().properties;
@@ -345,7 +345,7 @@ macro_rules! impl_device_child {
 impl_device_child!(CommandQueue, ptr);
 impl_device_child!(DirectCommandAllocator, ptr);
 impl_device_child!(BundleCommandAllocator, ptr);
-impl_device_child!(Heap, ptr);
+impl_device_child!(RawHeap, ptr);
 impl_device_child!(RawResource, ptr);
 impl_device_child!(Fence, ptr);
 impl_device_child!(CsuHeapSv, ptr);

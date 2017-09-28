@@ -6,52 +6,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-//! a continous GPU memory region.
-
-use winapi::ID3D12Heap;
-use comptr::ComPtr;
-
-/// a continous memory region
-#[derive(Clone, Debug)]
-pub struct Heap {
-    pub(crate) ptr: ComPtr<ID3D12Heap>,
-    size: u64,
-    alignment: u64,
-}
-
-impl Heap {
-    /// get a heap from a ComPtr
-    #[inline]
-    pub fn from_comptr(ptr: ComPtr<ID3D12Heap>) -> Heap {
-        let mut ret = Heap{ptr, size: 0, alignment: 0};
-        let desc = ret.get_desc();
-        ret.size = desc.size;
-        ret.alignment = desc.alignment.bits();
-        ret
-    }
-
-    /// get heap descriptions
-    #[inline]
-    pub fn get_desc(&mut self) -> HeapDesc {
-        unsafe {
-            let mut ret = ::std::mem::uninitialized();
-            self.ptr.GetDesc(&mut ret);
-            ::std::mem::transmute(ret)
-        }
-    }
-
-    /// get heap size
-    #[inline]
-    pub fn size(&self) -> u64 {
-        self.size
-    }
-
-    /// get heap alignment
-    #[inline]
-    pub fn alignment(&self) -> u64 {
-        self.alignment
-    }
-}
+//! Types to describe a heap
 
 /// description of a heap
 #[repr(C)]

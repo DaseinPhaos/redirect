@@ -8,292 +8,25 @@
 
 //! resource
 
-mod usage;
+pub mod usage;
 pub use self::usage::*;
 
-mod heap;
+pub mod description;
+pub use self::description::*;
+
+pub mod heap;
 pub use self::heap::*;
 
-mod raw;
+pub mod raw;
 pub use self::raw::*;
 
-mod barrier;
+pub mod barrier;
 pub use self::barrier::*;
 
+pub mod state;
+pub use self::state::*;
+
 use format::*;
-use swapchain::SampleDesc;
-
-/// resource description
-#[repr(C)]
-#[derive(Copy, Clone, Debug)]
-pub struct ResourceDesc {
-    pub dimension: ResourceDimension,
-    pub alignment: ResourceAlignment,
-    pub width: u64,
-    pub height: u32,
-    pub depth: u16,
-    pub mip_levels: u16,
-    pub format: DxgiFormat,
-    pub sample_desc: SampleDesc,
-    pub layout: TextureLayout,
-    pub flags: ResourceFlags,
-}
-
-impl ResourceDesc{
-    /// a buffer description
-    #[inline]
-    pub fn buffer(size: u64, flags: ResourceFlags, alignment: ResourceAlignment) -> ResourceDesc{
-        ResourceDesc{
-            dimension: RESOURCE_DIMENSION_BUFFER,
-            alignment,
-            width: size,
-            height: 1,
-            depth: 1,
-            mip_levels: 1,
-            format: DXGI_FORMAT_UNKNOWN,
-            sample_desc: Default::default(),
-            layout: TEXTURE_LAYOUT_ROW_MAJOR, // TODO: double check unknown
-            flags: flags,
-        }
-    }
-
-    /// a tex1d description
-    #[inline]
-    pub fn tex1d(
-        length: u64, array_size: u16, mip_levels: u16, format: DxgiFormat,
-        flags: ResourceFlags, alignment: ResourceAlignment
-    ) -> ResourceDesc{
-        ResourceDesc{
-            dimension: RESOURCE_DIMENSION_TEXTURE1D,
-            alignment,
-            width: length,
-            height: 1,
-            depth: array_size,
-            mip_levels: mip_levels,
-            format: format,
-            sample_desc: Default::default(),
-            layout: TEXTURE_LAYOUT_UNKNOWN,
-            flags: flags,
-        }
-    }
-
-    /// a tex2d description
-    #[inline]
-    pub fn tex2d(
-        width: u64, height: u32, array_size: u16, mip_levels: u16,
-        format: DxgiFormat, flags: ResourceFlags, alignment: ResourceAlignment
-    ) -> ResourceDesc{
-        ResourceDesc{
-            dimension: RESOURCE_DIMENSION_TEXTURE2D,
-            alignment,
-            width: width,
-            height: height,
-            depth: array_size,
-            mip_levels: mip_levels,
-            format: format,
-            sample_desc: Default::default(),
-            layout: TEXTURE_LAYOUT_UNKNOWN,
-            flags: flags,
-        }
-    }
-
-    /// a tex3d description
-    #[inline]
-    pub fn tex3d(
-        width: u64, height: u32, depth: u16, mip_levels: u16,
-        format: DxgiFormat, flags: ResourceFlags, alignment: ResourceAlignment
-    ) -> ResourceDesc{
-        ResourceDesc{
-            dimension: RESOURCE_DIMENSION_TEXTURE3D,
-            alignment, width, height, depth,
-            mip_levels: mip_levels,
-            format: format,
-            sample_desc: Default::default(),
-            layout: TEXTURE_LAYOUT_UNKNOWN,
-            flags: flags,
-        }
-    }
-}
-
-impl From<ResourceDesc> for ::winapi::D3D12_RESOURCE_DESC {
-    #[inline]
-    fn from(desc: ResourceDesc) -> Self {
-        unsafe{ ::std::mem::transmute(desc)}
-    }
-}
-
-bitflags!{
-    /// alignment of the resource
-    #[repr(C)]
-    pub struct ResourceAlignment: u64 {
-        /// 4mb for msaa textures, 64kb for everything else. This is the deefault.
-        const RESOURCE_DEFAULT_ALIGNED = 0;
-        /// 4kb aligned
-        const RESOURCE_4KB_ALIGNED = 0x1_000;
-        /// 64kb aligned
-        const RESOURCE_64KB_ALIGNED = 0x10_000;
-        /// 4mb aligned
-        const RESOURCE_4MB_ALIGNED = 0x1_000_000;
-    }
-}
-
-impl Default for ResourceAlignment {
-    #[inline]
-    fn default() -> ResourceAlignment {
-        RESOURCE_DEFAULT_ALIGNED
-    }
-}
-
-bitflags!{
-    /// dimension i.e. type of the resource
-    #[repr(C)]
-    pub struct ResourceDimension: u32 {
-        const RESOURCE_DIMENSION_UNKNOWN    = 0;
-        const RESOURCE_DIMENSION_BUFFER     = 1;
-        const RESOURCE_DIMENSION_TEXTURE1D  = 2;
-        const RESOURCE_DIMENSION_TEXTURE2D  = 3;
-        const RESOURCE_DIMENSION_TEXTURE3D  = 4;
-    }
-}
-
-bitflags! {
-    /// texture layout
-    #[repr(C)]
-    pub struct TextureLayout: u32 {
-        /// adapter-dependent layout. driver choose optimal layout
-        /// during resource creation
-        const TEXTURE_LAYOUT_UNKNOWN                 = 0;
-        /// data for the texture is stored in row-major order.
-        /// only the following texture properties are supported:
-        ///
-        /// - `RESOURCE_DIMENSION_TEXTURE2D`
-        /// - single mip level
-        /// - single array slice
-        /// 64kb alignment
-        /// non-MSAA
-        /// no `RESOURCE_FLAG_ALLOW_DEPTH_STENCIL`
-        /// cannot be a YUV format
-        ///
-        /// Note that buffers are row major
-        const TEXTURE_LAYOUT_ROW_MAJOR               = 1;
-        const TEXTURE_LAYOUT_64KB_UNDEFINED_SWIZZLE  = 2;
-        const TEXTURE_LAYOUT_64KB_STANDARD_SWIZZLE   = 3;
-    }
-}
-
-impl Default for TextureLayout {
-    #[inline]
-    fn default() -> Self {
-        TEXTURE_LAYOUT_UNKNOWN
-    }
-}
-
-bitflags!{
-    /// misc flags for resources. [more info](https://msdn.microsoft.com/library/windows/desktop/dn986742(v=vs.85).aspx)
-    #[repr(C)]
-    pub struct ResourceFlags: u32 {
-        /// Default flag
-        const RESOURCE_FLAG_NONE                       = 0;
-        /// Allow the resource to be used as render target.
-        /// - Should be used with format supporting render target capabilities
-        ///   At current feature level.
-        /// - Can't be used in conjunction with RowMajorLayout when ... (see doc for more)
-        /// - Can't be useed with 4kb resource alignment, or AllowDepthStencil, pr DenyRtDsTextures
-        const RESOURCE_FLAG_ALLOW_RENDER_TARGET        = 0x1;
-        /// Allow dsv on the resource, allow resource state transition to DepthWrite/DepthRead.
-        /// - Texture format must support depth stencil capability at the current feature level.
-        /// - Cannot be used with:
-        ///   - Buffer,
-        ///   - 4kb resource alignment,
-        ///   - AllowRenderTarget,
-        ///   - AllowUnorderedAccess,
-        ///   - AllowSimultaneousAccess,
-        ///   - 64KbStandardSwizzle,
-        ///   - RowMajor,
-        ///   - DenyRtDsTextures,
-        ///   - AllowDisplay
-        const RESOURCE_FLAG_ALLOW_DEPTH_STENCIL        = 0x2;
-        /// Allow uav on the resource, allow resource state transition to `UnorderedAccess`.
-        /// - Texture format must support unordered access capability at the current feature level.
-        /// - Cannot be used with MSAA and ... (see doc for more)
-        const RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS     = 0x4;
-        /// Disallows a srv to be created for the resource,
-        /// as well as disables the resource to transition into the state of SharedResources.
-        /// Must be used with AllowDepthStencil
-        const RESOURCE_FLAG_DENY_SHADER_RESOURCE       = 0x8;
-        /// Allows the resource to be used for cross-adapter data, as well as the same features enabled by AllowSimultaneousAccess.
-        /// Must be used with heaps with `SharedCrossAdapter` and not `AllowDisplay`.
-        const RESOURCE_FLAG_ALLOW_CROSS_ADAPTER        = 0x10;
-        /// Allows a resource to be simultaneously accessed by multiple different queues, devices or processes
-        /// - Cannot be used with Buffer, coz bbuffer always have this property..>.<
-        /// - Cannot be used with MSAA
-        const RESOURCE_FLAG_ALLOW_SIMULTANEOUS_ACCESS  = 0x20;
-    }
-}
-
-impl Default for ResourceFlags {
-    #[inline]
-    fn default() -> Self {
-        RESOURCE_FLAG_NONE
-    }
-}
-
-bitflags!{
-    /// the state of a resource regarding how it is being used. [more](https://msdn.microsoft.com/library/windows/desktop/dn986744%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396)
-    #[repr(C)]
-    pub struct ResourceStates: u32 {
-        /// resource should be in this state when
-        ///
-        /// - being translated across `COPY` queue to/from `DIRECT/COMPUTE` queues
-        /// - for CPU accessing
-        const RESOURCE_STATE_COMMON                      = 0;
-        /// a subresource should be in this state when accessed as a vertex buffer or constant buffer
-        const RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER  = 0x1;
-        /// a subresource should be in this state when accessed as a index buffer
-        const RESOURCE_STATE_INDEX_BUFFER                = 0x2;
-        /// a subresource should be in this state when used as a render target
-        const RESOURCE_STATE_RENDER_TARGET               = 0x4;
-        /// a subresource should be in this state when accessed via an UAV.
-        /// when in this state, a resource can be accessed for RW from multiple
-        /// command queues simultaneously.
-        const RESOURCE_STATE_UNORDERED_ACCESS            = 0x8;
-        /// a subresource should be in this state when used for depth write. mutual exclusive
-        const RESOURCE_STATE_DEPTH_WRITE                 = 0x10;
-        /// a subresource should be in this state when used for depth read.
-        const RESOURCE_STATE_DEPTH_READ                  = 0x20;
-        /// a subresource should be in this state when accessed as a SRV from any stage other than PS
-        const RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE   = 0x40;
-        /// a subresource should be in this state when accessed as a SRV from PS
-        const RESOURCE_STATE_PIXEL_SHADER_RESOURCE       = 0x80;
-        /// a subresource is used with stream output
-        const RESOURCE_STATE_STREAM_OUT                  = 0x100;
-        /// the resource is used as indirect argument
-        const RESOURCE_STATE_INDIRECT_ARGUMENT           = 0x200;
-        /// used as the destination in a copy operation
-        const RESOURCE_STATE_COPY_DEST                   = 0x400;
-        /// used as the src in a copy operation
-        const RESOURCE_STATE_COPY_SOURCE                 = 0x800;
-        /// used as the destination in a resolve operation
-        const RESOURCE_STATE_RESOLVE_DEST                = 0x1000;
-        /// used as the src in a resolve operation
-        const RESOURCE_STATE_RESOLVE_SOURCE              = 0x2000;
-        /// required starting state for upload heaps.
-        /// when in this state, a resource can be accessed for reading from
-        /// multiple command queues simultaneously.
-        const RESOURCE_STATE_GENERIC_READ = ((((0x1|0x2)|0x40)|0x80)|0x200)|0x800;
-        /// alias for `COMMON`
-        const RESOURCE_STATE_PRESENT                     = 0;
-        /// used for [predication](https://msdn.microsoft.com/library/windows/desktop/dn903927(v=vs.85).aspx)
-        const RESOURCE_STATE_PREDICATION                 = 0x200;
-    }
-}
-
-impl Default for ResourceStates {
-    #[inline]
-    fn default() -> Self {
-        RESOURCE_STATE_GENERIC_READ
-    }
-}
 
 // TODO: find out a sound way to work with different types of resources
 
@@ -319,7 +52,7 @@ impl CommittedResource {
 #[derive(Clone, Debug)]
 pub struct PlacedResource{
     raw: RawResource,
-    heap: Heap,
+    heap: RawHeap,
     heap_offset: u64,
     alloc_info: ResourceAllocInfo,
 }
@@ -327,7 +60,7 @@ pub struct PlacedResource{
 impl PlacedResource {
     #[inline]
     pub unsafe fn from_raw(
-        raw: RawResource, heap: Heap, 
+        raw: RawResource, heap: RawHeap, 
         heap_offset: u64, alloc_info: ResourceAllocInfo) -> Self {
         PlacedResource{
             raw, heap, heap_offset, alloc_info
@@ -340,7 +73,7 @@ impl PlacedResource {
     }
 
     #[inline]
-    pub fn get_placed_heap(&self) -> &Heap {
+    pub fn get_placed_heap(&self) -> &RawHeap {
         &self.heap
     }
 
@@ -360,7 +93,7 @@ impl PlacedResource {
 pub struct ResourceAllocInfo {
     /// consumed size of the resource on paged heap
     pub size: u64,
-    pub alignment: u64,
+    pub alignment: ResourceAlignment,
 }
 
 /// describes a resource used for GPU texture copying
