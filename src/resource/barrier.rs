@@ -8,7 +8,7 @@
 
 //! resource barriers
 
-use super::{PlacedResource, ResourceStates, RawResource};
+use super::{ResourceStates, RawResource};
 use smallvec::SmallVec;
 use std::borrow::Borrow;
 
@@ -64,7 +64,7 @@ impl ResourceBarrier {
     }
 
     #[inline]
-    pub fn aliasing(before: &mut PlacedResource, after: &mut PlacedResource) -> ResourceBarrier {
+    pub fn aliasing(before: &mut RawResource, after: &mut RawResource) -> ResourceBarrier {
         ResourceBarrier::new(
             ResourceBarrierType::Aliasing(
                 ResourceAliasingBarrier::new(before, after)
@@ -148,17 +148,18 @@ pub struct ResourceAliasingBarrier {
 
 impl ResourceAliasingBarrier {
     // TODO: global aliasing barriers, see remarks in https://msdn.microsoft.com/en-us/library/windows/desktop/dn986739(v=vs.85).aspx
+    // TODO: safety
     #[inline]
-    pub fn new(before: &mut PlacedResource, after: &mut PlacedResource) -> Self {
-        debug_assert_eq!(
-            before.get_placed_heap().ptr.as_ptr(),
-            after.get_placed_heap().ptr.as_ptr()
-        );
-        debug_assert_eq!(before.get_heap_offset(), after.get_heap_offset());
-        debug_assert_eq!(before.get_alloc_info(), after.get_alloc_info());
+    pub fn new(before: &mut RawResource, after: &mut RawResource) -> Self {
+        // debug_assert_eq!(
+        //     before.get_placed_heap().ptr.as_ptr(),
+        //     after.get_placed_heap().ptr.as_ptr()
+        // );
+        // debug_assert_eq!(before.get_heap_offset(), after.get_heap_offset());
+        // debug_assert_eq!(before.get_alloc_info(), after.get_alloc_info());
         ResourceAliasingBarrier{
-            before: before.as_raw().ptr.as_mut_ptr(),
-            after: after.as_raw().ptr.as_mut_ptr(),
+            before: before.ptr.as_mut_ptr(),
+            after: after.ptr.as_mut_ptr(),
         }
     }
 }

@@ -102,6 +102,7 @@ unsafe impl Buffer for ReadbackBuffer {
 }
 unsafe impl Readback for ReadbackBuffer {}
 
+/// A buffer placed on a heap of type `H`
 #[derive(Debug)]
 pub struct PlacedBuffer<H> {
     raw: RawResource,
@@ -109,6 +110,70 @@ pub struct PlacedBuffer<H> {
     /// offset from heap start
     offset: u64,
 }
+
+impl<H> PlacedBuffer<H> 
+where H: super::heap::traits::AcceptBuffer + super::heap::traits::GpuOnly {
+    /// initialize a `GpuOnly` buffer on a `GpuOnly` heap.
+    #[inline]
+    pub fn gpu_only(
+        device: &mut Device, mut heap: H, offset: u64, size: u64
+    ) -> Result<Self, WinError> {
+        debug_assert!(offset % super::description::RESOURCE_64KB_ALIGNED.bits() == 0);
+        debug_assert!(offset + size <= heap.size());
+        // TODO: check heap alignment?
+        let raw = unsafe {
+            device.create_placed_resource(
+                heap.as_raw_mut(), offset,
+                &super::ResourceDesc::buffer(size, Default::default()),
+                Default::default()
+            )
+        }?;
+        Ok(Self{raw, heap, offset})
+    }
+}
+
+impl<H> PlacedBuffer<H> 
+where H: super::heap::traits::AcceptBuffer + super::heap::traits::Upload {
+    /// initialize an `Upload` buffer on an `Upload` heap
+    #[inline]
+    pub fn upload(
+        device: &mut Device, mut heap: H, offset: u64, size: u64
+    ) -> Result<Self, WinError> {
+        debug_assert!(offset % super::description::RESOURCE_64KB_ALIGNED.bits() == 0);
+        debug_assert!(offset + size <= heap.size());
+        // TODO: check heap alignment?
+        let raw = unsafe {
+            device.create_placed_resource(
+                heap.as_raw_mut(), offset,
+                &super::ResourceDesc::buffer(size, Default::default()),
+                Default::default()
+            )
+        }?;
+        Ok(Self{raw, heap, offset})
+    }
+}
+
+impl<H> PlacedBuffer<H> 
+where H: super::heap::traits::AcceptBuffer + super::heap::traits::Readback {
+    /// initialize a `Readback` buffer on a `Readback` heap
+    #[inline]
+    pub fn readback(
+        device: &mut Device, mut heap: H, offset: u64, size: u64
+    ) -> Result<Self, WinError> {
+        debug_assert!(offset % super::description::RESOURCE_64KB_ALIGNED.bits() == 0);
+        debug_assert!(offset + size <= heap.size());
+        // TODO: check heap alignment?
+        let raw = unsafe {
+            device.create_placed_resource(
+                heap.as_raw_mut(), offset,
+                &super::ResourceDesc::buffer(size, Default::default()),
+                super::state::RESOURCE_STATE_COPY_DEST
+            )
+        }?;
+        Ok(Self{raw, heap, offset})
+    }
+}
+
 
 impl<H: Heap> Resource for PlacedBuffer<H> {
     #[inline]

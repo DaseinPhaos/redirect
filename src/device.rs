@@ -205,35 +205,29 @@ impl Device {
 
     /// attempts to create a placed resource.
     /// `heap_offset` must be a multiple of resource's alignment.
-    pub fn create_placed_resource(
+    pub unsafe fn create_placed_resource(
         &mut self, heap: &mut RawHeap, heap_offset: u64, 
         desc: &ResourceDesc, initial_state: ResourceStates
-    ) -> Result<PlacedResource, WinError> {
+    ) -> Result<RawResource, WinError> {
         let heap_properties = heap.get_desc().properties;
         let initial_state = match heap_properties.heap_type {
             HEAP_TYPE_UPLOAD => ::winapi::D3D12_RESOURCE_STATE_GENERIC_READ,
             HEAP_TYPE_READBACK => ::winapi::D3D12_RESOURCE_STATE_COPY_DEST,
-            _ => unsafe {::std::mem::transmute(initial_state)},
+            _ => ::std::mem::transmute(initial_state),
         };
-        let alloc_info = self.get_resource_alloc_info(
-            desc, heap_properties.visible_node_mask
-        );
-        unsafe {
-            let mut ptr = ::std::mem::uninitialized();
-            let hr = self.ptr.CreatePlacedResource(
-                heap.ptr.as_mut_ptr(),
-                heap_offset,
-                desc as *const _ as *const _,
-                initial_state,
-                ::std::ptr::null(),
-                & ::dxguid::IID_ID3D12Resource,
-                &mut ptr as *mut _ as *mut _
-            );
 
-            WinError::from_hresult_or_ok(hr, || PlacedResource::from_raw(
-                RawResource{ptr: ComPtr::new(ptr)}, heap.clone(), heap_offset, alloc_info
-            ))
-        }
+        let mut ptr = ::std::mem::uninitialized();
+        let hr = self.ptr.CreatePlacedResource(
+            heap.ptr.as_mut_ptr(),
+            heap_offset,
+            desc as *const _ as *const _,
+            initial_state,
+            ::std::ptr::null(),
+            & ::dxguid::IID_ID3D12Resource,
+            &mut ptr as *mut _ as *mut _
+        );
+
+        WinError::from_hresult_or_ok(hr, || RawResource{ptr: ComPtr::new(ptr)})
     }
 
     // TODO: copy or compute command lists?
@@ -357,10 +351,3 @@ impl_device_child!(Bundle, ptr);
 impl_device_child!(GraphicsPipelineState, ptr);
 impl_device_child!(ComputePipelineState, ptr);
 impl_device_child!(RootSig, ptr);
-
-impl DeviceChild for PlacedResource {
-    #[inline]
-    fn get_device(&mut self) -> Result<Device, WinError> {
-        self.as_raw().get_device()
-    }
-}

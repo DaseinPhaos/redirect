@@ -52,46 +52,6 @@ use format::*;
 
 // TODO: find out a sound way to work with different types of resources
 
-/// a placed resource, backed up by an explicit heap
-#[derive(Clone, Debug)]
-pub struct PlacedResource{
-    raw: RawResource,
-    heap: RawHeap,
-    heap_offset: u64,
-    alloc_info: ResourceAllocInfo,
-}
-
-impl PlacedResource {
-    #[inline]
-    pub unsafe fn from_raw(
-        raw: RawResource, heap: RawHeap, 
-        heap_offset: u64, alloc_info: ResourceAllocInfo) -> Self {
-        PlacedResource{
-            raw, heap, heap_offset, alloc_info
-        }
-    }
-
-    #[inline]
-    pub fn as_raw(&mut self) -> &mut RawResource {
-        &mut self.raw
-    }
-
-    #[inline]
-    pub fn get_placed_heap(&self) -> &RawHeap {
-        &self.heap
-    }
-
-    #[inline]
-    pub fn get_heap_offset(&self) -> u64 {
-        self.heap_offset
-    }
-
-    #[inline]
-    pub fn get_alloc_info(&self) -> ResourceAllocInfo {
-        self.alloc_info
-    }
-}
-
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct ResourceAllocInfo {
