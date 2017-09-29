@@ -20,7 +20,7 @@ pub struct DsvDesc {
 
 impl DsvDesc {
     #[inline]
-    pub fn into_cstruct(self) -> DsvDescBindHelper {
+    pub(crate) fn into_cstruct(self) -> DsvDescBindHelper {
         self.into()
     }
 }
@@ -92,10 +92,9 @@ bitflags!{
 }
 
 /// helper struct for ffi, not intended for application user
-/// TODO: remove from public interface
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
-pub struct DsvDescBindHelper {
+pub(crate) struct DsvDescBindHelper {
     format: DxgiFormat,
     view_dimension: ::winapi::D3D12_DSV_DIMENSION,
     flags: DsvFlags,

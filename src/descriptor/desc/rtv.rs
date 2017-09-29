@@ -19,7 +19,7 @@ pub struct RtvDesc {
 
 impl RtvDesc {
     #[inline]
-    pub fn into_cstruct(self) -> RtvDescBindHelper {
+    pub(crate) fn into_cstruct(self) -> RtvDescBindHelper {
         self.into()
     }
 }
@@ -106,10 +106,9 @@ pub struct RtvTex3DDesc{
 }
 
 /// helper struct for ffi, not intended for application user
-/// TODO: remove from public interface
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
-pub struct RtvDescBindHelper {
+pub(crate) struct RtvDescBindHelper {
     format: DxgiFormat,
     view_dimension: ::winapi::D3D12_RTV_DIMENSION,
     a: [u32; 4],

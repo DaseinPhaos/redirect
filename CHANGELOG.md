@@ -10,6 +10,7 @@
 - remove `CommittedResource`, `PlacedResource`
 - `Device::create_committed/placed_resource` now returns a `RawResource`
 - add methods for `PlacedBuffer` initialization
+- remove some descriptor binding helper from crate-level public interface
 
 # 0.2.1
 - Add a trait `factory::HwndProvider`, to bridge a hwnd provider with the swapchain creation API.
