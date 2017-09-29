@@ -64,6 +64,7 @@ unsafe impl Buffer for DefaultBuffer {
     fn get_size(&self) -> u64 { self.size }
 }
 unsafe impl GpuOnly for DefaultBuffer {}
+unsafe impl AllowShaderResource for DefaultBuffer {}
 
 /// a committed buffer with cpu-write access
 #[derive(Debug)]
@@ -94,6 +95,7 @@ unsafe impl Buffer for UploadBuffer {
     fn get_size(&self) -> u64 { self.size }
 }
 unsafe impl Upload for UploadBuffer {}
+unsafe impl AllowShaderResource for UploadBuffer {}
 
 /// a committed buffer with cpu-read access
 #[derive(Debug)]
@@ -124,6 +126,7 @@ unsafe impl Buffer for ReadbackBuffer {
     fn get_size(&self) -> u64 { self.size }
 }
 unsafe impl Readback for ReadbackBuffer {}
+unsafe impl AllowShaderResource for ReadbackBuffer {}
 
 /// A buffer placed on a heap of type `H`
 #[derive(Debug)]
@@ -223,3 +226,5 @@ unsafe impl<H: Heap> Placed for PlacedBuffer<H> {
         self.offset
     }
 }
+
+unsafe impl<H: Heap> AllowShaderResource for PlacedBuffer<H> {}

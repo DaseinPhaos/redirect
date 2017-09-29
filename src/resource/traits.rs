@@ -32,7 +32,7 @@ pub unsafe trait AllowDepthStencil: Resource { }
 pub unsafe trait AllowUnorderedAccess: Resource { }
 
 /// a resource that allows srv
-pub unsafe trait AllowSharedResource: Resource { }
+pub unsafe trait AllowShaderResource: Resource { }
 
 /// a resource that is placed on a heap
 pub unsafe trait Placed: Resource {
@@ -95,12 +95,12 @@ pub unsafe trait Buffer: Resource {
     /// Create a srv for this buffer on `csu_heap` at `index` with the given `slice`
     /// TODO: verify, raw buffer support
     #[inline]
-    fn create_srv<DH: CsuHeap>(
-        &mut self, device: &mut Device, csu_heap: &mut DH,
+    fn create_srv<DH: CsuHeap, B: AllowShaderResource + Buffer>(
+        buf: &mut B, device: &mut Device, csu_heap: &mut DH,
         index: u32, slice: BufferSlice
     ) {
-        debug_assert!(self.is_compatible_with(slice));
-        csu_heap.create_srv(device, Some(self.as_raw()), Some(&SrvDesc{
+        debug_assert!(buf.is_compatible_with(slice));
+        csu_heap.create_srv(device, Some(buf.as_raw()), Some(&SrvDesc{
             format: ::format::DXGI_FORMAT_UNKNOWN, // TODO: double check format for buffer
             dimension: SrvDimension::Buffer(SrvBufferDesc{
                 offset: slice.offset, num_elements: slice.length,
