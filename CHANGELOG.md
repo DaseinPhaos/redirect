@@ -11,6 +11,9 @@
 - `Device::create_committed/placed_resource` now returns a `RawResource`
 - add methods for `PlacedBuffer` initialization
 - remove some descriptor binding helper from crate-level public interface
+- fix a bug in `CsuHeap::create_uav`, it should take a `UavDesc` instead of a `SrvDesc`
+- add a `BufferSlice` to represent a structured slice into a buffer
+- add `create_cbv/srv/uav/uav_with_counter/vbv/ibv` utility methods to `Buffer`
 
 # 0.2.1
 - Add a trait `factory::HwndProvider`, to bridge a hwnd provider with the swapchain creation API.

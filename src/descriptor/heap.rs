@@ -13,7 +13,7 @@ use winapi::{ID3D12DescriptorHeap, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12
 use resource::RawResource;
 use error::WinError;
 use device::Device;
-use super::desc::{SrvDesc, CbvDesc, RtvDesc, DsvDesc, SamplerDesc};
+use super::desc::{SrvDesc, CbvDesc, RtvDesc, DsvDesc, UavDesc, SamplerDesc};
 
 
 /// descriptor heap builder struct
@@ -177,7 +177,7 @@ pub trait CsuHeap: DescriptorHeap {
         &mut self, device: &mut Device,
         resource: Option<&RawResource>,  // TODO: typed resources?
         counter: Option<&RawResource>,
-        desc: Option<&SrvDesc>,
+        desc: Option<&UavDesc>,
         index: u32
     );
 
@@ -220,7 +220,7 @@ impl CsuHeap for $Heap{
         &mut self, device: &mut Device,
         resource: Option<&RawResource>,  // TODO: typed resources?
         counter: Option<&RawResource>,
-        desc: Option<&SrvDesc>,
+        desc: Option<&UavDesc>,
         index: u32
     ) {
         let presource = if let Some(resource) = resource {

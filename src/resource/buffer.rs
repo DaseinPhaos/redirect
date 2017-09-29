@@ -14,6 +14,29 @@ use device::Device;
 use error::WinError;
 use super::heap::traits::Heap;
 
+/// a structured slice into some buffer
+#[derive(Copy, Clone, Debug)]
+pub struct BufferSlice {
+    /// zero-based offset of the first element to be accessed
+    pub offset: u64,
+    /// number of elements in the slice
+    pub length: u32,
+    /// number of bytes per-element
+    pub byte_stride: u32,
+}
+
+impl BufferSlice {
+    #[inline]
+    pub fn from_type<T>(offset: u64, length: u32) -> BufferSlice {
+        BufferSlice{offset, length, byte_stride: ::std::mem::size_of::<T>() as u32 }
+    }
+
+    #[inline]
+    pub fn from_bytes(offset: u64, length: u32) -> BufferSlice {
+        BufferSlice::from_type::<u8>(offset, length)
+    }
+}
+
 /// a committed buffer with GPU-only access
 #[derive(Debug)]
 pub struct DefaultBuffer {

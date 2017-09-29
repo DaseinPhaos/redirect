@@ -13,7 +13,7 @@ extern crate winit;
 
 use redirect::descriptor::DescriptorHeap;
 use redirect::command::GraphicsCommandList;
-use redirect::resource::{Resource, CpuWriteBuffer};
+use redirect::resource::{Buffer, CpuWriteBuffer};
 
 #[repr(C)]
 #[derive(Copy, Debug, Clone)]
@@ -101,11 +101,10 @@ fn main() {
     vertex_buffer.write_slice(&triangle, None).expect("Writing failed!");
 
     // create vertex buffer view
-    let vbv = redirect::pipeline::ia::VertexBufferView{
-        location: vertex_buffer.as_raw_mut().get_gpu_vaddress(),
-        size: std::mem::size_of::<Vertex>() as u32 * 3,
-        stride: std::mem::size_of::<Vertex>() as u32,
-    };
+    let vbv = vertex_buffer.create_vbv(
+        std::mem::size_of::<Vertex>() as u32 * triangle.len() as u32,
+        std::mem::size_of::<Vertex>() as u32
+    );
 
     // create input layout description for the vertex
     let pos_cstr = std::ffi::CString::new("POS").unwrap();
