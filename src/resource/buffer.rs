@@ -135,6 +135,7 @@ pub struct PlacedBuffer<H> {
     heap: H,
     /// offset from heap start
     offset: u64,
+    size: u64,
 }
 
 impl<H> PlacedBuffer<H> 
@@ -144,7 +145,8 @@ where H: super::heap::traits::AcceptBuffer + super::heap::traits::GpuOnly {
     pub fn gpu_only(
         device: &mut Device, mut heap: H, offset: u64, size: u64
     ) -> Result<Self, WinError> {
-        debug_assert!(offset % super::description::RESOURCE_64KB_ALIGNED.bits() == 0);
+        debug_assert_eq!(size % super::RESOURCE_64KB_ALIGNED.bits(), 0);
+        debug_assert!(offset % super::RESOURCE_64KB_ALIGNED.bits() == 0);
         debug_assert!(offset + size <= heap.size());
         // TODO: check heap alignment?
         let raw = unsafe {
@@ -154,7 +156,7 @@ where H: super::heap::traits::AcceptBuffer + super::heap::traits::GpuOnly {
                 Default::default()
             )
         }?;
-        Ok(Self{raw, heap, offset})
+        Ok(Self{raw, heap, offset, size})
     }
 }
 
@@ -165,6 +167,7 @@ where H: super::heap::traits::AcceptBuffer + super::heap::traits::Upload {
     pub fn upload(
         device: &mut Device, mut heap: H, offset: u64, size: u64
     ) -> Result<Self, WinError> {
+        debug_assert_eq!(size % super::RESOURCE_64KB_ALIGNED.bits(), 0);
         debug_assert!(offset % super::description::RESOURCE_64KB_ALIGNED.bits() == 0);
         debug_assert!(offset + size <= heap.size());
         // TODO: check heap alignment?
@@ -175,7 +178,7 @@ where H: super::heap::traits::AcceptBuffer + super::heap::traits::Upload {
                 Default::default()
             )
         }?;
-        Ok(Self{raw, heap, offset})
+        Ok(Self{raw, heap, offset, size})
     }
 }
 
@@ -186,6 +189,7 @@ where H: super::heap::traits::AcceptBuffer + super::heap::traits::Readback {
     pub fn readback(
         device: &mut Device, mut heap: H, offset: u64, size: u64
     ) -> Result<Self, WinError> {
+        debug_assert_eq!(size % super::RESOURCE_64KB_ALIGNED.bits(), 0);
         debug_assert!(offset % super::description::RESOURCE_64KB_ALIGNED.bits() == 0);
         debug_assert!(offset + size <= heap.size());
         // TODO: check heap alignment?
@@ -196,10 +200,9 @@ where H: super::heap::traits::AcceptBuffer + super::heap::traits::Readback {
                 super::state::RESOURCE_STATE_COPY_DEST
             )
         }?;
-        Ok(Self{raw, heap, offset})
+        Ok(Self{raw, heap, offset, size})
     }
 }
-
 
 impl<H: Heap> Resource for PlacedBuffer<H> {
     #[inline]
@@ -224,6 +227,18 @@ unsafe impl<H: Heap> Placed for PlacedBuffer<H> {
     #[inline]
     fn get_heap_offset(&self) -> u64 {
         self.offset
+    }
+
+    #[inline]
+    fn get_consumed_heap_size(&self) -> u64 {
+        self.size // TODO: check this is safe: https://msdn.microsoft.com/en-us/library/windows/desktop/dn788680(v=vs.85).aspx
+    }
+}
+
+unsafe impl<H: Heap> Buffer for PlacedBuffer<H> {
+    #[inline]
+    fn get_size(&self) -> u64 {
+        self.size
     }
 }
 

@@ -41,6 +41,8 @@ pub unsafe trait Placed: Resource {
     fn get_placed_heap(&mut self) -> &mut Self::Heap;
 
     fn get_heap_offset(&self) -> u64;
+
+    fn get_consumed_heap_size(&self) -> u64;
 }
 
 // TODO: is this valid?

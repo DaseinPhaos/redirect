@@ -176,3 +176,5 @@ unsafe impl Tex2D for RenderableTex2D {
 unsafe impl GpuOnly for RenderableTex2D {}
 unsafe impl AllowShaderResource for RenderableTex2D {}
 unsafe impl AllowRenderTarget for RenderableTex2D {}
+
+// TODO: placed textures, see https://msdn.microsoft.com/en-us/library/windows/desktop/dn788680(v=vs.85).aspx
