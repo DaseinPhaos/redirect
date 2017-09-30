@@ -48,6 +48,9 @@ pub use self::traits::*;
 pub mod buffer;
 pub use self::buffer::*;
 
+pub mod texture;
+pub use self::texture::*;
+
 use format::*;
 
 // TODO: find out a sound way to work with different types of resources

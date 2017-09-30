@@ -10,7 +10,7 @@
 
 use super::raw::RawResource;
 use error::WinError;
-use descriptor::{CsuHeap, CbvDesc, SrvBufferDesc, SrvDesc, SrvDimension, UavDimension, UavBufferDesc, UavDesc};
+use descriptor::*;
 use device::Device;
 use super::buffer::BufferSlice;
 use pipeline::ia::{IndexBufferView, VertexBufferView};
@@ -256,5 +256,113 @@ unsafe impl<B: Buffer + Readback> CpuReadBuffer for B {
             raw.unmap(0, range);
         }
         Ok(ret)
+    }
+}
+
+/// a texture
+pub unsafe trait Texture: Resource {
+    /// get the format of the texel
+    #[inline]
+    fn get_format(&mut self) -> ::format::DxgiFormat {
+        let desc = self.as_raw_mut().get_desc();
+        desc.format
+    }
+
+    /// Create a srv for this texture on `csu_heap` at `index`
+    /// TODO: verify, SrvTex1DDesc support
+    #[inline]
+    fn create_srv<DH: CsuHeap, T: AllowShaderResource + Texture>(
+        tex: &mut T, device: &mut Device, csu_heap: &mut DH, index: u32
+    ) {
+        csu_heap.create_srv(device, Some(tex.as_raw()), None, index);
+    }
+
+    /// Create a srv for this texture on `csu_heap` at `index`
+    /// TODO: verify, UavTex1DDesc support
+    #[inline]
+    fn create_uav<DH: CsuHeap, T: AllowUnorderedAccess + Texture>(
+        tex: &mut T, device: &mut Device, csu_heap: &mut DH, index: u32
+    ) {
+        csu_heap.create_uav(device, Some(tex.as_raw()), None, None, index);
+    }
+
+    /// Create a rtv for this texture on `heap` at `index`
+    /// TODO: RtvTex1DDesc support
+    #[inline]
+    fn create_rtv<T: AllowRenderTarget + Texture>(
+        tex: &mut T, device: &mut Device, heap: &mut RtvHeap, index: u32
+    ) {
+        heap.create_rtv(device, Some(tex.as_raw_mut()), None, index);
+    }
+
+    /// Create a dsv for this texture on `heap` at `index`
+    /// TODO: DsvTex1DDesc support
+    #[inline]
+    fn create_dsv<T: AllowDepthStencil + Texture>(
+        tex: &mut T, device: &mut Device, heap: &mut DsvHeap, index: u32
+    ) {
+        heap.create_dsv(device, Some(tex.as_raw_mut()), None, index);
+    }
+}
+
+/// a 2d texture
+pub unsafe trait Tex2D: Texture {
+    /// get the width of the texture
+    #[inline]
+    fn get_width(&mut self) -> u64 {
+        let desc = self.as_raw_mut().get_desc();
+        desc.width
+    }
+
+    #[inline]
+    fn get_height(&mut self) -> u32 {
+        let desc = self.as_raw_mut().get_desc();
+        desc.height
+    }
+
+    fn create_srv_with_desc<DH: CsuHeap, T: AllowShaderResource + Tex2D>(
+        tex: &mut T, device: &mut Device, csu_heap: &mut DH,
+        index: u32, desc: SrvTex2DDesc
+    ) {
+        // TODO: check miplevels
+        let format = tex.get_format(); // TODO: support other formats?
+        csu_heap.create_srv(device, Some(tex.as_raw()), Some(&SrvDesc{
+            format, dimension: SrvDimension::Tex2D(desc), 
+            component_mapping: Default::default()
+        }), index);
+    }
+
+    fn create_uav_with_desc<DH: CsuHeap, T: AllowUnorderedAccess + Tex2D>(
+        tex: &mut T, device: &mut Device, csu_heap: &mut DH,
+        index: u32, desc: UavTex2DDesc
+    ) {
+        // TODO: check miplevels
+        let format = tex.get_format(); // TODO: support other formats?
+        csu_heap.create_uav(device, Some(tex.as_raw()), None, Some(&UavDesc{
+            format, dimension: UavDimension::Tex2D(desc)
+        }), index);
+    }
+
+    fn create_rtv_with_desc<T: AllowRenderTarget + Tex2D>(
+        tex: &mut T, device: &mut Device, heap: &mut RtvHeap,
+        index: u32, desc: RtvTex2DDesc
+    ) {
+        // TODO: check miplevels
+        let format = tex.get_format(); // TODO: support other formats?
+        heap.create_rtv(device, Some(tex.as_raw_mut()), Some(&RtvDesc{
+            format, dimension: RtvDimension::Tex2D(desc)
+        }), index);
+    }
+
+    fn create_dsv_with_desc<T: AllowDepthStencil + Tex2D>(
+        tex: &mut T, device: &mut Device, heap: &mut DsvHeap,
+        index: u32, desc: DsvTex2DDesc
+    ) {
+        // TODO: check miplevels
+        let format = tex.get_format(); // TODO: support other formats?
+        heap.create_dsv(device, Some(tex.as_raw_mut()), Some(&DsvDesc{
+            format, dimension: DsvDimension::Tex2D(desc),
+            flags: Default::default() // TODO: support additional flags
+        }), index);
     }
 }

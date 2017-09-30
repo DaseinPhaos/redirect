@@ -14,6 +14,9 @@
 - fix a bug in `CsuHeap::create_uav`, it should take a `UavDesc` instead of a `SrvDesc`
 - add a `BufferSlice` to represent a structured slice into a buffer
 - add `create_cbv/srv/uav/uav_with_counter/vbv/ibv` utility methods to `Buffer`
+- add a default option for DsvFlags
+- add `Texture` and `Tex2D` traits, and associated safe functions
+- add a `texture` module, defining safe `DefaultTex2D`, `DsableTex2D` and `RenderableTex2D`
 
 # 0.2.1
 - Add a trait `factory::HwndProvider`, to bridge a hwnd provider with the swapchain creation API.

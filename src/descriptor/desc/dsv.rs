@@ -91,6 +91,13 @@ bitflags!{
     }
 }
 
+impl Default for DsvFlags {
+    #[inline]
+    fn default() -> Self {
+        DSV_FLAG_NONE
+    }
+}
+
 /// helper struct for ffi, not intended for application user
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]

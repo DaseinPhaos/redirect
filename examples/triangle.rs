@@ -13,7 +13,7 @@ extern crate winit;
 
 use redirect::descriptor::DescriptorHeap;
 use redirect::command::GraphicsCommandList;
-use redirect::resource::{Buffer, CpuWriteBuffer};
+use redirect::resource::{Buffer, CpuWriteBuffer, Texture, DsableTex2D};
 
 #[repr(C)]
 #[derive(Copy, Debug, Clone)]
@@ -68,17 +68,12 @@ fn main() {
     ).build_dsv_heap(&mut device).expect(
         "dsv heap creation failed"
     );
-    let mut ds_buffer = device.create_committed_resource(
-        &Default::default(), Default::default(),
-        &redirect::resource::ResourceDesc::tex2d(
-            width as u64, height, 1, 1,
-            redirect::format::DXGI_FORMAT_D24_UNORM_S8_UINT,
-            redirect::resource::RESOURCE_FLAG_ALLOW_DEPTH_STENCIL,
-            Default::default()
-        ),
-        redirect::resource::RESOURCE_STATE_DEPTH_WRITE
+
+    let mut ds_tex = DsableTex2D::new(
+        &mut device, width as u64, height, 1,
+        redirect::format::DXGI_FORMAT_D24_UNORM_S8_UINT
     ).expect("ds buffer creation failed");
-    dsv_heap.create_dsv(&mut device, Some(&mut ds_buffer), None, 0);
+    DsableTex2D::create_dsv(&mut ds_tex, &mut device, &mut dsv_heap, 0);
 
     // create rtvs on this heap for the two back buffers
     let mut backbuffers = [
