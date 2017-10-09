@@ -1,4 +1,4 @@
-# unpublished
+# 0.3.0
 - remove `unsafe` from `Event::get()`.
 - impl `Send` and `Sync` for `Event`.
 - exclude `ComPtr` field access from crate-level API.

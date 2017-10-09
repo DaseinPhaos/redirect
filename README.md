@@ -19,13 +19,18 @@ This is a Windows 10 only crate. Using under other toolchains would be a no-op.
 Most of the core API has been ported. Main leftovers include TiledResource, Marker and some other related stuff.
 `redirect` can now be used to draw a triangle! Checkout `./examples/triangle.rs`.
 
+## WIP
+
+- figure out a way to deal with resources more safely.
+  **Status**: v0.3.0 introduces some type safe buffer/texture types above `resource::RawTexture`.
+  **Future Work**: add more type safe textures?
+
 ## What's Next
 
 - reduce vertex definition boilerplate.
-- figure out a way to deal with resources more safely.
 - figure out a simple way to do more compile time checking around root signature and pso.
-- rework around compute pipeline.
 - reconsider safety guarantees.
+- introduce a more solid example that covers more API use case.
 
 ## License
 

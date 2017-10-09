@@ -76,6 +76,7 @@ fn main() {
     DsableTex2D::create_dsv(&mut ds_tex, &mut device, &mut dsv_heap, 0);
 
     // create rtvs on this heap for the two back buffers
+    // TODO: verify usage: https://msdn.microsoft.com/en-us/library/windows/desktop/bb174570(v=vs.85).aspx
     let mut backbuffers = [
         swapchain.get_buffer(0).expect("failed to get buffer 0"), 
         swapchain.get_buffer(1).expect("failed to get buffer 1"),
