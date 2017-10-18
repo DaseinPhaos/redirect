@@ -29,8 +29,8 @@ impl Default for DepthStencilDesc {
     fn default() -> DepthStencilDesc{
         DepthStencilDesc{
             depth: true.into(),
-            depth_write_mask: DEPTH_WRITE_MASK_ALL,
-            depth_func: COMPARISON_FUNC_LESS,
+            depth_write_mask: DepthWriteMask::ALL,
+            depth_func: ComparisonFunc::LESS,
             stencil: false.into(),
             stencil_read_mask: 0xff,
             stencil_write_mask: 0xff,
@@ -57,10 +57,10 @@ pub struct StencilOpDesc {
 impl Default for StencilOpDesc{
     fn default() -> StencilOpDesc{
         StencilOpDesc{
-            fail: STENCIL_OP_KEEP,
-            depth_fail: STENCIL_OP_KEEP,
-            pass: STENCIL_OP_KEEP,
-            func: COMPARISON_FUNC_ALWAYS,
+            fail: StencilOp::KEEP,
+            depth_fail: StencilOp::KEEP,
+            pass: StencilOp::KEEP,
+            func: ComparisonFunc::ALWAYS,
         }
     }
 }
@@ -68,25 +68,25 @@ impl Default for StencilOpDesc{
 bitflags!{
     #[repr(C)]
     pub struct DepthWriteMask: u32 {
-        const DEPTH_WRITE_MASK_ZERO = 0;
-        const DEPTH_WRITE_MASK_ALL = 1;
+        const ZERO = 0;
+        const ALL = 1;
     }
 }
 
 bitflags!{
     #[repr(C)]
     pub struct StencilOp: u32 {
-        const STENCIL_OP_KEEP      = 1;
-        const STENCIL_OP_ZERO      = 2;
-        const STENCIL_OP_REPLACE   = 3;
+        const KEEP      = 1;
+        const ZERO      = 2;
+        const REPLACE   = 3;
         /// increment and clamp
-        const STENCIL_OP_INCR_SAT  = 4;
+        const INCR_SAT  = 4;
         /// decrement and clamp
-        const STENCIL_OP_DECR_SAT  = 5;
-        const STENCIL_OP_INVERT    = 6;
+        const DECR_SAT  = 5;
+        const INVERT    = 6;
         /// increment and wrap
-        const STENCIL_OP_INCR      = 7;
+        const INCR      = 7;
         /// decrement and wrap
-        const STENCIL_OP_DECR      = 8;
+        const DECR      = 8;
     }
 }

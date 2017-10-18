@@ -219,7 +219,7 @@ impl SwapChainDesc {
             format,
             stereo: false.into(),
             sample_desc: Default::default(),
-            buffer_usage: USAGE_RENDER_TARGET_OUTPUT,
+            buffer_usage: Usage::RENDER_TARGET_OUTPUT,
             buffer_count: 2,
             scaling: Default::default(),
             swap_effect: Default::default(),
@@ -326,13 +326,13 @@ bitflags!{
     #[repr(C)]
     pub struct Scaling: u32 {
         /// back buffer content would be scaled to fill the presentation target
-        const SCALING_STRETCH = 0;
+        const STRETCH = 0;
         /// back buffer content would appear without scaling, with top edge
         /// aligned with the presentation target.
-        const SCALING_NONE = 1;
+        const NONE = 1;
         /// back buffer content would be scaled to fit the presentation target,
         /// while preserving the aspect ratio, centered with black borders
-        const SCALING_ASPECT_RATIO_STRETCH = 2;
+        const ASPECT_RATIO_STRETCH = 2;
     }
 }
 
@@ -345,7 +345,7 @@ impl From<Scaling> for ::winapi::DXGI_SCALING {
 impl Default for Scaling {
     #[inline]
     fn default() -> Scaling {
-        SCALING_STRETCH
+        Scaling::STRETCH
     }
 }
 
@@ -356,22 +356,22 @@ bitflags!{
     #[repr(C)]
     pub struct SwapEffect: u32 {
         /// bitblt, back buffer content would be discarded after presented
-        const SWAP_EFFECT_DISCARD = 0;
+        const DISCARD = 0;
         /// bitblt, back buffer content would persist after presented,
         /// cannot be used with multisampling
-        const SWAP_EFFECT_SEQUENTIAL = 1;
+        const SEQUENTIAL = 1;
         /// flip, back buffer content would persist after presented,
         /// cannot be used with multisampling
-        const SWAP_EFFECT_FLIP_SEQUENTIAL = 3;
+        const FLIP_SEQUENTIAL = 3;
         /// flip, back buffer content would be discared after presented,
         /// cannot be used with multisampling and partial presentation
-        const SWAP_EFFECT_FLIP_DISCARD = 4;
+        const FLIP_DISCARD = 4;
     }
 }
 
 impl Default for SwapEffect {
     fn default() -> SwapEffect {
-        SWAP_EFFECT_FLIP_DISCARD
+        SwapEffect::FLIP_DISCARD
     }
 }
 
@@ -380,19 +380,19 @@ bitflags!{
     #[repr(C)]
     pub struct AlphaMode: u32 {
         /// transparency behavior is not specified
-        const ALPHA_MODE_UNSPECIFIED = 0;
+        const UNSPECIFIED = 0;
         /// each color channel is premultiplied by the alpha value
-        const ALPHA_MODE_PREMULTIPLIED = 1;
+        const PREMULTIPLIED = 1;
         /// each color channel is not premultiplied by the alpha value
-        const ALPHA_MODE_STRAIGHT = 2;
+        const STRAIGHT = 2;
         /// alpha channel would be ignored
-        const ALPHA_MODE_IGNORE = 3;
+        const IGNORE = 3;
     }
 }
 
 impl Default for AlphaMode {
     fn default() -> AlphaMode {
-        ALPHA_MODE_UNSPECIFIED
+        AlphaMode::UNSPECIFIED
     }
 }
 
@@ -400,36 +400,36 @@ bitflags!{
     /// misc flags for swapchain behavior
     #[repr(C)]
     pub struct SwapChainFlags: u32 {
-        const SWAP_CHAIN_FLAG_NONE = 0;
+        const NONE = 0;
         /// turn off fullscreen automatic rotation
-        const SWAP_CHAIN_FLAG_NONPREROTATED = 1;
+        const NONPREROTATED = 1;
         /// allow switch between fullscreen and windowed with `resize_target`
-        const SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH = 2;
+        const ALLOW_SWITCH = 2;
         /// allow `get_dc` on the 0th back buffer
-        const SWAP_CHAIN_FLAG_GDI_COMPATIBLE = 4;
+        const GDI_COMPATIBLE = 4;
         /// OS would support creation only when driver and hardware protection is used?
-        const SWAP_CHAIN_FLAG_RESTRICTED_CONTENT = 8;
-        const SWAP_CHAIN_FLAG_RESTRICT_SHARED_RESOURCE_DRIVER = 16;
+        const RESTRICTED_CONTENT = 8;
+        const RESTRICT_SHARED_RESOURCE_DRIVER = 16;
         /// the presented content would only be avaiable for local display
-        const SWAP_CHAIN_FLAG_DISPLAY_ONLY = 32;
+        const DISPLAY_ONLY = 32;
         /// ensure rendering does not begin while a frame is still being resented
-        const SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT = 64;
+        const FRAME_LATENCY_WAITABLE_OBJECT = 64;
         /// create a swapchain in the foreground layer for multi-plane rendering
-        const SWAP_CHAIN_FLAG_FOREGROUND_LAYER = 128;
-        const SWAP_CHAIN_FLAG_FULLSCREEN_VIDEO = 256;
-        const SWAP_CHAIN_FLAG_YUV_VIDEO = 512;
-        const SWAP_CHAIN_FLAG_HW_PROTECTED = 1024;
+        const FOREGROUND_LAYER = 128;
+        const FULLSCREEN_VIDEO = 256;
+        const YUV_VIDEO = 512;
+        const HW_PROTECTED = 1024;
         /// enable displays that support variable refresh rates to function
         /// properly when the application presents a swapchain tied to a full
         /// screen borderless window.
-        const SWAP_CHAIN_FLAG_ALLOW_TEARING = 2048;
+        const ALLOW_TEARING = 2048;
     }
 }
 
 impl Default for SwapChainFlags {
     #[inline]
     fn default() -> Self {
-        SWAP_CHAIN_FLAG_NONE
+        SwapChainFlags::NONE
     }
 }
 
@@ -439,22 +439,22 @@ bitflags!{
     pub struct PresentFlags: u32 {
         /// present a frame from each buffer (starting from the current one)
         /// to the output
-        const PRESENT_FLAG_NONE = 0;
+        const NONE = 0;
         /// present a frame from current buffer to the output.
         /// this flag allows vsync instead of typical sequencing
-        const PRESENT_FLAG_DO_NOT_SEQUENCE = 0x2;
+        const DO_NOT_SEQUENCE = 0x2;
         /// don't present to the output. intended for use only when switching from idle
-        const PRESENT_FLAG_TEST = 0x1;
+        const TEST = 0x1;
         /// make the runtime discard outstanding queued frames
-        const PRESENT_FLAG_RESTART = 0x4;
+        const RESTART = 0x4;
         /// make the invocation fail if the calling thread would be blocked
-        const PRESENT_FLAG_DO_NOT_WAIT = 0x8;
+        const DO_NOT_WAIT = 0x8;
         /// indicates that presentation content will be shown only on the particular output. The content will not be visible on other outputs.
-        const PRESENT_FLAG_RESTRICT_TO_OUTPUT = 0x10;
+        const RESTRICT_TO_OUTPUT = 0x10;
         /// stereo prefers right-eye viewing instead of right
-        const PRESENT_FLAG_STEREO_PREFER_RIGHT = 0x20;
+        const STEREO_PREFER_RIGHT = 0x20;
         /// Indicates that the presentation should use the left buffer as a mono buffer.
-        const PRESENT_FLAG_STEREO_TEMPORARY_MONO = 0x40;
+        const STEREO_TEMPORARY_MONO = 0x40;
         // TODO: const PRESENT_USE_DURATION = 0x100;
         /// allow tearing for variable refresh rate displays.
         ///
@@ -462,14 +462,14 @@ bitflags!{
         /// - the swapchain was reated with the `ALLOW_TEARING` flag
         /// - the `sync_interval` is `0`
         /// - fullscreen borderless window, disabling automatic Alt+Enter...
-        const PRESENT_FLAG_ALLOW_TEARING = 0x200;
+        const ALLOW_TEARING = 0x200;
     }
 }
 
 impl Default for PresentFlags {
     #[inline]
     fn default() -> Self {
-        PRESENT_FLAG_NONE
+        PresentFlags::NONE
     }
 }
 
@@ -477,20 +477,20 @@ bitflags!{
     /// method the raster uses to create an image on the surface
     #[repr(C)]
     pub struct ScanlineOrder: u32 {
-        const SCANLINE_ORDER_UNSPECIFIED = 0;
+        const UNSPECIFIED = 0;
         /// image is created from the first scanline to the last without skipping any
-        const SCANLINE_ORDER_PROGRESSIVE = 1;
+        const PROGRESSIVE = 1;
         /// image is created beginning with the upper field
-        const SCANLINE_ORDER_UPPER_FIELD_FIRST = 2;
+        const UPPER_FIELD_FIRST = 2;
         /// image is created beginning with the lower field
-        const SCANLINE_ORDER_LOWER_FIELD_FIRST = 3;
+        const LOWER_FIELD_FIRST = 3;
     }
 }
 
 impl Default for ScanlineOrder {
     #[inline]
     fn default() -> Self {
-        SCANLINE_ORDER_UNSPECIFIED
+        ScanlineOrder::UNSPECIFIED
     }
 }
 
@@ -498,15 +498,15 @@ bitflags!{
     /// scaling behavior for an image on a monitor
     #[repr(C)]
     pub struct ModeScaling: u32 {
-        const MODE_SCALING_UNSPECIFIED = 0;
-        const MODE_SCALING_CENTERED = 1;
-        const MODE_SCALING_STRETCHED = 2;
+        const UNSPECIFIED = 0;
+        const CENTERED = 1;
+        const STRETCHED = 2;
     }
 }
 
 impl Default for ModeScaling {
     #[inline]
     fn default() -> Self {
-        MODE_SCALING_UNSPECIFIED
+        ModeScaling::UNSPECIFIED
     }
 }

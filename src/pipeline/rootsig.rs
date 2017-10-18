@@ -205,10 +205,10 @@ bitflags!{
     /// type of a descriptor range
     #[repr(C)]
     pub struct DescriptorRangeType: u32 {
-        const DESCRIPTOR_RANGE_TYPE_SRV      = 0;
-        const DESCRIPTOR_RANGE_TYPE_UAV      = DESCRIPTOR_RANGE_TYPE_SRV.bits + 1;
-        const DESCRIPTOR_RANGE_TYPE_CBV      = DESCRIPTOR_RANGE_TYPE_UAV.bits + 1;
-        const DESCRIPTOR_RANGE_TYPE_SAMPLER  = DESCRIPTOR_RANGE_TYPE_CBV.bits + 1;
+        const SRV      = 0;
+        const UAV      = DescriptorRangeType::SRV.bits + 1;
+        const CBV      = DescriptorRangeType::UAV.bits + 1;
+        const SAMPLER  = DescriptorRangeType::CBV.bits + 1;
     }
 }
 
@@ -216,19 +216,19 @@ bitflags!{
     /// specifies which shader can access content of a given root parameter
     #[repr(C)]
     pub struct ShaderVisibility: u32 {
-        const SHADER_VISIBILITY_ALL       = 0;
-        const SHADER_VISIBILITY_VERTEX    = 1;
-        const SHADER_VISIBILITY_HULL      = 2;
-        const SHADER_VISIBILITY_DOMAIN    = 3;
-        const SHADER_VISIBILITY_GEOMETRY  = 4;
-        const SHADER_VISIBILITY_PIXEL     = 5;
+        const ALL       = 0;
+        const VERTEX    = 1;
+        const HULL      = 2;
+        const DOMAIN    = 3;
+        const GEOMETRY  = 4;
+        const PIXEL     = 5;
     }
 }
 
 impl Default for ShaderVisibility {
     #[inline]
     fn default() -> ShaderVisibility {
-        SHADER_VISIBILITY_ALL
+        ShaderVisibility::ALL
     }
 }
 
@@ -236,21 +236,21 @@ bitflags!{
     /// misc flags for a root signature
     #[repr(C)]
     pub struct RootSigFlags: u32 {
-        const ROOT_SIGNATURE_FLAG_NONE                                = 0;
-        const ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT  = 0x1;
-        const ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS      = 0x2;
-        const ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS        = 0x4;
-        const ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS      = 0x8;
-        const ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS    = 0x10;
-        const ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS       = 0x20;
-        const ROOT_SIGNATURE_FLAG_ALLOW_STREAM_OUTPUT                 = 0x40;
+        const NONE                                = 0;
+        const ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT  = 0x1;
+        const DENY_VERTEX_SHADER_ROOT_ACCESS      = 0x2;
+        const DENY_HULL_SHADER_ROOT_ACCESS        = 0x4;
+        const DENY_DOMAIN_SHADER_ROOT_ACCESS      = 0x8;
+        const DENY_GEOMETRY_SHADER_ROOT_ACCESS    = 0x10;
+        const DENY_PIXEL_SHADER_ROOT_ACCESS       = 0x20;
+        const ALLOW_STREAM_OUTPUT                 = 0x40;
     }
 }
 
 impl Default for RootSigFlags {
     #[inline]
     fn default() -> Self {
-        ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT
+        RootSigFlags::ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT
     }
 }
 

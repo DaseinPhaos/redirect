@@ -50,7 +50,7 @@ impl StaticSamplerDesc {
             address_w: Default::default(),
             mip_bias: 0.0f32,
             max_anisotropy: 1,
-            comparison_func: COMPARISON_FUNC_ALWAYS,
+            comparison_func: ComparisonFunc::ALWAYS,
             border_color: Default::default(),
             min_lod: 0.0f32,
             max_lod: 1.0f32,
@@ -64,42 +64,42 @@ bitflags!{
     /// filtering options for texture sampling. [more info](https://msdn.microsoft.com/library/windows/desktop/dn770367(v=vs.85).aspx)
     #[repr(C)]
     pub struct Filter: u32 {
-        const FILTER_MIN_MAG_MIP_POINT                           = 0;
-        const FILTER_MIN_MAG_POINT_MIP_LINEAR                    = 0x1;
-        const FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT              = 0x4;
-        const FILTER_MIN_POINT_MAG_MIP_LINEAR                    = 0x5;
-        const FILTER_MIN_LINEAR_MAG_MIP_POINT                    = 0x10;
-        const FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR             = 0x11;
-        const FILTER_MIN_MAG_LINEAR_MIP_POINT                    = 0x14;
-        const FILTER_MIN_MAG_MIP_LINEAR                          = 0x15;
-        const FILTER_ANISOTROPIC                                 = 0x55;
-        const FILTER_COMPARISON_MIN_MAG_MIP_POINT                = 0x80;
-        const FILTER_COMPARISON_MIN_MAG_POINT_MIP_LINEAR         = 0x81;
-        const FILTER_COMPARISON_MIN_POINT_MAG_LINEAR_MIP_POINT   = 0x84;
-        const FILTER_COMPARISON_MIN_POINT_MAG_MIP_LINEAR         = 0x85;
-        const FILTER_COMPARISON_MIN_LINEAR_MAG_MIP_POINT         = 0x90;
-        const FILTER_COMPARISON_MIN_LINEAR_MAG_POINT_MIP_LINEAR  = 0x91;
-        const FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT         = 0x94;
-        const FILTER_COMPARISON_MIN_MAG_MIP_LINEAR               = 0x95;
-        const FILTER_COMPARISON_ANISOTROPIC                      = 0xd5;
-        const FILTER_MINIMUM_MIN_MAG_MIP_POINT                   = 0x100;
-        const FILTER_MINIMUM_MIN_MAG_POINT_MIP_LINEAR            = 0x101;
-        const FILTER_MINIMUM_MIN_POINT_MAG_LINEAR_MIP_POINT      = 0x104;
-        const FILTER_MINIMUM_MIN_POINT_MAG_MIP_LINEAR            = 0x105;
-        const FILTER_MINIMUM_MIN_LINEAR_MAG_MIP_POINT            = 0x110;
-        const FILTER_MINIMUM_MIN_LINEAR_MAG_POINT_MIP_LINEAR     = 0x111;
-        const FILTER_MINIMUM_MIN_MAG_LINEAR_MIP_POINT            = 0x114;
-        const FILTER_MINIMUM_MIN_MAG_MIP_LINEAR                  = 0x115;
-        const FILTER_MINIMUM_ANISOTROPIC                         = 0x155;
-        const FILTER_MAXIMUM_MIN_MAG_MIP_POINT                   = 0x180;
-        const FILTER_MAXIMUM_MIN_MAG_POINT_MIP_LINEAR            = 0x181;
-        const FILTER_MAXIMUM_MIN_POINT_MAG_LINEAR_MIP_POINT      = 0x184;
-        const FILTER_MAXIMUM_MIN_POINT_MAG_MIP_LINEAR            = 0x185;
-        const FILTER_MAXIMUM_MIN_LINEAR_MAG_MIP_POINT            = 0x190;
-        const FILTER_MAXIMUM_MIN_LINEAR_MAG_POINT_MIP_LINEAR     = 0x191;
-        const FILTER_MAXIMUM_MIN_MAG_LINEAR_MIP_POINT            = 0x194;
-        const FILTER_MAXIMUM_MIN_MAG_MIP_LINEAR                  = 0x195;
-        const FILTER_MAXIMUM_ANISOTROPIC                         = 0x1d5;
+        const MIN_MAG_MIP_POINT                           = 0;
+        const MIN_MAG_POINT_MIP_LINEAR                    = 0x1;
+        const MIN_POINT_MAG_LINEAR_MIP_POINT              = 0x4;
+        const MIN_POINT_MAG_MIP_LINEAR                    = 0x5;
+        const MIN_LINEAR_MAG_MIP_POINT                    = 0x10;
+        const MIN_LINEAR_MAG_POINT_MIP_LINEAR             = 0x11;
+        const MIN_MAG_LINEAR_MIP_POINT                    = 0x14;
+        const MIN_MAG_MIP_LINEAR                          = 0x15;
+        const ANISOTROPIC                                 = 0x55;
+        const COMPARISON_MIN_MAG_MIP_POINT                = 0x80;
+        const COMPARISON_MIN_MAG_POINT_MIP_LINEAR         = 0x81;
+        const COMPARISON_MIN_POINT_MAG_LINEAR_MIP_POINT   = 0x84;
+        const COMPARISON_MIN_POINT_MAG_MIP_LINEAR         = 0x85;
+        const COMPARISON_MIN_LINEAR_MAG_MIP_POINT         = 0x90;
+        const COMPARISON_MIN_LINEAR_MAG_POINT_MIP_LINEAR  = 0x91;
+        const COMPARISON_MIN_MAG_LINEAR_MIP_POINT         = 0x94;
+        const COMPARISON_MIN_MAG_MIP_LINEAR               = 0x95;
+        const COMPARISON_ANISOTROPIC                      = 0xd5;
+        const MINIMUM_MIN_MAG_MIP_POINT                   = 0x100;
+        const MINIMUM_MIN_MAG_POINT_MIP_LINEAR            = 0x101;
+        const MINIMUM_MIN_POINT_MAG_LINEAR_MIP_POINT      = 0x104;
+        const MINIMUM_MIN_POINT_MAG_MIP_LINEAR            = 0x105;
+        const MINIMUM_MIN_LINEAR_MAG_MIP_POINT            = 0x110;
+        const MINIMUM_MIN_LINEAR_MAG_POINT_MIP_LINEAR     = 0x111;
+        const MINIMUM_MIN_MAG_LINEAR_MIP_POINT            = 0x114;
+        const MINIMUM_MIN_MAG_MIP_LINEAR                  = 0x115;
+        const MINIMUM_ANISOTROPIC                         = 0x155;
+        const MAXIMUM_MIN_MAG_MIP_POINT                   = 0x180;
+        const MAXIMUM_MIN_MAG_POINT_MIP_LINEAR            = 0x181;
+        const MAXIMUM_MIN_POINT_MAG_LINEAR_MIP_POINT      = 0x184;
+        const MAXIMUM_MIN_POINT_MAG_MIP_LINEAR            = 0x185;
+        const MAXIMUM_MIN_LINEAR_MAG_MIP_POINT            = 0x190;
+        const MAXIMUM_MIN_LINEAR_MAG_POINT_MIP_LINEAR     = 0x191;
+        const MAXIMUM_MIN_MAG_LINEAR_MIP_POINT            = 0x194;
+        const MAXIMUM_MIN_MAG_MIP_LINEAR                  = 0x195;
+        const MAXIMUM_ANISOTROPIC                         = 0x1d5;
     }
 }
 
@@ -108,22 +108,22 @@ bitflags!{
     #[repr(C)]
     pub struct TextureAddressMode: u32 {
         /// tile at every integer junction, essentially repeating the textures
-        const TEXTURE_ADDRESS_MODE_WRAP = 1;
+        const WRAP = 1;
         /// filp at every integer junction
-        const TEXTURE_ADDRESS_MODE_MIRROR = 2;
+        const MIRROR = 2;
         /// clamp to values at normalized boundary
-        const TEXTURE_ADDRESS_MODE_CLAMP = 3;
+        const CLAMP = 3;
         /// set to a "border color"
-        const TEXTURE_ADDRESS_MODE_BORDER = 4;
+        const BORDER = 4;
         /// take the absolution value of texture coordinates, then clamp to the boundary
-        const TEXTURE_ADDRESS_MODE_MIRROR_ONCE = 5;
+        const MIRROR_ONCE = 5;
     }
 }
 
 impl Default for TextureAddressMode {
     #[inline]
     fn default() -> Self {
-        TEXTURE_ADDRESS_MODE_WRAP
+        TextureAddressMode::WRAP
     }
 }
 
@@ -131,15 +131,15 @@ bitflags!{
     /// border colors
     #[repr(C)]
     pub struct BorderColor: u32 {
-        const BORDER_COLOR_TRANSPARENT_BLACK = 0;
-        const BORDER_COLOR_OPAQUE_BLACK = BORDER_COLOR_TRANSPARENT_BLACK.bits + 1;
-        const BORDER_COLOR_OPAQUE_WHITE = BORDER_COLOR_OPAQUE_BLACK.bits + 1;
+        const TRANSPARENT_BLACK = 0;
+        const OPAQUE_BLACK = BorderColor::TRANSPARENT_BLACK.bits + 1;
+        const OPAQUE_WHITE = BorderColor::OPAQUE_BLACK.bits + 1;
     }
 }
 
 impl Default for BorderColor {
     #[inline]
     fn default() -> BorderColor {
-        BORDER_COLOR_TRANSPARENT_BLACK
+        BorderColor::TRANSPARENT_BLACK
     }
 }

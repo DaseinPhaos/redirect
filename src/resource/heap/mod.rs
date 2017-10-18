@@ -31,8 +31,8 @@ impl DefaultHeap {
     pub fn new(device: &mut Device, size: u64) -> Result<Self, WinError> {
         let desc = HeapDesc::new(
             size,
-            HeapProperties::new(HEAP_TYPE_DEFAULT),
-            HEAP_FLAG_NONE
+            HeapProperties::new(HeapType::DEFAULT),
+            Default::default()
         );
 
         let raw = device.create_heap(&desc)?;
@@ -51,8 +51,8 @@ impl UploadHeap {
     pub fn new(device: &mut Device, size: u64) -> Result<Self, WinError> {
         let desc = HeapDesc::new(
             size,
-            HeapProperties::new(HEAP_TYPE_UPLOAD),
-            HEAP_FLAG_NONE
+            HeapProperties::new(HeapType::UPLOAD),
+            Default::default()
         );
 
         let raw = device.create_heap(&desc)?;
@@ -71,8 +71,8 @@ impl ReadbackHeap {
     pub fn new(device: &mut Device, size: u64) -> Result<Self, WinError> {
         let desc = HeapDesc::new(
             size,
-            HeapProperties::new(HEAP_TYPE_READBACK),
-            HEAP_FLAG_NONE
+            HeapProperties::new(HeapType::READBACK),
+            Default::default()
         );
 
         let raw = device.create_heap(&desc)?;

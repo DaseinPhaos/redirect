@@ -50,15 +50,15 @@ bitflags!{
     /// misc fence options
     #[repr(C)]
     pub struct FenceFlags: u32 {
-        const FENCE_FLAG_NONE = 0;
-        const FENCE_FLAG_SHARED = 0x1;
-        const FENCE_FLAG_SHARED_CROSS_ADAPTER = 0x2;
+        const NONE = 0;
+        const SHARED = 0x1;
+        const SHARED_CROSS_ADAPTER = 0x2;
     }
 }
 
 impl Default for FenceFlags {
     #[inline]
     fn default() -> FenceFlags {
-        FENCE_FLAG_NONE
+        FenceFlags::NONE
     }
 }

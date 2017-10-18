@@ -123,9 +123,9 @@ impl Default for CommandQueueDesc {
     #[inline]
     fn default() -> CommandQueueDesc {
         CommandQueueDesc{
-            list_type: COMMAND_LIST_TYPE_DIRECT,
-            priority: COMMAND_QUEUE_PRIOIRITY_NORMAL,
-            flags: COMMAND_QUEUE_FLAG_NONE,
+            list_type: CommandListType::DIRECT,
+            priority: CommandQueuePriority::NORMAL,
+            flags: CommandQueueFlags::NONE,
             node_mask: 0,
         }
     }
@@ -136,16 +136,16 @@ bitflags!{
     /// priority levels for a command queue
     #[repr(C)]
     pub struct CommandQueuePriority: u32 {
-        const COMMAND_QUEUE_PRIOIRITY_NORMAL = 0;
-        const COMMAND_QUEUE_PRIORITY_HIGH = 100;
-        const COMMAND_QUEUE_PRIOIRITY_GLOBAL_REALTIME = 1000;
+        const NORMAL = 0;
+        const HIGH = 100;
+        const REALTIME = 1000;
     }
 }
 
 impl Default for CommandQueuePriority {
     #[inline]
     fn default() -> Self {
-        COMMAND_QUEUE_PRIOIRITY_NORMAL
+        CommandQueuePriority::NORMAL
     }
 }
 
@@ -153,14 +153,14 @@ bitflags!{
     /// misc flags for a command queue
     #[repr(C)]
     pub struct CommandQueueFlags: u32 {
-        const COMMAND_QUEUE_FLAG_NONE = 0;
-        const COMMAND_QUEUE_FLAG_DISABLE_GPU_TIMEOUT = 0x1;
+        const NONE = 0;
+        const DISABLE_GPU_TIMEOUT = 0x1;
     }
 }
 
 impl Default for CommandQueueFlags {
     #[inline]
     fn default() -> Self {
-        COMMAND_QUEUE_FLAG_NONE
+        CommandQueueFlags::NONE
     }
 }

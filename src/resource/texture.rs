@@ -92,10 +92,10 @@ impl DsableTex2D {
             Default::default(), // TODO: check if additional denies helps?
             &super::description::ResourceDesc::tex2d(
                 width, height, 1, mip_levels, format,
-                super::description::RESOURCE_FLAG_ALLOW_DEPTH_STENCIL,
+                super::description::ResourceFlags::ALLOW_DEPTH_STENCIL,
                 Default::default()
             ),
-            super::RESOURCE_STATE_DEPTH_WRITE // TODO: other initial states?
+            super::ResourceStates::DEPTH_WRITE // TODO: other initial states?
         )?;
         Ok(DsableTex2D{raw, width, height, mip_levels, format})
     }
@@ -145,7 +145,7 @@ impl RenderableTex2D {
             Default::default(), // TODO: check if additional denies helps?
             &super::description::ResourceDesc::tex2d(
                 width, height, 1, mip_levels, format,
-                super::description::RESOURCE_FLAG_ALLOW_RENDER_TARGET,
+                super::description::ResourceFlags::ALLOW_RENDER_TARGET,
                 Default::default()
             ),
             Default::default() // TODO: other initial states?

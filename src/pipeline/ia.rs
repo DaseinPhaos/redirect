@@ -32,6 +32,18 @@ pub struct VertexBufferView {
     pub stride: u32,
 }
 
+/// a vertex
+pub trait Vertex: Sized {
+    /// get the stride per vertex
+    #[inline]
+    fn get_stride(&self) -> u32 {
+        ::std::mem::size_of::<Self>() as u32
+    }
+
+    /// get the input layout of this vertex
+    fn get_input_layout(&self) -> InputLayoutBuilder;
+}
+
 /// a input layout constructor
 #[derive(Clone, Debug, Default)]
 pub struct InputLayoutBuilder<'a> {
@@ -69,7 +81,7 @@ impl<'a> InputElementDesc<'a>{
             semantic_name: semantic_name.as_ptr(), 
             semantic_index: 0, format, input_slot: 0, 
             aligned_byte_offset: ::winapi::D3D12_APPEND_ALIGNED_ELEMENT,
-            input_slot_class: INPUT_CLASSIFICATION_PER_VERTEX,
+            input_slot_class: InputClassification::PER_VERTEX,
             instance_data_step_rate: 0,
             _pd: Default::default(),
         }
@@ -80,88 +92,88 @@ bitflags!{
     /// identifies the type of input data
     #[repr(C)]
     pub struct InputClassification: u32 {
-        const INPUT_CLASSIFICATION_PER_VERTEX = 0;
-        const INPUT_CLASSIFICATION_PER_INSTANCE = 1;
+        const PER_VERTEX = 0;
+        const PER_INSTANCE = 1;
     }
 }
 
 bitflags!{
     #[repr(C)]
     pub struct StripCutValue: u32 {
-        const STRIP_CUT_VALUE_DISABLED = 0;
-        const STRIP_CUT_VALUE_0XFFFF = 1;
-        const STRIP_CUT_VALUE_0XFFFFFFFF = 2;
+        const DISABLED = 0;
+        const FFFF = 1;
+        const FFFFFFFF = 2;
     }
 }
 
 impl Default for StripCutValue {
     #[inline]
     fn default() -> StripCutValue {
-        STRIP_CUT_VALUE_DISABLED
+        StripCutValue::DISABLED
     }
 }
 
 bitflags!{
     #[repr(C)]
     pub struct PrimitiveTopologyType: u32 {
-        const PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED  = 0;
-        const PRIMITIVE_TOPOLOGY_TYPE_POINT      = 1;
-        const PRIMITIVE_TOPOLOGY_TYPE_LINE       = 2;
-        const PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE   = 3;
-        const PRIMITIVE_TOPOLOGY_TYPE_PATCH      = 4;
+        const UNDEFINED  = 0;
+        const POINT      = 1;
+        const LINE       = 2;
+        const TRIANGLE   = 3;
+        const PATCH      = 4;
     }
 }
 
 bitflags!{
     #[repr(C)]
     pub struct PrimitiveTopology: u32 {
-        const PRIMITIVE_TOPOLOGY_UNDEFINED                     = 0;
-        const PRIMITIVE_TOPOLOGY_POINTLIST                     = 1;
-        const PRIMITIVE_TOPOLOGY_LINELIST                      = 2;
-        const PRIMITIVE_TOPOLOGY_LINESTRIP                     = 3;
-        const PRIMITIVE_TOPOLOGY_TRIANGLELIST                  = 4;
-        const PRIMITIVE_TOPOLOGY_TRIANGLESTRIP                 = 5;
-        const PRIMITIVE_TOPOLOGY_LINELIST_ADJ                  = 10;
-        const PRIMITIVE_TOPOLOGY_LINESTRIP_ADJ                 = 11;
-        const PRIMITIVE_TOPOLOGY_TRIANGLELIST_ADJ              = 12;
-        const PRIMITIVE_TOPOLOGY_TRIANGLESTRIP_ADJ             = 13;
-        const PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST     = 33;
-        const PRIMITIVE_TOPOLOGY_2_CONTROL_POINT_PATCHLIST     = 34;
-        const PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST     = 35;
-        const PRIMITIVE_TOPOLOGY_4_CONTROL_POINT_PATCHLIST     = 36;
-        const PRIMITIVE_TOPOLOGY_5_CONTROL_POINT_PATCHLIST     = 37;
-        const PRIMITIVE_TOPOLOGY_6_CONTROL_POINT_PATCHLIST     = 38;
-        const PRIMITIVE_TOPOLOGY_7_CONTROL_POINT_PATCHLIST     = 39;
-        const PRIMITIVE_TOPOLOGY_8_CONTROL_POINT_PATCHLIST     = 40;
-        const PRIMITIVE_TOPOLOGY_9_CONTROL_POINT_PATCHLIST     = 41;
-        const PRIMITIVE_TOPOLOGY_10_CONTROL_POINT_PATCHLIST    = 42;
-        const PRIMITIVE_TOPOLOGY_11_CONTROL_POINT_PATCHLIST    = 43;
-        const PRIMITIVE_TOPOLOGY_12_CONTROL_POINT_PATCHLIST    = 44;
-        const PRIMITIVE_TOPOLOGY_13_CONTROL_POINT_PATCHLIST    = 45;
-        const PRIMITIVE_TOPOLOGY_14_CONTROL_POINT_PATCHLIST    = 46;
-        const PRIMITIVE_TOPOLOGY_15_CONTROL_POINT_PATCHLIST    = 47;
-        const PRIMITIVE_TOPOLOGY_16_CONTROL_POINT_PATCHLIST    = 48;
-        const PRIMITIVE_TOPOLOGY_17_CONTROL_POINT_PATCHLIST    = 49;
-        const PRIMITIVE_TOPOLOGY_18_CONTROL_POINT_PATCHLIST    = 50;
-        const PRIMITIVE_TOPOLOGY_19_CONTROL_POINT_PATCHLIST    = 51;
-        const PRIMITIVE_TOPOLOGY_20_CONTROL_POINT_PATCHLIST    = 52;
-        const PRIMITIVE_TOPOLOGY_21_CONTROL_POINT_PATCHLIST    = 53;
-        const PRIMITIVE_TOPOLOGY_22_CONTROL_POINT_PATCHLIST    = 54;
-        const PRIMITIVE_TOPOLOGY_23_CONTROL_POINT_PATCHLIST    = 55;
-        const PRIMITIVE_TOPOLOGY_24_CONTROL_POINT_PATCHLIST    = 56;
-        const PRIMITIVE_TOPOLOGY_25_CONTROL_POINT_PATCHLIST    = 57;
-        const PRIMITIVE_TOPOLOGY_26_CONTROL_POINT_PATCHLIST    = 58;
-        const PRIMITIVE_TOPOLOGY_27_CONTROL_POINT_PATCHLIST    = 59;
-        const PRIMITIVE_TOPOLOGY_28_CONTROL_POINT_PATCHLIST    = 60;
-        const PRIMITIVE_TOPOLOGY_29_CONTROL_POINT_PATCHLIST    = 61;
-        const PRIMITIVE_TOPOLOGY_30_CONTROL_POINT_PATCHLIST    = 62;
-        const PRIMITIVE_TOPOLOGY_31_CONTROL_POINT_PATCHLIST    = 63;
-        const PRIMITIVE_TOPOLOGY_32_CONTROL_POINT_PATCHLIST    = 64;
+        const UNDEFINED                     = 0;
+        const POINTLIST                     = 1;
+        const LINELIST                      = 2;
+        const LINESTRIP                     = 3;
+        const TRIANGLELIST                  = 4;
+        const TRIANGLESTRIP                 = 5;
+        const LINELIST_ADJ                  = 10;
+        const LINESTRIP_ADJ                 = 11;
+        const TRIANGLELIST_ADJ              = 12;
+        const TRIANGLESTRIP_ADJ             = 13;
+        const CONTROL_POINT_PATCHLIST_1     = 33;
+        const CONTROL_POINT_PATCHLIST_2     = 34;
+        const CONTROL_POINT_PATCHLIST_3     = 35;
+        const CONTROL_POINT_PATCHLIST_4     = 36;
+        const CONTROL_POINT_PATCHLIST_5     = 37;
+        const CONTROL_POINT_PATCHLIST_6     = 38;
+        const CONTROL_POINT_PATCHLIST_7     = 39;
+        const CONTROL_POINT_PATCHLIST_8     = 40;
+        const CONTROL_POINT_PATCHLIST_9     = 41;
+        const CONTROL_POINT_PATCHLIST_10    = 42;
+        const CONTROL_POINT_PATCHLIST_11    = 43;
+        const CONTROL_POINT_PATCHLIST_12    = 44;
+        const CONTROL_POINT_PATCHLIST_13    = 45;
+        const CONTROL_POINT_PATCHLIST_14    = 46;
+        const CONTROL_POINT_PATCHLIST_15    = 47;
+        const CONTROL_POINT_PATCHLIST_16    = 48;
+        const CONTROL_POINT_PATCHLIST_17    = 49;
+        const CONTROL_POINT_PATCHLIST_18    = 50;
+        const CONTROL_POINT_PATCHLIST_19    = 51;
+        const CONTROL_POINT_PATCHLIST_20    = 52;
+        const CONTROL_POINT_PATCHLIST_21    = 53;
+        const CONTROL_POINT_PATCHLIST_22    = 54;
+        const CONTROL_POINT_PATCHLIST_23    = 55;
+        const CONTROL_POINT_PATCHLIST_24    = 56;
+        const CONTROL_POINT_PATCHLIST_25    = 57;
+        const CONTROL_POINT_PATCHLIST_26    = 58;
+        const CONTROL_POINT_PATCHLIST_27    = 59;
+        const CONTROL_POINT_PATCHLIST_28    = 60;
+        const CONTROL_POINT_PATCHLIST_29    = 61;
+        const CONTROL_POINT_PATCHLIST_30    = 62;
+        const CONTROL_POINT_PATCHLIST_31    = 63;
+        const CONTROL_POINT_PATCHLIST_32    = 64;
     }
 }
 
 impl Default for PrimitiveTopology {
     fn default() -> Self {
-        PRIMITIVE_TOPOLOGY_TRIANGLELIST
+        PrimitiveTopology::TRIANGLELIST
     }
 }

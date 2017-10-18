@@ -142,14 +142,14 @@ impl<'a> GraphicsPipelineStateBuilder<'a> {
             depth_stencil_state: Default::default(),
             input_layout: Default::default(),
             strip_cut_value: Default::default(),
-            primitive_topology_type: ia::PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
+            primitive_topology_type: ia::PrimitiveTopologyType::TRIANGLE,
             num_render_targets: 1,
             rtv_formats: [::format::DXGI_FORMAT_UNKNOWN; 8],
             dsv_format: ::format::DXGI_FORMAT_D24_UNORM_S8_UINT,
             sample_desc: Default::default(),
             node_mask: 0,
             cache: None,
-            flags: PIPELINE_STATE_FLAG_NONE,
+            flags: PipelineStateFlags::NONE,
         }
     }
 
@@ -209,7 +209,7 @@ impl<'a> ComputePipelineStateBuilder<'a> {
             cs: None,
             node_mask: 0,
             cache: None,
-            flags: PIPELINE_STATE_FLAG_NONE,
+            flags: PipelineStateFlags::NONE,
         }
     }
 
@@ -237,15 +237,15 @@ impl<'a> ComputePipelineStateBuilder<'a> {
 bitflags!{
     #[repr(C)]
     pub struct PipelineStateFlags: u32 {
-        const PIPELINE_STATE_FLAG_NONE        = 0;
-        const PIPELINE_STATE_FLAG_TOOL_DEBUG  = 0x1;
+        const NONE        = 0;
+        const TOOL_DEBUG  = 0x1;
     }
 }
 
 impl Default for PipelineStateFlags{
     #[inline]
     fn default() -> Self {
-        PIPELINE_STATE_FLAG_NONE
+        PipelineStateFlags::NONE
     }
 }
 
@@ -253,13 +253,13 @@ bitflags!{
     /// comparison options, specifying under which circumstance the comparison passes
     #[repr(C)]
     pub struct ComparisonFunc: u32 {
-        const COMPARISON_FUNC_NEVER          = 1;
-        const COMPARISON_FUNC_LESS           = 2;
-        const COMPARISON_FUNC_EQUAL          = 3;
-        const COMPARISON_FUNC_LESS_EQUAL     = 4;
-        const COMPARISON_FUNC_GREATER        = 5;
-        const COMPARISON_FUNC_NOT_EQUAL      = 6;
-        const COMPARISON_FUNC_GREATER_EQUAL  = 7;
-        const COMPARISON_FUNC_ALWAYS         = 8;
+        const NEVER          = 1;
+        const LESS           = 2;
+        const EQUAL          = 3;
+        const LESS_EQUAL     = 4;
+        const GREATER        = 5;
+        const NOT_EQUAL      = 6;
+        const GREATER_EQUAL  = 7;
+        const ALWAYS         = 8;
     }
 }

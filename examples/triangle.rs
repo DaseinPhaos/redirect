@@ -28,7 +28,7 @@ fn main() {
 
     // initialize a device with the default adapter
     let mut device = redirect::device::Device::new(
-        None, redirect::device::FEATURE_LEVEL_11_0
+        None, redirect::device::FeatureLevel::L_11_0
     ).expect("device initialization failed.");
 
     // initialize a command queue from this device with default options
@@ -197,8 +197,8 @@ fn main() {
         let mut barriers = redirect::resource::ResourceBarriersBuilder::new();
         barriers.push(redirect::resource::ResourceBarrier::transition(
             &backbuffers[backbuffer_idx as usize], 0,
-            redirect::resource::RESOURCE_STATE_PRESENT,
-            redirect::resource::RESOURCE_STATE_RENDER_TARGET
+            redirect::resource::ResourceStates::PRESENT,
+            redirect::resource::ResourceStates::RENDER_TARGET
         ));
         recording.resource_barriers(&barriers);
         recording.clear_rtv(
@@ -219,8 +219,8 @@ fn main() {
         let mut barriers = redirect::resource::ResourceBarriersBuilder::new();
         barriers.push(redirect::resource::ResourceBarrier::transition(
             &backbuffers[backbuffer_idx as usize], 0,
-            redirect::resource::RESOURCE_STATE_RENDER_TARGET,
-            redirect::resource::RESOURCE_STATE_PRESENT
+            redirect::resource::ResourceStates::RENDER_TARGET,
+            redirect::resource::ResourceStates::PRESENT
         ));
         recording.resource_barriers(&barriers);
         cmdlist = recording.close().expect(

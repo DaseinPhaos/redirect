@@ -147,8 +147,8 @@ impl Device {
         initial_state: ResourceStates
     ) -> Result<RawResource, WinError> {
         let initial_state = match heap_properties.heap_type {
-            HEAP_TYPE_UPLOAD => ::winapi::D3D12_RESOURCE_STATE_GENERIC_READ,
-            HEAP_TYPE_READBACK => ::winapi::D3D12_RESOURCE_STATE_COPY_DEST,
+            HeapType::UPLOAD => ::winapi::D3D12_RESOURCE_STATE_GENERIC_READ,
+            HeapType::READBACK => ::winapi::D3D12_RESOURCE_STATE_COPY_DEST,
             _ => unsafe {::std::mem::transmute(initial_state)},
         };
         unsafe {
@@ -211,8 +211,8 @@ impl Device {
     ) -> Result<RawResource, WinError> {
         let heap_properties = heap.get_desc().properties;
         let initial_state = match heap_properties.heap_type {
-            HEAP_TYPE_UPLOAD => ::winapi::D3D12_RESOURCE_STATE_GENERIC_READ,
-            HEAP_TYPE_READBACK => ::winapi::D3D12_RESOURCE_STATE_COPY_DEST,
+            HeapType::UPLOAD => ::winapi::D3D12_RESOURCE_STATE_GENERIC_READ,
+            HeapType::READBACK => ::winapi::D3D12_RESOURCE_STATE_COPY_DEST,
             _ => ::std::mem::transmute(initial_state),
         };
 
@@ -296,10 +296,16 @@ bitflags! {
     /// set of features targeted by a device
     #[repr(C)]
     pub struct FeatureLevel: u32 {
-        const FEATURE_LEVEL_11_0 = 0xb000;
-        const FEATURE_LEVEL_11_1 = 0xb100;
-        const FEATURE_LEVEL_12_0 = 0xc000;
-        const FEATURE_LEVEL_12_1 = 0xc100;
+        const L_11_0 = 0xb000;
+        const L_11_1 = 0xb100;
+        const L_12_0 = 0xc000;
+        const L_12_1 = 0xc100;
+    }
+}
+
+impl Default for FeatureLevel {
+    fn default() -> FeatureLevel {
+        FeatureLevel::L_11_0
     }
 }
 

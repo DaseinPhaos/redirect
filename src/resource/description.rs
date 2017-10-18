@@ -32,7 +32,7 @@ impl ResourceDesc{
     #[inline]
     pub fn buffer(size: u64, flags: ResourceFlags) -> ResourceDesc{
         ResourceDesc{
-            dimension: RESOURCE_DIMENSION_BUFFER,
+            dimension: ResourceDimension::BUFFER,
             alignment: Default::default(),
             width: size,
             height: 1,
@@ -40,7 +40,7 @@ impl ResourceDesc{
             mip_levels: 1,
             format: DXGI_FORMAT_UNKNOWN,
             sample_desc: Default::default(),
-            layout: TEXTURE_LAYOUT_ROW_MAJOR,
+            layout: TextureLayout::ROW_MAJOR,
             flags: flags,
         }
     }
@@ -52,7 +52,7 @@ impl ResourceDesc{
         flags: ResourceFlags, alignment: ResourceAlignment
     ) -> ResourceDesc{
         ResourceDesc{
-            dimension: RESOURCE_DIMENSION_TEXTURE1D,
+            dimension: ResourceDimension::TEXTURE1D,
             alignment,
             width: length,
             height: 1,
@@ -60,7 +60,7 @@ impl ResourceDesc{
             mip_levels: mip_levels,
             format: format,
             sample_desc: Default::default(),
-            layout: TEXTURE_LAYOUT_UNKNOWN,
+            layout: TextureLayout::UNKNOWN,
             flags: flags,
         }
     }
@@ -72,7 +72,7 @@ impl ResourceDesc{
         format: DxgiFormat, flags: ResourceFlags, alignment: ResourceAlignment
     ) -> ResourceDesc{
         ResourceDesc{
-            dimension: RESOURCE_DIMENSION_TEXTURE2D,
+            dimension: ResourceDimension::TEXTURE2D,
             alignment,
             width: width,
             height: height,
@@ -80,7 +80,7 @@ impl ResourceDesc{
             mip_levels: mip_levels,
             format: format,
             sample_desc: Default::default(),
-            layout: TEXTURE_LAYOUT_UNKNOWN,
+            layout: TextureLayout::UNKNOWN,
             flags: flags,
         }
     }
@@ -92,12 +92,12 @@ impl ResourceDesc{
         format: DxgiFormat, flags: ResourceFlags, alignment: ResourceAlignment
     ) -> ResourceDesc{
         ResourceDesc{
-            dimension: RESOURCE_DIMENSION_TEXTURE3D,
+            dimension: ResourceDimension::TEXTURE3D,
             alignment, width, height, depth,
             mip_levels: mip_levels,
             format: format,
             sample_desc: Default::default(),
-            layout: TEXTURE_LAYOUT_UNKNOWN,
+            layout: TextureLayout::UNKNOWN,
             flags: flags,
         }
     }
@@ -115,20 +115,20 @@ bitflags!{
     #[repr(C)]
     pub struct ResourceAlignment: u64 {
         /// 4mb for msaa textures, 64kb for everything else. This is the deefault.
-        const RESOURCE_DEFAULT_ALIGNED = 0;
+        const DEFAULT = 0;
         /// 4kb aligned
-        const RESOURCE_4KB_ALIGNED = 0x1_000;
+        const FOUR_KB = 0x1_000;
         /// 64kb aligned
-        const RESOURCE_64KB_ALIGNED = 0x10_000;
+        const SIXTY_FOUR_KB = 0x10_000;
         /// 4mb aligned
-        const RESOURCE_4MB_ALIGNED = 0x1_000_000;
+        const FOUR_MB = 0x1_000_000;
     }
 }
 
 impl Default for ResourceAlignment {
     #[inline]
     fn default() -> ResourceAlignment {
-        RESOURCE_DEFAULT_ALIGNED
+        ResourceAlignment::DEFAULT
     }
 }
 
@@ -136,11 +136,11 @@ bitflags!{
     /// dimension i.e. type of the resource
     #[repr(C)]
     pub struct ResourceDimension: u32 {
-        const RESOURCE_DIMENSION_UNKNOWN    = 0;
-        const RESOURCE_DIMENSION_BUFFER     = 1;
-        const RESOURCE_DIMENSION_TEXTURE1D  = 2;
-        const RESOURCE_DIMENSION_TEXTURE2D  = 3;
-        const RESOURCE_DIMENSION_TEXTURE3D  = 4;
+        const UNKNOWN    = 0;
+        const BUFFER     = 1;
+        const TEXTURE1D  = 2;
+        const TEXTURE2D  = 3;
+        const TEXTURE3D  = 4;
     }
 }
 
@@ -150,29 +150,29 @@ bitflags! {
     pub struct TextureLayout: u32 {
         /// adapter-dependent layout. driver choose optimal layout
         /// during resource creation
-        const TEXTURE_LAYOUT_UNKNOWN                 = 0;
+        const UNKNOWN                 = 0;
         /// data for the texture is stored in row-major order.
         /// only the following texture properties are supported:
         ///
-        /// - `RESOURCE_DIMENSION_TEXTURE2D`
+        /// - `TEXTURE2D`
         /// - single mip level
         /// - single array slice
         /// 64kb alignment
         /// non-MSAA
-        /// no `RESOURCE_FLAG_ALLOW_DEPTH_STENCIL`
+        /// no `ALLOW_DEPTH_STENCIL`
         /// cannot be a YUV format
         ///
         /// Note that buffers should be row major
-        const TEXTURE_LAYOUT_ROW_MAJOR               = 1;
-        const TEXTURE_LAYOUT_64KB_UNDEFINED_SWIZZLE  = 2;
-        const TEXTURE_LAYOUT_64KB_STANDARD_SWIZZLE   = 3;
+        const ROW_MAJOR               = 1;
+        const UNDEFINED_SWIZZLE  = 2;
+        const STANDARD_SWIZZLE   = 3;
     }
 }
 
 impl Default for TextureLayout {
     #[inline]
     fn default() -> Self {
-        TEXTURE_LAYOUT_UNKNOWN
+        TextureLayout::UNKNOWN
     }
 }
 
@@ -181,13 +181,13 @@ bitflags!{
     #[repr(C)]
     pub struct ResourceFlags: u32 {
         /// Default flag
-        const RESOURCE_FLAG_NONE                       = 0;
+        const NONE                       = 0;
         /// Allow the resource to be used as render target.
         /// - Should be used with format supporting render target capabilities
         ///   At current feature level.
         /// - Can't be used in conjunction with RowMajorLayout when ... (see doc for more)
         /// - Can't be useed with 4kb resource alignment, or AllowDepthStencil, pr DenyRtDsTextures
-        const RESOURCE_FLAG_ALLOW_RENDER_TARGET        = 0x1;
+        const ALLOW_RENDER_TARGET        = 0x1;
         /// Allow dsv on the resource, allow resource state transition to DepthWrite/DepthRead.
         /// - Texture format must support depth stencil capability at the current feature level.
         /// - Cannot be used with:
@@ -200,28 +200,28 @@ bitflags!{
         ///   - RowMajor,
         ///   - DenyRtDsTextures,
         ///   - AllowDisplay
-        const RESOURCE_FLAG_ALLOW_DEPTH_STENCIL        = 0x2;
+        const ALLOW_DEPTH_STENCIL        = 0x2;
         /// Allow uav on the resource, allow resource state transition to `UnorderedAccess`.
         /// - Texture format must support unordered access capability at the current feature level.
         /// - Cannot be used with MSAA and ... (see doc for more)
-        const RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS     = 0x4;
+        const ALLOW_UNORDERED_ACCESS     = 0x4;
         /// Disallows a srv to be created for the resource,
         /// as well as disables the resource to transition into the state of SharedResources.
         /// Must be used with AllowDepthStencil
-        const RESOURCE_FLAG_DENY_SHADER_RESOURCE       = 0x8;
+        const DENY_SHADER_RESOURCE       = 0x8;
         /// Allows the resource to be used for cross-adapter data, as well as the same features enabled by AllowSimultaneousAccess.
         /// Must be used with heaps with `SharedCrossAdapter` and not `AllowDisplay`.
-        const RESOURCE_FLAG_ALLOW_CROSS_ADAPTER        = 0x10;
+        const ALLOW_CROSS_ADAPTER        = 0x10;
         /// Allows a resource to be simultaneously accessed by multiple different queues, devices or processes
         /// - Cannot be used with Buffer, coz bbuffer always have this property..>.<
         /// - Cannot be used with MSAA
-        const RESOURCE_FLAG_ALLOW_SIMULTANEOUS_ACCESS  = 0x20;
+        const ALLOW_SIMULTANEOUS_ACCESS  = 0x20;
     }
 }
 
 impl Default for ResourceFlags {
     #[inline]
     fn default() -> Self {
-        RESOURCE_FLAG_NONE
+        ResourceFlags::NONE
     }
 }

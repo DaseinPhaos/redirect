@@ -186,17 +186,17 @@ bitflags!{
     #[repr(C)]
     pub struct ResourceBarrierFlags: u32 {
         /// The default, an atomic barrier.
-        const RESOURCE_BARRIER_FLAG_NONE = 0;
+        const NONE = 0;
         /// Marks the start of a transition, putting the resource in a temporary no-access condition.
-        const RESOURCE_BARRIER_FLAG_BEGIN_ONLY = 0x1;
+        const BEGIN_ONLY = 0x1;
         /// Marks the end of a transition, restore the resource to the state after transition.
-        const RESOURCE_BARRIER_FLAG_END_ONLY = 0x2;
+        const END_ONLY = 0x2;
     }
 }
 
 impl Default for ResourceBarrierFlags {
     #[inline]
     fn default() -> Self {
-        RESOURCE_BARRIER_FLAG_NONE
+        ResourceBarrierFlags::NONE
     }
 }

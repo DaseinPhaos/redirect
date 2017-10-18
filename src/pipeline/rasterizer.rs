@@ -31,8 +31,8 @@ impl Default for RasterizerDesc {
     #[inline]
     fn default() -> RasterizerDesc{
         RasterizerDesc{
-            fill: FILL_MODE_SOLID,
-            cull: CULL_MODE_BACK,
+            fill: FillMode::SOLID,
+            cull: CullMode::BACK,
             front_ccw: true.into(),
             depth_bias: 0,
             depth_bias_clamp: 0.0f32,
@@ -41,7 +41,7 @@ impl Default for RasterizerDesc {
             multisample: false.into(),
             antialiased_line: false.into(),
             forced_sample_count: 0,
-            conservative_raster: CONSERVATIVE_MODE_OFF,
+            conservative_raster: ConservativeMode::OFF,
         }
     }
 }
@@ -49,24 +49,24 @@ impl Default for RasterizerDesc {
 bitflags!{
     #[repr(C)]
     pub struct FillMode: u32 {
-        const FILL_MODE_WIREFRAME = 2;
-        const FILL_MODE_SOLID = 3;
+        const WIREFRAME = 2;
+        const SOLID = 3;
     }
 }
 
 bitflags!{
     #[repr(C)]
     pub struct CullMode: u32 {
-        const CULL_MODE_NONE = 1;
-        const CULL_MODE_FRONT = 2;
-        const CULL_MODE_BACK = 3;
+        const NONE = 1;
+        const FRONT = 2;
+        const BACK = 3;
     }
 }
 
 bitflags!{
     #[repr(C)]
     pub struct ConservativeMode: u32 {
-        const CONSERVATIVE_MODE_OFF = 0;
-        const CONSERVATIVE_MODE_ON = 1;
+        const OFF = 0;
+        const ON = 1;
     }
 }

@@ -71,26 +71,26 @@ bitflags!{
     #[repr(C)]
     pub struct HeapType: u32 {
         /// GPU RW, no CPU access. This is the default heap type.
-        const HEAP_TYPE_DEFAULT   = 1;
+        const DEFAULT   = 1;
         /// Optimal for CPU write.
         /// Best for CPU write-once, GPU read-once data.
         /// Resources in this heap must be created with `GENERATE_READ` state, and
         /// cannot be changed away.
-        const HEAP_TYPE_UPLOAD    = 2;
+        const UPLOAD    = 2;
         /// Optimal for CPU write.
         /// Best for GPU write-once, CPU readable data.
         /// Resources in this heap must be created with `COPY_DEST` state, and
         /// cannot be changed away from this.
-        const HEAP_TYPE_READBACK  = 3;
+        const READBACK  = 3;
         /// Custom heap for advanced usage.
-        const HEAP_TYPE_CUSTOM    = 4;
+        const CUSTOM    = 4;
     }
 }
 
 impl Default for HeapType {
     #[inline]
     fn default() -> HeapType {
-        HEAP_TYPE_DEFAULT
+        HeapType::DEFAULT
     }
 }
 
@@ -99,18 +99,18 @@ bitflags!{
     #[repr(C)]
     pub struct PageProperty: u32 {
         /// The default cpu page property.
-        const PAGE_PROPERTY_UNKNOWN        = 0;
+        const UNKNOWN        = 0;
         /// The CPU cannot access the heap, thus no property available.
-        const PAGE_PROPERTY_NOT_AVAILABLE  = 1;
-        const PAGE_PROPERTY_WRITE_COMBINE  = 2;
-        const PAGE_PROPERTY_WRITE_BACK     = 3;
+        const NOT_AVAILABLE  = 1;
+        const WRITE_COMBINE  = 2;
+        const WRITE_BACK     = 3;
     }
 }
 
 impl Default for PageProperty {
     #[inline]
     fn default() -> PageProperty {
-        PAGE_PROPERTY_UNKNOWN
+        PageProperty::UNKNOWN
     }
 }
 
@@ -119,16 +119,16 @@ bitflags!{
     #[repr(C)]
     pub struct MemoryPoolPreference: u32 {
         /// The default pool preference.
-        const MEMORY_POOL_UNKNOWN  = 0;
-        const MEMORY_POOL_L0       = 1;
-        const MEMORY_POOL_L1       = 2;
+        const UNKNOWN  = 0;
+        const L0       = 1;
+        const L1       = 2;
     }
 }
 
 impl Default for MemoryPoolPreference {
     #[inline]
     fn default() -> MemoryPoolPreference {
-        MEMORY_POOL_UNKNOWN
+        MemoryPoolPreference::UNKNOWN
     }
 }
 
@@ -137,18 +137,18 @@ bitflags!{
     #[repr(C)]
     pub struct HeapAlignment: u64 {
         /// alias for 64kb, the default.
-        const HEAP_ALIGNMENT_DEFAULT = 0;
+        const DEFAULT = 0;
         /// 64kb aligned.
-        const HEAP_ALIGNMENT_DEFAULT_RESOURCE_PLACEMENT = ::winapi::D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT as u64;
+        const DEFAULT_RESOURCE_PLACEMENT = ::winapi::D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT as u64;
         /// 4mb aligned. MSAA resource heap must use this alignment.
-        const HEAP_ALIGNMENT_DEFAULT_MSAA_RESOURCE_PLACEMENT = ::winapi::D3D12_DEFAULT_MSAA_RESOURCE_PLACEMENT_ALIGNMENT as u64;
+        const DEFAULT_MSAA_RESOURCE_PLACEMENT = ::winapi::D3D12_DEFAULT_MSAA_RESOURCE_PLACEMENT_ALIGNMENT as u64;
     }
 }
 
 impl Default for HeapAlignment {
     #[inline]
     fn default() -> Self {
-        HEAP_ALIGNMENT_DEFAULT
+        HeapAlignment::DEFAULT
     }
 }
 
@@ -157,33 +157,33 @@ bitflags!{
     #[repr(C)]
     pub struct HeapFlags: u32 {
         /// The default, no options specified.
-        const HEAP_FLAG_NONE                            = 0;
+        const NONE                            = 0;
         /// a [shared heap](https://msdn.microsoft.com/library/windows/desktop/mt186623(v=vs.85).aspx)
-        const HEAP_FLAG_SHARED                          = 0x1;
+        const SHARED                          = 0x1;
         /// the heap isn't allowed to contain buffers
-        const HEAP_FLAG_DENY_BUFFERS                    = 0x4;
+        const DENY_BUFFERS                    = 0x4;
         /// the heap can contain swapchain surfaces
-        const HEAP_FLAG_ALLOW_DISPLAY                   = 0x8;
+        const ALLOW_DISPLAY                   = 0x8;
         /// the heap can be shored across adapters
-        const HEAP_FLAG_SHARED_CROSS_ADAPTER            = 0x20;
+        const SHARED_CROSS_ADAPTER            = 0x20;
         /// the heap can't store render target or depth stencil textures
-        const HEAP_FLAG_DENY_RT_DS_TEXTURES             = 0x40;
+        const DENY_RT_DS_TEXTURES             = 0x40;
         /// the heap can't contain textures without `ALLOW_RENDER_TARGET` or `ALLOW_DEPTH_STENCIL` flags
-        const HEAP_FLAG_DENY_NON_RT_DS_TEXTURES         = 0x80;
+        const DENY_NON_RT_DS_TEXTURES         = 0x80;
         /// unsupported
-        const HEAP_FLAG_HARDWARE_PROTECTED              = 0x100;
+        const HARDWARE_PROTECTED              = 0x100;
         /// allow tools to support `MEM_WRITE_WATCH`
-        const HEAP_FLAG_ALLOW_WRITE_WATCH               = 0x200;
-        const HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES  = 0;
-        const HEAP_FLAG_ALLOW_ONLY_BUFFERS              = 0xc0;
-        const HEAP_FLAG_ALLOW_ONLY_NON_RT_DS_TEXTURES   = 0x44;
-        const HEAP_FLAG_ALLOW_ONLY_RT_DS_TEXTURES       = 0x84;
+        const ALLOW_WRITE_WATCH               = 0x200;
+        const ALLOW_ALL_BUFFERS_AND_TEXTURES  = 0;
+        const ALLOW_ONLY_BUFFERS              = 0xc0;
+        const ALLOW_ONLY_NON_RT_DS_TEXTURES   = 0x44;
+        const ALLOW_ONLY_RT_DS_TEXTURES       = 0x84;
     }
 }
 
 impl Default for HeapFlags {
     #[inline]
     fn default() -> Self {
-        HEAP_FLAG_NONE
+        HeapFlags::NONE
     }
 }

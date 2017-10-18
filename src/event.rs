@@ -118,7 +118,7 @@ bitflags!{
 
 impl Default for AccessRight {
     fn default() -> AccessRight {
-        ALL_ACCESS
+        AccessRight::ALL_ACCESS
     }
 }
 
@@ -137,6 +137,6 @@ bitflags!{
 
 impl Default for Flag {
     fn default() -> Flag {
-        NONE
+        Flag::NONE
     }
 }

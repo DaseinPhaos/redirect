@@ -29,21 +29,21 @@ bitflags!{
     #[repr(C)]
     pub struct CommandListType: u32 {
         /// direct list doesn't inherit any GPU state.
-        const COMMAND_LIST_TYPE_DIRECT = 0;
+        const DIRECT = 0;
         /// bundle inherits all GPU state (except PSO and primitive topology)
         /// from the direct list, where it must be opearated on
-        const COMMAND_LIST_TYPE_BUNDLE = 1;
+        const BUNDLE = 1;
         /// computing command list
-        const COMMAND_LIST_TYPE_COMPUTE = 2;
+        const COMPUTE = 2;
         /// copying(drawing) command list
-        const COMMAND_LIST_TYPE_COPY = 3;
+        const COPY = 3;
     }
 }
 
 impl Default for CommandListType {
     #[inline]
     fn default() -> Self {
-        COMMAND_LIST_TYPE_DIRECT
+        CommandListType::DIRECT
     }
 }
 
@@ -51,14 +51,14 @@ bitflags!{
     /// depth stencil clear flags
     #[repr(C)]
     pub struct DepthStencilClearFlags: u32 {
-        const DS_CLEAR_FLAG_DEPTH = 0x1;
-        const DS_CLEAR_FLAG_STENCIL = 0x2;
+        const DEPTH = 0x1;
+        const STENCIL = 0x2;
     }
 }
 
 impl Default for DepthStencilClearFlags {
     #[inline]
     fn default() -> DepthStencilClearFlags {
-        DS_CLEAR_FLAG_DEPTH | DS_CLEAR_FLAG_STENCIL
+        DepthStencilClearFlags::DEPTH | DepthStencilClearFlags::STENCIL
     }
 }

@@ -76,14 +76,14 @@ impl Default for RenderTargetBlendDesc {
         RenderTargetBlendDesc{
             blend_enabled: false.into(),
             logic_op_enabled: false.into(),
-            src_blend: BLEND_ONE,
-            dst_blend: BLEND_ZERO,
-            blend_op: BLEND_OP_ADD,
-            src_alpha: BLEND_ONE,
-            dst_alpha: BLEND_ZERO,
-            blend_op_alpha: BLEND_OP_ADD,
-            logic_op: LOGIC_OP_NOOP,
-            write_mask: COLOR_WRITE_ENABLE_ALL,
+            src_blend: Blend::ONE,
+            dst_blend: Blend::ZERO,
+            blend_op: BlendOp::ADD,
+            src_alpha: Blend::ONE,
+            dst_alpha: Blend::ZERO,
+            blend_op_alpha: BlendOp::ADD,
+            logic_op: LogicOp::NOOP,
+            write_mask: ColorWriteMask::ENABLE_ALL,
         }
     }
 }
@@ -92,23 +92,23 @@ bitflags!{
     /// a blend factor
     #[repr(C)]
     pub struct Blend: u32 {
-        const BLEND_ZERO              = 1;
-        const BLEND_ONE               = 2;
-        const BLEND_SRC_COLOR         = 3;
-        const BLEND_INV_SRC_COLOR     = 4;
-        const BLEND_SRC_ALPHA         = 5;
-        const BLEND_INV_SRC_ALPHA     = 6;
-        const BLEND_DEST_ALPHA        = 7;
-        const BLEND_INV_DEST_ALPHA    = 8;
-        const BLEND_DEST_COLOR        = 9;
-        const BLEND_INV_DEST_COLOR    = 10;
-        const BLEND_SRC_ALPHA_SAT     = 11;
-        const BLEND_BLEND_FACTOR      = 14;
-        const BLEND_INV_BLEND_FACTOR  = 15;
-        const BLEND_SRC1_COLOR        = 16;
-        const BLEND_INV_SRC1_COLOR    = 17;
-        const BLEND_SRC1_ALPHA        = 18;
-        const BLEND_INV_SRC1_ALPHA    = 19;
+        const ZERO              = 1;
+        const ONE               = 2;
+        const SRC_COLOR         = 3;
+        const INV_SRC_COLOR     = 4;
+        const SRC_ALPHA         = 5;
+        const INV_SRC_ALPHA     = 6;
+        const DEST_ALPHA        = 7;
+        const INV_DEST_ALPHA    = 8;
+        const DEST_COLOR        = 9;
+        const INV_DEST_COLOR    = 10;
+        const SRC_ALPHA_SAT     = 11;
+        const FACTOR      = 14;
+        const INV_FACTOR  = 15;
+        const SRC1_COLOR        = 16;
+        const INV_SRC1_COLOR    = 17;
+        const SRC1_ALPHA        = 18;
+        const INV_SRC1_ALPHA    = 19;
     }
 }
 
@@ -116,11 +116,11 @@ bitflags!{
     /// a blend operation
     #[repr(C)]
     pub struct BlendOp: u32 {
-        const BLEND_OP_ADD           = 1;
-        const BLEND_OP_SUBTRACT      = 2;
-        const BLEND_OP_REV_SUBTRACT  = 3;
-        const BLEND_OP_MIN           = 4;
-        const BLEND_OP_MAX           = 5;
+        const ADD           = 1;
+        const SUBTRACT      = 2;
+        const REV_SUBTRACT  = 3;
+        const MIN           = 4;
+        const MAX           = 5;
     }
 }
 
@@ -128,22 +128,22 @@ bitflags!{
     /// a logic operation
     #[repr(C)]
     pub struct LogicOp: u32 {
-        const LOGIC_OP_CLEAR          = 0;
-        const LOGIC_OP_SET            = LOGIC_OP_CLEAR.bits +1;
-        const LOGIC_OP_COPY           = LOGIC_OP_SET.bits +1;
-        const LOGIC_OP_COPY_INVERTED  = LOGIC_OP_COPY.bits +1;
-        const LOGIC_OP_NOOP           = LOGIC_OP_COPY_INVERTED.bits +1;
-        const LOGIC_OP_INVERT         = LOGIC_OP_NOOP.bits +1;
-        const LOGIC_OP_AND            = LOGIC_OP_INVERT.bits +1;
-        const LOGIC_OP_NAND           = LOGIC_OP_AND.bits +1;
-        const LOGIC_OP_OR             = LOGIC_OP_NAND.bits +1;
-        const LOGIC_OP_NOR            = LOGIC_OP_OR.bits +1;
-        const LOGIC_OP_XOR            = LOGIC_OP_NOR.bits +1;
-        const LOGIC_OP_EQUIV          = LOGIC_OP_XOR.bits +1;
-        const LOGIC_OP_AND_REVERSE    = LOGIC_OP_EQUIV.bits +1;
-        const LOGIC_OP_AND_INVERTED   = LOGIC_OP_AND_REVERSE.bits +1;
-        const LOGIC_OP_OR_REVERSE     = LOGIC_OP_AND_INVERTED.bits +1;
-        const LOGIC_OP_OR_INVERTED    = LOGIC_OP_OR_REVERSE.bits +1;
+        const CLEAR          = 0;
+        const SET            = LogicOp::CLEAR.bits +1;
+        const COPY           = LogicOp::SET.bits +1;
+        const COPY_INVERTED  = LogicOp::COPY.bits +1;
+        const NOOP           = LogicOp::COPY_INVERTED.bits +1;
+        const INVERT         = LogicOp::NOOP.bits +1;
+        const AND            = LogicOp::INVERT.bits +1;
+        const NAND           = LogicOp::AND.bits +1;
+        const OR             = LogicOp::NAND.bits +1;
+        const NOR            = LogicOp::OR.bits +1;
+        const XOR            = LogicOp::NOR.bits +1;
+        const EQUIV          = LogicOp::XOR.bits +1;
+        const AND_REVERSE    = LogicOp::EQUIV.bits +1;
+        const AND_INVERTED   = LogicOp::AND_REVERSE.bits +1;
+        const OR_REVERSE     = LogicOp::AND_INVERTED.bits +1;
+        const OR_INVERTED    = LogicOp::OR_REVERSE.bits +1;
     }
 }
 
@@ -151,13 +151,13 @@ bitflags!{
     /// color write mask of a blend operation
     #[repr(C)]
     pub struct ColorWriteMask: u8 {
-        const COLOR_WRITE_ENABLE_RED = 1;
-        const COLOR_WRITE_ENABLE_GREEN = 2;
-        const COLOR_WRITE_ENABLE_BLUE = 4;
-        const COLOR_WRITE_ENABLE_ALPHA = 8;
-        const COLOR_WRITE_ENABLE_ALL = COLOR_WRITE_ENABLE_RED.bits |
-                                        COLOR_WRITE_ENABLE_GREEN.bits |
-                                        COLOR_WRITE_ENABLE_BLUE.bits |
-                                        COLOR_WRITE_ENABLE_ALPHA.bits;
+        const ENABLE_RED = 1;
+        const ENABLE_GREEN = 2;
+        const ENABLE_BLUE = 4;
+        const ENABLE_ALPHA = 8;
+        const ENABLE_ALL = ColorWriteMask::ENABLE_RED.bits |
+                           ColorWriteMask::ENABLE_GREEN.bits |
+                           ColorWriteMask::ENABLE_BLUE.bits |
+                           ColorWriteMask::ENABLE_ALPHA.bits;
     }
 }

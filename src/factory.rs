@@ -234,11 +234,11 @@ bitflags!{
     /// adapter flags
     #[repr(C)]
     pub struct AdapterFlags: u32 {
-        const ADAPTER_FLAG_NONE = 0;
+        const NONE = 0;
         /// reserved flag
-        const ADAPTER_FLAG_REMOTE = 1;
+        const REMOTE = 1;
         /// software adapter
-        const ADAPTER_FLAG_SOFTWARE = 2;
+        const SOFTWARE = 2;
     }
 }
 
@@ -307,10 +307,10 @@ bitflags!{
     /// rotation mode for the monitor
     #[repr(C)]
     pub struct RotationMode: u32 {
-        const ROTATION_MODE_UNSPECIFIED = 0;
-        const ROTATION_MODE_IDENTITY = 1;
-        const ROTATION_MODE_ROTATE90 = 2;
-        const ROTATION_MODE_ROTATE180 = 3;
-        const ROTATION_MODE_ROTATE270 = 4;
+        const UNSPECIFIED = 0;
+        const IDENTITY = 1;
+        const ROTATE90 = 2;
+        const ROTATE180 = 3;
+        const ROTATE270 = 4;
     }
 }

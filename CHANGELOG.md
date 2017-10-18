@@ -1,3 +1,6 @@
+# unpublished
+- update `bitflags` dependency to 1.0, rename constants accordingly.
+
 # 0.3.0
 - remove `unsafe` from `Event::get()`.
 - impl `Send` and `Sync` for `Event`.

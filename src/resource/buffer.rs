@@ -79,7 +79,7 @@ impl UploadBuffer {
     pub fn new(device: &mut Device, size: u64) -> Result<UploadBuffer, WinError> {
         let raw = device.create_committed_resource(
             &super::heap::description::HeapProperties::new(
-                super::heap::description::HEAP_TYPE_UPLOAD
+                super::heap::description::HeapType::UPLOAD
             ),
             Default::default(), // TODO: check if additional denies helps?
             &super::description::ResourceDesc::buffer(size, Default::default()),
@@ -110,11 +110,11 @@ impl ReadbackBuffer {
     pub fn new(device: &mut Device, size: u64) -> Result<ReadbackBuffer, WinError> {
         let raw = device.create_committed_resource(
             &super::heap::description::HeapProperties::new(
-                super::heap::description::HEAP_TYPE_READBACK
+                super::heap::description::HeapType::READBACK
             ),
             Default::default(), // TODO: check if additional denies helps?
             &super::description::ResourceDesc::buffer(size, Default::default()),
-            super::state::RESOURCE_STATE_COPY_DEST
+            super::state::ResourceStates::COPY_DEST
         )?;
         Ok(ReadbackBuffer{raw, size})
     }
@@ -145,8 +145,8 @@ where H: super::heap::traits::AcceptBuffer + super::heap::traits::GpuOnly {
     pub fn gpu_only(
         device: &mut Device, mut heap: H, offset: u64, size: u64
     ) -> Result<Self, WinError> {
-        debug_assert_eq!(size % super::RESOURCE_64KB_ALIGNED.bits(), 0);
-        debug_assert!(offset % super::RESOURCE_64KB_ALIGNED.bits() == 0);
+        debug_assert_eq!(size % super::ResourceAlignment::SIXTY_FOUR_KB.bits(), 0);
+        debug_assert!(offset % super::ResourceAlignment::SIXTY_FOUR_KB.bits() == 0);
         debug_assert!(offset + size <= heap.size());
         // TODO: check heap alignment?
         let raw = unsafe {
@@ -167,8 +167,8 @@ where H: super::heap::traits::AcceptBuffer + super::heap::traits::Upload {
     pub fn upload(
         device: &mut Device, mut heap: H, offset: u64, size: u64
     ) -> Result<Self, WinError> {
-        debug_assert_eq!(size % super::RESOURCE_64KB_ALIGNED.bits(), 0);
-        debug_assert!(offset % super::description::RESOURCE_64KB_ALIGNED.bits() == 0);
+        debug_assert_eq!(size % super::ResourceAlignment::SIXTY_FOUR_KB.bits(), 0);
+        debug_assert!(offset % super::description::ResourceAlignment::SIXTY_FOUR_KB.bits() == 0);
         debug_assert!(offset + size <= heap.size());
         // TODO: check heap alignment?
         let raw = unsafe {
@@ -189,15 +189,15 @@ where H: super::heap::traits::AcceptBuffer + super::heap::traits::Readback {
     pub fn readback(
         device: &mut Device, mut heap: H, offset: u64, size: u64
     ) -> Result<Self, WinError> {
-        debug_assert_eq!(size % super::RESOURCE_64KB_ALIGNED.bits(), 0);
-        debug_assert!(offset % super::description::RESOURCE_64KB_ALIGNED.bits() == 0);
+        debug_assert_eq!(size % super::ResourceAlignment::SIXTY_FOUR_KB.bits(), 0);
+        debug_assert!(offset % super::description::ResourceAlignment::SIXTY_FOUR_KB.bits() == 0);
         debug_assert!(offset + size <= heap.size());
         // TODO: check heap alignment?
         let raw = unsafe {
             device.create_placed_resource(
                 heap.as_raw_mut(), offset,
                 &super::ResourceDesc::buffer(size, Default::default()),
-                super::state::RESOURCE_STATE_COPY_DEST
+                super::state::ResourceStates::COPY_DEST
             )
         }?;
         Ok(Self{raw, heap, offset, size})

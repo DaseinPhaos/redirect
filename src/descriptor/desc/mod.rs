@@ -52,10 +52,10 @@ impl Default for Shader4ComponentMapping {
     #[inline]
     fn default() -> Self {
         Shader4ComponentMapping::new(
-            SHADER_COMPONENT_MAPPING_FROM_MEMORY_COMPONENT_0,
-            SHADER_COMPONENT_MAPPING_FROM_MEMORY_COMPONENT_1,
-            SHADER_COMPONENT_MAPPING_FROM_MEMORY_COMPONENT_2,
-            SHADER_COMPONENT_MAPPING_FROM_MEMORY_COMPONENT_3
+            ShaderComponentMapping::FROM_MEMORY_COMPONENT_0,
+            ShaderComponentMapping::FROM_MEMORY_COMPONENT_1,
+            ShaderComponentMapping::FROM_MEMORY_COMPONENT_2,
+            ShaderComponentMapping::FROM_MEMORY_COMPONENT_3
         )
     }
 }
@@ -65,16 +65,16 @@ bitflags!{
     #[repr(C)]
     pub struct ShaderComponentMapping: u32 {
         /// indicates return component 0, i.e. R in RGBA
-        const SHADER_COMPONENT_MAPPING_FROM_MEMORY_COMPONENT_0 = 0;
+        const FROM_MEMORY_COMPONENT_0 = 0;
         /// indicates return component 1, i.e. G in RGBA
-        const SHADER_COMPONENT_MAPPING_FROM_MEMORY_COMPONENT_1 = 1;
+        const FROM_MEMORY_COMPONENT_1 = 1;
         /// indicates return component 2, i.e. B in RGBA
-        const SHADER_COMPONENT_MAPPING_FROM_MEMORY_COMPONENT_2 = 2;
+        const FROM_MEMORY_COMPONENT_2 = 2;
         /// indicates return component 3, i.e. A in RGBA
-        const SHADER_COMPONENT_MAPPING_FROM_MEMORY_COMPONENT_3 = 3;
+        const FROM_MEMORY_COMPONENT_3 = 3;
         /// indicates forcing the resulting value to 0
-        const SHADER_COMPONENT_MAPPING_FORCE_VALUE_0 = 4;
+        const FORCE_VALUE_0 = 4;
         /// indicates forcing the resulting value to 0x1 or 1.0f
-        const SHADER_COMPONENT_MAPPING_FORCE_VALUE_1 = 5;
+        const FORCE_VALUE_1 = 5;
     }
 }

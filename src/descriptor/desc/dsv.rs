@@ -85,16 +85,16 @@ bitflags!{
     /// bound to the pipeline (on a same resource) simultaneously
     #[repr(C)]
     pub struct DsvFlags: u32 {
-        const DSV_FLAG_NONE = 0;
-        const DSV_FLAG_READ_ONLY_DEPTH = 0x1;
-        const DSV_FLAG_READ_ONLY_STENCIL = 0x2;
+        const NONE = 0;
+        const READ_ONLY_DEPTH = 0x1;
+        const READ_ONLY_STENCIL = 0x2;
     }
 }
 
 impl Default for DsvFlags {
     #[inline]
     fn default() -> Self {
-        DSV_FLAG_NONE
+        DsvFlags::NONE
     }
 }
 
