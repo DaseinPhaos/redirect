@@ -8,6 +8,9 @@
 
 //! executable code snippet for GPU
 
+mod reflection;
+pub use self::reflection::*;
+
 use comptr::ComPtr;
 use winapi::ID3DBlob;
 use std::os::raw::c_char;
@@ -52,11 +55,15 @@ pub struct DsShaderBytecode {
     pub(crate) ptr: ComPtr<ID3DBlob>,
 }
 
+pub trait ShaderBytecode {
+    fn to_shader_bytecode(&mut self) -> ::winapi::D3D12_SHADER_BYTECODE;
+}
+
 macro_rules! impl_shader_bytecode {
     ($Shader: ty) => {
-        impl $Shader {
+        impl ShaderBytecode for $Shader {
             #[inline]
-            pub fn to_shader_bytecode(&mut self) -> ::winapi::D3D12_SHADER_BYTECODE {
+            fn to_shader_bytecode(&mut self) -> ::winapi::D3D12_SHADER_BYTECODE {
                 let mut ret: ::winapi::D3D12_SHADER_BYTECODE = unsafe {
                     ::std::mem::uninitialized()
                 };

@@ -123,8 +123,13 @@ fn main() {
     let vs_entry = std::ffi::CString::new("VSMain").unwrap();
     let mut builder = redirect::shader::ShaderBuilder::new(buffer.as_ref(), vs_entry.as_ref());
     let vs = builder.build_vs().expect("VS creation failed");
+    let mut vsbc = vs.clone();
+
     builder.entry_point = ps_entry.as_ref();
-    let ps = builder.build_ps().expect("PS creation failed");
+    let mut ps = builder.build_ps().expect("PS creation failed");
+    // let mut ps_reflection = redirect::shader::ShaderReflection::new(&mut ps).expect("Failed to query vs reflection");
+    // let ps_desc = ps_reflection.get_desc().expect("Failed to get vs description");
+    // println!("PS: {:?}", ps_desc);
 
     // create root signature and pso
     let rootsig = redirect::pipeline::rootsig::RootSigBuilder::new().build(&mut device, 0).expect("root signature creation failed");
@@ -140,6 +145,10 @@ fn main() {
     psod.depth_stencil_state.depth = true.into();
     psod.rtv_formats[0] = backbuffers[0].get_desc().format;
     let pso = psod.build(&mut device).expect("PSO creation failed");
+
+    let mut vs_reflection = redirect::shader::ShaderReflection::new(&mut vsbc).expect("Failed to query vs reflection");
+    let vs_desc = vs_reflection.get_desc().expect("Failed to get vs description");
+    println!("VS: {:?}", vs_desc);
 
     // create a command allocator for direct command list
     let mut allocator = device.create_direct_command_allocator(
