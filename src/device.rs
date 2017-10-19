@@ -197,7 +197,7 @@ impl Device {
                 1 << node_idx
             };
             self.ptr.GetResourceAllocationInfo(
-                visible_mask, 1, desc as *const _ as *const _, &mut ret
+                &mut ret, visible_mask, 1, desc as *const _ as *const _
             );
             ::std::mem::transmute(ret)
         }

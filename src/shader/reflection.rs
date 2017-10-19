@@ -283,9 +283,11 @@ impl ShaderReflection {
 
     #[inline]
     pub fn get_desc(&mut self) -> Result<ShaderDesc, WinError> {unsafe{
-        let mut ret = ::std::mem::uninitialized();
-        let hr = self.ptr.GetDesc(&mut ret as *mut _ as *mut _);
-        WinError::from_hresult_or_ok(hr, || ret)
+        let mut ret = ::std::mem::zeroed();
+        let hr = self.ptr.GetDesc(&mut ret);
+        WinError::from_hresult_or_ok(hr, || {
+            ::std::mem::transmute(ret)
+        })
     }}
 
     // TODO: GetGSInputPrimitive
@@ -294,18 +296,19 @@ impl ShaderReflection {
     pub fn get_input_parameter_desc(
         &mut self, index: u32
     ) -> Result<SignatureParameterDesc, WinError> {unsafe{
-        let mut ret = ::std::mem::uninitialized();
+        let mut ret = ::std::mem::zeroed();
         let hr = self.ptr.GetInputParameterDesc(
-            index, &mut ret as *mut _ as *mut _
+            index, &mut ret
         );
-        WinError::from_hresult_or_ok(hr, || ret)
+        println!("{:?}", ret);
+        WinError::from_hresult_or_ok(hr, || ::std::mem::transmute(ret))
     }}
 
     #[inline]
     pub fn get_output_parameter_desc(
         &mut self, index: u32
     ) -> Result<SignatureParameterDesc, WinError> {unsafe{
-        let mut ret = ::std::mem::uninitialized();
+        let mut ret = ::std::mem::zeroed();
         let hr = self.ptr.GetOutputParameterDesc(
             index, &mut ret as *mut _ as *mut _
         );
@@ -316,7 +319,7 @@ impl ShaderReflection {
     pub fn get_patch_constant_parameter_desc(
         &mut self, index: u32
     ) -> Result<SignatureParameterDesc, WinError> {unsafe{
-        let mut ret = ::std::mem::uninitialized();
+        let mut ret = ::std::mem::zeroed();
         let hr = self.ptr.GetPatchConstantParameterDesc(
             index, &mut ret as *mut _ as *mut _
         );
@@ -325,7 +328,7 @@ impl ShaderReflection {
 
     #[inline]
     pub fn get_min_feature_level(&mut self) -> Result<FeatureLevel, WinError> {unsafe{
-        let mut ret = ::std::mem::uninitialized();
+        let mut ret = ::std::mem::zeroed();
         let hr = self.ptr.GetMinFeatureLevel(&mut ret as *mut _ as *mut _);
         WinError::from_hresult_or_ok(hr, || ret)
     }}
@@ -351,7 +354,7 @@ impl ShaderReflection {
     pub fn get_resource_binding_desc(
         &mut self, index: u32
     ) -> Result<ShaderInputBindDesc, WinError> {unsafe{
-        let mut ret = ::std::mem::uninitialized();
+        let mut ret = ::std::mem::zeroed();
         let hr = self.ptr.GetResourceBindingDesc(
             index, &mut ret as *mut _ as *mut _
         );
@@ -364,9 +367,7 @@ impl ShaderReflection {
     pub fn get_thread_group_size(&mut self) -> (u32, u32, u32) {unsafe{
         let mut ret = (0, 0, 0);
         self.ptr.GetThreadGroupSize(
-            &mut ret.0 as *mut _,
-            &mut ret.1,
-            &mut ret.2
+            &mut ret.0, &mut ret.1, &mut ret.2
         );
         ret
     }}
